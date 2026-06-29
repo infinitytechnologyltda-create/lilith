@@ -1,6 +1,7 @@
 // Lilith Life Organizer - Main Logic File
 
 // ==================== STATE MANAGEMENT ====================
+let currentLocalStorageKey = localStorage.getItem("lilith_active_slot") || "lilith_state";
 let state = {
     user: {
         level: 1,
@@ -68,7 +69,7 @@ const SEED_DATA = {
 
 // Load State from LocalStorage
 function loadState() {
-    const rawState = localStorage.getItem("lilith_state");
+    const rawState = localStorage.getItem(currentLocalStorageKey);
     if (rawState) {
         try {
             state = JSON.parse(rawState);
@@ -146,7 +147,7 @@ function loadState() {
 
 // Save State to LocalStorage
 function saveState() {
-    localStorage.setItem("lilith_state", JSON.stringify(state));
+    localStorage.setItem(currentLocalStorageKey, JSON.stringify(state));
     const storageMode = localStorage.getItem("lilith_storage_mode") || "cloud";
     if (storageMode === "cloud" && supabaseClient && supabaseUser) {
         saveToSupabaseDebounced();
@@ -3370,44 +3371,46 @@ function updateSupabaseUI() {
         cloudBtn.title = "Armazenamento: Apenas Local";
         cloudIcon.setAttribute("data-lucide", "database");
         
-        if (panelConfig) panelConfig.style.display = "none";
-        if (panelAuth) panelAuth.style.display = "none";
-        if (panelDashboard) panelDashboard.style.display = "none";
-    } else if (!supabaseClient) {
-        // Disconnected from project
-        cloudBtn.classList.add("disconnected");
-        cloudBtn.title = "Configurar Supabase";
-        cloudIcon.setAttribute("data-lucide", "cloud-off");
-        
-        if (panelConfig) panelConfig.style.display = "block";
-        if (panelAuth) panelAuth.style.display = "none";
-        if (panelDashboard) panelDashboard.style.display = "none";
-    } else if (!supabaseUser) {
-        // Connected to project, but not logged in
-        cloudBtn.classList.add("pending");
-        cloudBtn.title = "Supabase: Entrar na Conta";
-        cloudIcon.setAttribute("data-lucide", "cloud");
-        
-        if (panelConfig) panelConfig.style.display = "none";
-        if (panelAuth) panelAuth.style.display = "block";
-        if (panelDashboard) panelDashboard.style.display = "none";
-    } else {
-        // Connected & Authenticated
-        cloudBtn.classList.add("connected");
-        cloudBtn.title = `Supabase: Logado como ${supabaseUser.email}`;
-        cloudIcon.setAttribute("data-lucide", "cloud");
-        if (userEmailEl) userEmailEl.textContent = supabaseUser.email;
-        
-        // Update user display name in sidebar footer if default
-        const userNameDisplay = document.getElementById("user-name-display");
-        if (userNameDisplay && userNameDisplay.textContent === "Usuário Lilith") {
-            const username = supabaseUser.email.split("@")[0];
-            userNameDisplay.textContent = username.charAt(0).toUpperCase() + username.slice(1);
+        // Populate the slot select input to match localStorage active slot
+        const slotSelect = document.getElementById("local-storage-slot-select");
+        if (slotSelect) {
+            slotSelect.value = localStorage.getItem("lilith_active_slot") || "lilith_state";
         }
         
         if (panelConfig) panelConfig.style.display = "none";
-        if (panelAuth) panelAuth.style.display = "none";
-        if (panelDashboard) panelDashboard.style.display = "block";
+        if (panelAuth) panelAuth.style.display = "block"; // Show Local Storage Slot Selector
+        if (panelDashboard) panelDashboard.style.display = "none";
+    } else {
+        // Cloud mode
+        if (panelAuth) panelAuth.style.display = "none"; // Hide Local Storage Slot Selector
+        
+        if (!supabaseClient) {
+            // Disconnected from project
+            cloudBtn.classList.add("disconnected");
+            cloudBtn.title = "Configurar Supabase";
+            cloudIcon.setAttribute("data-lucide", "cloud-off");
+            
+            if (panelConfig) panelConfig.style.display = "block";
+            if (panelDashboard) panelDashboard.style.display = "none";
+        } else {
+            // Connected
+            cloudBtn.classList.add("connected");
+            cloudBtn.title = "Supabase: Conectado à Nuvem";
+            cloudIcon.setAttribute("data-lucide", "cloud");
+            
+            if (userEmailEl) {
+                const slot = localStorage.getItem("lilith_active_slot") || "lilith_state";
+                const slotNames = {
+                    lilith_state: "Pessoal (Padrão)",
+                    lilith_state_trabalho: "Trabalho",
+                    lilith_state_estudos: "Estudos"
+                };
+                userEmailEl.textContent = slotNames[slot] || slot;
+            }
+            
+            if (panelConfig) panelConfig.style.display = "none";
+            if (panelDashboard) panelDashboard.style.display = "block";
+        }
     }
 
     if (window.lucide) {
@@ -3433,17 +3436,18 @@ function saveToSupabaseDebounced() {
 
 // Upload local state to Supabase
 async function uploadStateToSupabase(showAlert = false) {
-    if (!supabaseClient || !supabaseUser) return;
+    if (!supabaseClient) return;
     
     supabaseSyncing = true;
     const syncStatusEl = document.getElementById("supabase-sync-status");
     const lastSyncTimeEl = document.getElementById("supabase-last-sync-time");
 
     try {
+        const userId = supabaseUser ? supabaseUser.id : (localStorage.getItem("lilith_active_slot") || "lilith_state");
         const { error } = await supabaseClient
             .from('lilith_data')
             .upsert({ 
-                user_id: supabaseUser.id, 
+                user_id: userId, 
                 state: state, 
                 updated_at: new Date().toISOString() 
             }, { onConflict: 'user_id' });
@@ -3477,17 +3481,18 @@ async function uploadStateToSupabase(showAlert = false) {
 
 // Load state from Supabase
 async function loadStateFromSupabase(showAlert = true) {
-    if (!supabaseClient || !supabaseUser) return;
+    if (!supabaseClient) return;
 
     supabaseSyncing = true;
     const syncStatusEl = document.getElementById("supabase-sync-status");
     const lastSyncTimeEl = document.getElementById("supabase-last-sync-time");
 
     try {
+        const userId = supabaseUser ? supabaseUser.id : (localStorage.getItem("lilith_active_slot") || "lilith_state");
         const { data, error } = await supabaseClient
             .from('lilith_data')
             .select('state, updated_at')
-            .eq('user_id', supabaseUser.id)
+            .eq('user_id', userId)
             .maybeSingle();
 
         if (error) throw error;
@@ -3497,7 +3502,7 @@ async function loadStateFromSupabase(showAlert = true) {
         if (data && data.state) {
             // Overwrite state and save local
             state = data.state;
-            localStorage.setItem("lilith_state", JSON.stringify(state));
+            localStorage.setItem(currentLocalStorageKey, JSON.stringify(state));
             if (state.themeColor) {
                 setThemeColor(state.themeColor);
             }
@@ -3818,18 +3823,6 @@ function initSupabaseEventListeners() {
         };
     }
 
-    // Sign out from account
-    if (signOutBtn) {
-        signOutBtn.onclick = async () => {
-            if (supabaseClient) {
-                await supabaseClient.auth.signOut();
-                supabaseUser = null;
-                updateSupabaseUI();
-                showMagicAlert("Sessão Encerrada 👋", "Você saiu da sua conta do Supabase.");
-            }
-        };
-    }
-
     // Backup download trigger
     if (backupBtn) {
         backupBtn.onclick = () => downloadBackup();
@@ -3847,7 +3840,7 @@ function initSupabaseEventListeners() {
                         saveState();
                         
                         // If connected to Supabase, update the remote database too
-                        if (supabaseClient && supabaseUser) {
+                        if (supabaseClient) {
                             await uploadStateToSupabase(false);
                         }
                         
@@ -3871,29 +3864,48 @@ function initSupabaseEventListeners() {
         };
     }
 
-    // Auth form submit (Sign In only)
-    if (authForm && authSubmitBtn) {
-        authForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("supabase-email-input").value.trim();
-            const password = document.getElementById("supabase-password-input").value;
-
-            if (!supabaseClient) return;
-
-            authSubmitBtn.disabled = true;
-            authSubmitBtn.textContent = "Processando...";
-
-            try {
-                // Sign In
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                showMagicAlert("Bem-vindo de volta! 🔑", "Logado com sucesso no Supabase.");
-            } catch (err) {
-                console.error("Erro na autenticação:", err);
-                showMagicAlert("Erro de Autenticação ❌", err.message || "Erro desconhecido.");
-            } finally {
-                authSubmitBtn.disabled = false;
-                authSubmitBtn.textContent = "Entrar na Conta";
+    // Local storage slot selection save
+    const slotSaveBtn = document.getElementById("local-storage-slot-save-btn");
+    const slotSelect = document.getElementById("local-storage-slot-select");
+    if (slotSaveBtn && slotSelect) {
+        slotSaveBtn.onclick = async () => {
+            const selectedSlot = slotSelect.value;
+            const previousSlot = localStorage.getItem("lilith_active_slot") || "lilith_state";
+            
+            if (selectedSlot !== previousSlot) {
+                // Save active slot in localStorage
+                localStorage.setItem("lilith_active_slot", selectedSlot);
+                currentLocalStorageKey = selectedSlot;
+                
+                // Load state from the newly selected slot
+                loadState();
+                
+                // Load theme color from this slot if saved
+                const themeColor = localStorage.getItem("lilith_theme_color") || "#D97A9A";
+                setThemeColor(themeColor);
+                
+                // If cloud mode and supabaseClient, fetch state from Supabase for this slot
+                const storageMode = localStorage.getItem("lilith_storage_mode") || "cloud";
+                if (storageMode === "cloud" && supabaseClient) {
+                    await loadStateFromSupabase(false);
+                }
+                
+                // Re-render UI elements
+                updateUIElements();
+                renderModuleContent(currentModule);
+                
+                const slotNames = {
+                    lilith_state: "Pessoal (Padrão)",
+                    lilith_state_trabalho: "Trabalho",
+                    lilith_state_estudos: "Estudos"
+                };
+                const slotName = slotNames[selectedSlot] || selectedSlot;
+                showMagicAlert("Perfil Alterado! 📁", `O perfil "${slotName}" foi ativado.`);
+                
+                // Close modal
+                closeModal("modal-supabase-overlay");
+            } else {
+                showMagicAlert("Aviso ⚠️", "Este perfil já está ativo.");
             }
         };
     }

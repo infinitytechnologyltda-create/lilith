@@ -1012,41 +1012,37 @@
                 </button>
             </div>
 
-            <!-- Panel 2: Auth Screen (Sign In only - Registration removed) -->
+            <!-- Panel 2: Local Storage Slot Selector -->
             <div class="supabase-panel" id="supabase-panel-auth" style="display:none;">
                 <h4 style="font-size:14px; font-weight:600; color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-                    <i data-lucide="log-in" style="width:16px; height:16px; color:var(--primary);"></i>
-                    Entrar na Conta Supabase
+                    <i data-lucide="database" style="width:16px; height:16px; color:var(--primary);"></i>
+                    Perfil de Armazenamento Local
                 </h4>
                 
-                <form id="supabase-auth-form">
-                    <div class="form-group">
-                        <label class="form-label" for="supabase-email-input">E-mail</label>
-                        <input type="email" class="form-input" id="supabase-email-input" placeholder="seu-email@exemplo.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="supabase-password-input">Senha</label>
-                        <input type="password" class="form-input" id="supabase-password-input" placeholder="••••••••" required minlength="6">
-                    </div>
-                    
-                    <button type="submit" class="action-btn" id="supabase-auth-submit-btn" style="width: 100%; justify-content: center; margin-top:8px;">
-                        Entrar na Conta
-                    </button>
-                </form>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+                    Selecione em qual slot do LocalStorage você deseja salvar as informações desta sessão. Isso permite alternar entre diferentes perfis (ex: Pessoal, Trabalho) no mesmo navegador.
+                </p>
                 
-                <div style="text-align:center; margin-top:16px;">
-                    <button type="button" class="action-btn-secondary" id="supabase-disconnect-project-btn" style="font-size:12px; padding:6px 12px;">
-                        <i data-lucide="unlink" style="width:12px; height:12px;"></i> Desconectar Projeto
-                    </button>
+                <div class="form-group">
+                    <label class="form-label" for="local-storage-slot-select">Escolher Perfil/Slot</label>
+                    <select class="form-select" id="local-storage-slot-select" style="width: 100%;">
+                        <option value="lilith_state">Perfil Pessoal (Padrão)</option>
+                        <option value="lilith_state_trabalho">Perfil Profissional (Trabalho)</option>
+                        <option value="lilith_state_estudos">Perfil de Estudos (Alternativo)</option>
+                    </select>
                 </div>
+                
+                <button type="button" class="action-btn" id="local-storage-slot-save-btn" style="width: 100%; justify-content: center; margin-top:8px;">
+                    <i data-lucide="save" style="width:16px; height:16px;"></i> Aplicar Perfil
+                </button>
             </div>
 
             <!-- Panel 3: Dashboard & Sync Controls (Sync buttons removed, backup button added) -->
             <div class="supabase-panel" id="supabase-panel-dashboard" style="display:none;">
                 <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; flex-direction:column; gap:6px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:var(--text-muted);">E-mail do Usuário:</span>
-                        <span style="font-size:13px; font-weight:600; color:#fff;" id="supabase-user-email">email@exemplo.com</span>
+                        <span style="font-size:12px; color:var(--text-muted);" id="supabase-user-label">Perfil Ativo:</span>
+                        <span style="font-size:13px; font-weight:600; color:#fff;" id="supabase-user-email">Pessoal (Padrão)</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span style="font-size:12px; color:var(--text-muted);">Status da Nuvem:</span>
@@ -1066,8 +1062,8 @@
                 </div>
                 
                 <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:16px;">
-                    <button type="button" class="action-btn-secondary" id="supabase-signout-btn" style="font-size:12px; padding:6px 12px; color:var(--danger); border-color:rgba(239, 68, 68, 0.2);">
-                        <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair da Conta
+                    <button type="button" class="action-btn-secondary" id="supabase-disconnect-project-btn" style="font-size:12px; padding:6px 12px; color:var(--danger); border-color:rgba(239, 68, 68, 0.2);">
+                        <i data-lucide="unlink" style="width:12px; height:12px;"></i> Desconectar Projeto
                     </button>
                     <button type="button" class="action-btn-secondary" id="supabase-change-keys-btn" style="font-size:12px; padding:6px 12px;">
                         <i data-lucide="settings" style="width:12px; height:12px;"></i> Configurar Chaves
