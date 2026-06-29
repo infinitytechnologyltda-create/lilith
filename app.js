@@ -3823,6 +3823,9 @@ function initSupabaseEventListeners() {
                         throw signUpError;
                     }
                     showMagicAlert("Conta Criada! 🎉", "Sua conta exclusiva foi configurada e logada.");
+                } else if (error && error.message.includes("Email not confirmed")) {
+                    showMagicAlert("Verifique seu E-mail ✉️", "Sua conta está aguardando confirmação. Entrando no modo local temporariamente.");
+                    // Proceed anyway
                 } else if (error) {
                     throw error;
                 }
