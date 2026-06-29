@@ -3767,13 +3767,28 @@ function initSupabaseEventListeners() {
     
     // Login Screen Logic
     const loginForm = document.getElementById("auth-login-form");
+    const togglePassBtn = document.getElementById("toggle-password-btn");
+    const passInputEl = document.getElementById("login-password");
+    
+    if (togglePassBtn && passInputEl) {
+        togglePassBtn.onclick = () => {
+            const isPass = passInputEl.type === "password";
+            passInputEl.type = isPass ? "text" : "password";
+            const icon = document.getElementById("toggle-password-icon");
+            if(icon) {
+                icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
+                lucide.createIcons(); // refresh icons
+            }
+        };
+    }
+
     if (loginForm) {
         loginForm.onsubmit = async (e) => {
             e.preventDefault();
-            const userInput = document.getElementById("login-username").value;
-            const passInput = document.getElementById("login-password").value;
+            const userInput = document.getElementById("login-username").value.trim().toLowerCase();
+            const passInput = document.getElementById("login-password").value.trim();
             
-            if (userInput !== "AndersonMoitinho" || passInput !== "A@147896325@a") {
+            if (userInput !== "andersonmoitinho" || passInput !== "A@147896325@a") {
                 showMagicAlert("Acesso Negado ❌", "Usuário ou senha incorretos.");
                 return;
             }
