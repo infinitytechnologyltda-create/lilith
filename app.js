@@ -2,6 +2,7 @@
 
 // ==================== STATE MANAGEMENT ====================
 let currentLocalStorageKey = localStorage.getItem("lilith_active_slot") || "lilith_state";
+let localDirectoryHandle = null;
 let state = {
     user: {
         level: 1,
@@ -148,9 +149,22 @@ function loadState() {
 // Save State to LocalStorage
 function saveState() {
     localStorage.setItem(currentLocalStorageKey, JSON.stringify(state));
+    writeToLocalDirectory();
     const storageMode = localStorage.getItem("lilith_storage_mode") || "cloud";
     if (storageMode === "cloud" && supabaseClient && supabaseUser) {
         saveToSupabaseDebounced();
+    }
+}
+
+async function writeToLocalDirectory() {
+    if (!localDirectoryHandle) return;
+    try {
+        const fileHandle = await localDirectoryHandle.getFileHandle("lilith_database.json", { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(state, null, 2));
+        await writable.close();
+    } catch (err) {
+        console.error("Failed to write to local directory:", err);
     }
 }
 
@@ -3790,77 +3804,116 @@ function initSupabaseEventListeners() {
         };
     }
 
-    // Disconnect project completely
-    if (disconnectProjBtn) {
-        disconnectProjBtn.onclick = () => {
-            if (confirm("Deseja realmente desconectar este projeto do Supabase? Suas chaves locais serão apagadas.")) {
-                localStorage.removeItem("lilith_supabase_url");
-                localStorage.removeItem("lilith_supabase_key");
-                supabaseClient = null;
-                supabaseUser = null;
-                updateSupabaseUI();
-                showMagicAlert("Desconectado ☁️", "Projeto Supabase desconectado.");
+    // Local Directory Storage Setup
+    const localFolderBtn = document.getElementById("local-folder-storage-btn");
+    const localFolderStatus = document.getElementById("local-folder-status");
+    if (localFolderBtn && window.showDirectoryPicker) {
+        localFolderBtn.onclick = async () => {
+            try {
+                localDirectoryHandle = await window.showDirectoryPicker({
+                    id: 'lilith_storage',
+                    mode: 'readwrite',
+                    startIn: 'documents'
+                });
+                
+                if (localFolderStatus) {
+                    localFolderStatus.style.display = "block";
+                    localFolderStatus.textContent = `Pasta selecionada: ${localDirectoryHandle.name}`;
+                    localFolderStatus.style.color = "#22c55e"; // green
+                }
+                
+                // Immediately backup current state to this folder
+                await writeToLocalDirectory();
+                showMagicAlert("Pasta Vinculada! 📁", `Dados salvos em lilith_database.json dentro de ${localDirectoryHandle.name}. O sistema tentará manter este arquivo atualizado enquanto a página estiver aberta.`);
+            } catch (err) {
+                console.error("Error picking directory:", err);
+                if (err.name !== 'AbortError') {
+                    showMagicAlert("Erro ❌", "Não foi possível acessar a pasta.");
+                }
             }
         };
+    } else if (localFolderBtn) {
+        localFolderBtn.onclick = () => showMagicAlert("Aviso ⚠️", "Seu navegador não suporta seleção de pastas locais (File System Access API).");
     }
 
-    // Change keys (return to credential panel)
-    if (changeKeysBtn) {
-        changeKeysBtn.onclick = () => {
-            const panelConfig = document.getElementById("supabase-panel-config");
-            const panelAuth = document.getElementById("supabase-panel-auth");
-            const panelDashboard = document.getElementById("supabase-panel-dashboard");
-
-            const urlInput = document.getElementById("supabase-url-input");
-            const keyInput = document.getElementById("supabase-key-input");
-
-            if (urlInput) urlInput.value = localStorage.getItem("lilith_supabase_url") || "";
-            if (keyInput) keyInput.value = localStorage.getItem("lilith_supabase_key") || "";
-
-            if (panelConfig) panelConfig.style.display = "block";
-            if (panelAuth) panelAuth.style.display = "none";
-            if (panelDashboard) panelDashboard.style.display = "none";
-        };
-    }
-
-    // Backup download trigger
+    // Backup download triggers
     if (backupBtn) {
         backupBtn.onclick = () => downloadBackup();
     }
+    
+    const backupNotepadBtn = document.getElementById("backup-notepad-btn");
+    if (backupNotepadBtn) {
+        backupNotepadBtn.onclick = () => {
+            const textContent = `BACKUP LILITH (BLOCO DE NOTAS) - ${new Date().toLocaleString()}\n\nESTADO ATUAL:\n${JSON.stringify(state, null, 2)}`;
+            const blob = new Blob([textContent], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `lilith_backup_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMagicAlert("Backup Concluído! 📄", "Arquivo de texto (.txt) baixado com sucesso.");
+        };
+    }
 
-    // App data reset trigger
-    const resetDataBtn = document.getElementById("app-reset-data-btn");
-    if (resetDataBtn) {
-        resetDataBtn.onclick = async () => {
-            if (confirm("⚠️ ATENÇÃO: Deseja realmente resetar TODOS os dados da aplicação? Isso apagará permanentemente suas anotações, diário, ideias, tarefas, projetos, metas, calendário, hábitos e finanças.")) {
-                if (confirm("🚨 TEM CERTEZA ABSOLUTA? Essa ação NÃO pode ser desfeita e todos os dados salvos localmente (e na nuvem, se conectado) serão perdidos.")) {
-                    try {
-                        // Reset local state to a fresh copy of SEED_DATA
-                        state = JSON.parse(JSON.stringify(SEED_DATA));
-                        saveState();
-                        
-                        // If connected to Supabase, update the remote database too
-                        if (supabaseClient) {
-                            await uploadStateToSupabase(false);
-                        }
-                        
-                        // Run loadState to apply any migrations/app updates
-                        loadState();
-                        
-                        // Re-render UI elements
-                        updateUIElements();
-                        renderModuleContent(currentModule);
-                        
-                        // Close modal
-                        closeModal("modal-supabase-overlay");
-                        
-                        showMagicAlert("Aplicação Reiniciada! 🌟", "Todos os seus dados foram resetados com sucesso para hoje.");
-                    } catch (err) {
-                        console.error("Erro ao resetar dados:", err);
-                        showMagicAlert("Erro ao Resetar ❌", "Ocorreu um erro ao tentar resetar seus dados.");
-                    }
-                }
+    const backupWordpadBtn = document.getElementById("backup-wordpad-btn");
+    if (backupWordpadBtn) {
+        backupWordpadBtn.onclick = () => {
+            const rtfContent = `{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1046{\\fonttbl{\\f0\\fnil\\fcharset0 Calibri;}}
+{\\*\\generator Riched20 10.0.19041}\\viewkind4\\uc1 
+\\pard\\sa200\\sl276\\slmult1\\b\\f0\\fs28 BACKUP LILITH - ${new Date().toLocaleString()}\\par
+\\b0\\fs22\\par
+Este arquivo contém os dados no formato RTF (Rich Text Format). \\par
+\\par
+DADOS SALVOS: \\par
+${JSON.stringify(state, null, 2).replace(/\\n/g, "\\par\n")}
+}`;
+            const blob = new Blob([rtfContent], { type: "application/rtf" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `lilith_backup_${new Date().toISOString().split('T')[0]}.rtf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMagicAlert("Backup Concluído! 📝", "Documento WordPad (.rtf) baixado com sucesso.");
+        };
+    }
+
+    const backupImageBtn = document.getElementById("backup-image-btn");
+    if (backupImageBtn) {
+        backupImageBtn.onclick = async () => {
+            if (typeof html2canvas === 'undefined') {
+                showMagicAlert("Erro ❌", "A biblioteca de imagens ainda está carregando. Tente novamente em alguns segundos.");
+                return;
             }
+            const modal = document.getElementById("modal-supabase-overlay");
+            if (modal) modal.style.display = "none";
+            
+            showMagicAlert("Capturando...", "Preparando a imagem do seu painel. Aguarde...");
+            
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(document.body, {
+                        backgroundColor: "#0d0a0b",
+                        scale: 2
+                    });
+                    const url = canvas.toDataURL("image/png");
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `lilith_relatorio_visual_${new Date().toISOString().split('T')[0]}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showMagicAlert("Backup Visual Concluído! 🖼️", "Imagem baixada com sucesso.");
+                } catch (err) {
+                    console.error("Error generating image:", err);
+                    showMagicAlert("Erro ❌", "Falha ao gerar o relatório em imagem.");
+                }
+            }, 500);
         };
     }
 

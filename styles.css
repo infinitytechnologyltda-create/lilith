@@ -171,7 +171,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 8px;
     padding: 0 24px;
     overflow-x: auto;
@@ -181,12 +181,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .sidebar-menu::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Safari/Chrome */
-}
-
-@media (min-width: 1025px) {
-    .sidebar-menu {
-        justify-content: center;
-    }
 }
 
 .menu-visor {

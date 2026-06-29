@@ -6,6 +6,7 @@
     <title>Lilith - Produtividade e Gerenciamento Pessoal</title>
     <meta name="description" content="Centralize informações, projetos, ideias, tarefas, hábitos, finanças e objetivos pessoais em um painel elegante, gamificado e minimalista.">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <video id="bg-video" autoplay loop muted playsinline>
@@ -985,11 +986,11 @@
                         <option value="cloud">Nuvem + Local (Supabase Cloud + LocalStorage)</option>
                     </select>
                 </div>
-                <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:12px; color:var(--text-muted);">Apagar tudo e recomeçar:</span>
-                    <button type="button" class="action-btn-secondary" id="app-reset-data-btn" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.2); font-size:12px; padding:4px 8px;">
-                        <i data-lucide="trash-2" style="width:12px; height:12px;"></i> Resetar Dados
+                <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:12px; display:flex; flex-direction:column; gap:8px;">
+                    <button type="button" class="action-btn" id="local-folder-storage-btn" style="background:rgba(255,255,255,0.05); color:var(--text-main); justify-content:center; width:100%;">
+                        <i data-lucide="folder" style="width:16px; height:16px;"></i> Escolher Pasta Local para Dados
                     </button>
+                    <span id="local-folder-status" style="font-size:11px; color:var(--text-muted); text-align:center; display:none;">Nenhuma pasta selecionada</span>
                 </div>
             </div>
             
@@ -1054,19 +1055,20 @@
                     </div>
                 </div>
 
-                <!-- Backup Button to download everything organized -->
-                <div style="margin-bottom:16px;">
+                <!-- Backup Options -->
+                <div style="margin-bottom:16px; display:flex; flex-direction:column; gap:8px;">
+                    <span style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Fazer Backup Geral:</span>
                     <button type="button" class="action-btn" id="supabase-backup-btn" style="width:100%; justify-content:center; gap:8px; background:linear-gradient(to right, var(--primary), var(--accent));">
-                        <i data-lucide="download" style="width:16px; height:16px;"></i> Fazer Backup Geral (Markdown + JSON)
+                        <i data-lucide="download" style="width:16px; height:16px;"></i> MarkDown + JSON
                     </button>
-                </div>
-                
-                <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:16px;">
-                    <button type="button" class="action-btn-secondary" id="supabase-disconnect-project-btn" style="font-size:12px; padding:6px 12px; color:var(--danger); border-color:rgba(239, 68, 68, 0.2);">
-                        <i data-lucide="unlink" style="width:12px; height:12px;"></i> Desconectar Projeto
+                    <button type="button" class="action-btn-secondary" id="backup-notepad-btn" style="width:100%; justify-content:center; gap:8px;">
+                        <i data-lucide="file-text" style="width:14px; height:14px;"></i> Bloco de Notas (.txt)
                     </button>
-                    <button type="button" class="action-btn-secondary" id="supabase-change-keys-btn" style="font-size:12px; padding:6px 12px;">
-                        <i data-lucide="settings" style="width:12px; height:12px;"></i> Configurar Chaves
+                    <button type="button" class="action-btn-secondary" id="backup-wordpad-btn" style="width:100%; justify-content:center; gap:8px;">
+                        <i data-lucide="file-signature" style="width:14px; height:14px;"></i> WordPad (.rtf)
+                    </button>
+                    <button type="button" class="action-btn-secondary" id="backup-image-btn" style="width:100%; justify-content:center; gap:8px;">
+                        <i data-lucide="image" style="width:14px; height:14px;"></i> Imagem (Relatório Visual)
                     </button>
                 </div>
             </div>
