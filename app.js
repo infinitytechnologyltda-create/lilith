@@ -3799,7 +3799,7 @@ function initSupabaseEventListeners() {
             btn.disabled = true;
             btn.style.opacity = "0.5";
 
-            const email = "andersonmoitinho@lilith.com";
+            const email = "anhderson1@gmail.com";
             
             try {
                 // Ensure client is initialized
