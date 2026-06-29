@@ -1077,6 +1077,9 @@ document.getElementById("diary-save-btn").onclick = () => {
         updatedAt: updatedAt
     };
     saveState();
+    if (typeof uploadStateToSupabase === "function") {
+        uploadStateToSupabase(false);
+    }
     
     if(isNew) {
         addXP(25);
@@ -1174,9 +1177,7 @@ function renderIdeas() {
             <div class="note-footer">
                 <span class="note-date">${formatDateString(idea.date)}</span>
                 <div class="note-actions">
-                    <button class="note-action" onclick="convertIdeaToTask('${idea.id}')" title="Transformar em Tarefa" style="color:var(--accent);"><i data-lucide="check-square"></i></button>
                     <button class="note-action" onclick="convertIdeaToProject('${idea.id}')" title="Transformar em Projeto" style="color:var(--secondary);"><i data-lucide="folder-git"></i></button>
-                    <button class="note-action delete" onclick="deleteIdea('${idea.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
                 </div>
             </div>
         `;
@@ -1260,6 +1261,7 @@ function convertIdeaToProject(id) {
         };
     }
 }
+window.convertIdeaToProject = convertIdeaToProject;
 
 // 5. WHITEBOARD (QUADRO NEGRO)
 let canvas, ctx;
