@@ -820,6 +820,10 @@ function renderNotes() {
         `;
         grid.appendChild(card);
     });
+    
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 }
 
 document.getElementById("notes-search").addEventListener("input", renderNotes);
@@ -866,6 +870,7 @@ function toggleNoteFavorite(id) {
         renderNotes();
     }
 }
+window.toggleNoteFavorite = toggleNoteFavorite;
 
 function deleteNote(id) {
     if(confirm("Deseja realmente excluir esta anotação?")) {
@@ -874,6 +879,7 @@ function deleteNote(id) {
         renderNotes();
     }
 }
+window.deleteNote = deleteNote;
 
 function editNote(id) {
     const note = state.notes.find(n => n.id === id);
@@ -887,6 +893,7 @@ function editNote(id) {
         openModal("modal-notes-overlay");
     }
 }
+window.editNote = editNote;
 
 // 3. DIÁRIO PESSOAL
 let selectedMoods = []; // Array of up to 3 selected moods
