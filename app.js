@@ -72,6 +72,9 @@ function loadState() {
     if (rawState) {
         try {
             state = JSON.parse(rawState);
+            if (state.themeColor) {
+                localStorage.setItem("lilith_theme_color", state.themeColor);
+            }
         } catch (e) {
             console.error("Erro ao parsear dados do localStorage. Usando padrões.", e);
             state = { ...SEED_DATA };
@@ -2782,6 +2785,9 @@ window.onload = () => {
     checkDailyHabitsQuest();
     updateUIElements();
     
+    // Initialize Theme Color Picker
+    initThemeColorPicker();
+    
     // Initialize Supabase
     initSupabase();
     initSupabaseEventListeners();
@@ -3492,6 +3498,9 @@ async function loadStateFromSupabase(showAlert = true) {
             // Overwrite state and save local
             state = data.state;
             localStorage.setItem("lilith_state", JSON.stringify(state));
+            if (state.themeColor) {
+                setThemeColor(state.themeColor);
+            }
             
             // Re-render dashboard/active module
             updateUIElements();
@@ -3888,4 +3897,141 @@ function initSupabaseEventListeners() {
             }
         };
     }
+}
+
+// ==================== THEME COLOR PICKER ====================
+function initThemeColorPicker() {
+    const themeColorInput = document.getElementById("theme-color-input");
+    const savedThemeColor = localStorage.getItem("lilith_theme_color") || "#D97A9A";
+    
+    // Set initial theme
+    setThemeColor(savedThemeColor);
+
+    if (themeColorInput) {
+        // Set input value
+        themeColorInput.value = savedThemeColor;
+        
+        // Listen to live input and final change
+        themeColorInput.oninput = (e) => {
+            setThemeColor(e.target.value);
+        };
+        themeColorInput.onchange = (e) => {
+            setThemeColor(e.target.value);
+        };
+    }
+}
+
+function setThemeColor(hex) {
+    if (!hex || !hex.startsWith("#") || hex.length !== 7) return;
+
+    // Helper to parse hex to rgb
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+
+    // Convert RGB to HSL
+    let r_norm = r / 255;
+    let g_norm = g / 255;
+    let b_norm = b / 255;
+    let max = Math.max(r_norm, g_norm, b_norm);
+    let min = Math.min(r_norm, g_norm, b_norm);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0; // achromatic
+    } else {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r_norm: h = (g_norm - b_norm) / d + (g_norm < b_norm ? 6 : 0); break;
+            case g_norm: h = (b_norm - r_norm) / d + 2; break;
+            case b_norm: h = (r_norm - g_norm) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    h = Math.round(h * 360);
+    s = Math.round(s * 100);
+    l = Math.round(l * 100);
+
+    // Derive secondary and accent HSL
+    const s_l = Math.min(95, l + 12);
+    const s_s = Math.min(100, s + 10);
+    const a_l = Math.min(98, l + 20);
+    const a_s = Math.max(10, s - 10);
+
+    const primary = hex;
+    const primaryGlow = `rgba(${r}, ${g}, ${b}, 0.35)`;
+    
+    // Secondary
+    const secondary = `hsl(${h}, ${s_s}%, ${s_l}%)`;
+    // Convert secondary to rgb for glow
+    const secRgb = hslToRgb(h / 360, s_s / 100, s_l / 100);
+    const secondaryGlow = `rgba(${secRgb[0]}, ${secRgb[1]}, ${secRgb[2]}, 0.35)`;
+
+    // Accent
+    const accent = `hsl(${h}, ${a_s}%, ${a_l}%)`;
+    // Convert accent to rgb for glow
+    const accRgb = hslToRgb(h / 360, a_s / 100, a_l / 100);
+    const accentGlow = `rgba(${accRgb[0]}, ${accRgb[1]}, ${accRgb[2]}, 0.35)`;
+
+    // Apply to documentElement variables
+    const root = document.documentElement;
+    root.style.setProperty('--primary', primary);
+    root.style.setProperty('--primary-glow', primaryGlow);
+    root.style.setProperty('--secondary', secondary);
+    root.style.setProperty('--secondary-glow', secondaryGlow);
+    root.style.setProperty('--accent', accent);
+    root.style.setProperty('--accent-glow', accentGlow);
+    
+    root.style.setProperty('--border-color', `rgba(${r}, ${g}, ${b}, 0.3)`);
+    root.style.setProperty('--border-hover', secondary);
+    root.style.setProperty('--text-muted', accent);
+    
+    root.style.setProperty('--success', secondary);
+    root.style.setProperty('--warning', accent);
+    root.style.setProperty('--danger', primary);
+
+    // Update circular color indicator in the header
+    const previewDot = document.getElementById("theme-color-preview");
+    if (previewDot) {
+        previewDot.style.backgroundColor = primary;
+    }
+
+    // Save to localStorage so it persists
+    localStorage.setItem('lilith_theme_color', hex);
+    
+    // Keep color input synced
+    const themeColorInput = document.getElementById("theme-color-input");
+    if (themeColorInput && themeColorInput.value !== hex) {
+        themeColorInput.value = hex;
+    }
+
+    // Update state object and save it
+    if (typeof state !== 'undefined' && state) {
+        state.themeColor = hex;
+        saveState();
+    }
+}
+
+function hslToRgb(h, s, l) {
+    let r, g, b;
+    if (s === 0) {
+        r = g = b = l; // achromatic
+    } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
