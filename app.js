@@ -25,22 +25,14 @@ let state = {
 
 // Seeding standard placeholder data to make it look premium on first run
 const SEED_DATA = {
-    user: { level: 2, xp: 70 },
-    notes: [
-        { id: "note-1", title: "🎯 Ideias de Lançamento Lilith", category: "Trabalho", content: "1. Criar design glassmorphic premium.\n2. Incluir canvas whiteboard funcional.\n3. Integrar sistema de gamificação com ganho de XP.", date: "2026-06-19", favorite: true },
-        { id: "note-2", title: "💡 Livros para ler este ano", category: "Inspiração", content: "- Sapiens (Yuval Noah Harari)\n- Foco (Daniel Goleman)\n- Hábitos Atômicos (James Clear)", date: "2026-06-18", favorite: false }
-    ],
-    diary: {
-        "2026-06-19": { text: "Hoje iniciei o projeto Lilith! O painel visual está fantástico, a lousa de desenho funciona super suave e o sistema de quests de fato gamifica a produtividade. Animado para ver como isso vai me ajudar no dia a dia.", mood: "excited" }
-    },
-    ideas: [
-        { id: "idea-1", title: "🚀 Plataforma SaaS de Meditação", theme: "Startup", content: "Um aplicativo móvel voltado para meditações guiadas curtas (3 minutos) focado no estresse corporativo.", date: "2026-06-19" },
-        { id: "idea-2", title: "🏖️ Roteiro de viagem para o Chile", theme: "Viagem", content: "Explorar Santiago, Vinícolas de Casablanca e subir os Andes em Portillo no inverno.", date: "2026-06-17" }
-    ],
+    user: { level: 1, xp: 0 },
+    notes: [],
+    diary: {},
+    ideas: [],
     quests: {
         daily: [
             { id: "qd-1", text: "Fazer análise diária geral", xp: 30, completed: false },
-            { id: "qd-2", text: "Registrar humor no diário", xp: 15, completed: true },
+            { id: "qd-2", text: "Registrar humor no diário", xp: 15, completed: false },
             { id: "qd-3", text: "Marcar pelo menos 1 hábito, escrever no diário pessoal, supervisionar Controle de Hábitos", xp: 20, completed: false }
         ],
         weekly: [
@@ -52,43 +44,13 @@ const SEED_DATA = {
             { id: "qm-2", text: "Atingir nível 3 de produtividade", xp: 250, completed: false }
         ]
     },
-    tasks: [
-        { id: "task-1", title: "Desenvolver protótipo do painel financeiro", category: "Projetos", priority: "Alta", date: "2026-06-21", completed: false },
-        { id: "task-2", title: "Comprar suprimentos de arte", category: "Pessoal", priority: "Baixa", date: "2026-06-25", completed: false },
-        { id: "task-3", title: "Reunião de alinhamento semanal", category: "Trabalho", priority: "Média", date: "2026-06-20", completed: true }
-    ],
-    projects: [
-        {
-            id: "proj-1",
-            title: "Desenvolvimento Lilith",
-            category: "Tecnologia",
-            desc: "Construção da aplicação completa de produtividade pessoal gamificada.",
-            steps: [
-                { text: "Criar layout responsivo e sidebar", completed: true },
-                { text: "Configurar localStorage e roteador", completed: true },
-                { text: "Implementar Whiteboard interativo", completed: false },
-                { text: "Publicar versão beta de testes", completed: false }
-            ]
-        }
-    ],
-    goals: [
-        { id: "goal-1", title: "Economizar R$ 5.000 para viagem", type: "Curto Prazo", date: "2026-09-30", progress: 40 },
-        { id: "goal-2", title: "Obter certificação Cloud Architecture", type: "Médio Prazo", date: "2026-12-15", progress: 15 }
-    ],
-    calendarEvents: [
-        { id: "ev-1", title: "Lançamento da Beta Lilith", date: "2026-06-25", type: "event" },
-        { id: "ev-2", title: "Consulta médica anual", date: "2026-06-22", type: "event" }
-    ],
-    habits: [
-        { id: "hb-1", name: "Beber 2.5L de água", tracking: { "2026-06-19": true, "2026-06-18": true, "2026-06-17": false, "2026-06-16": true } },
-        { id: "hb-2", name: "Estudar 30 minutos", tracking: { "2026-06-19": false, "2026-06-18": true, "2026-06-17": true, "2026-06-16": true } },
-        { id: "hb-3", name: "Meditação matinal", tracking: { "2026-06-19": true, "2026-06-18": false, "2026-06-17": false, "2026-06-16": false } }
-    ],
-    finances: [
-        { id: "fin-1", desc: "Salário Projeto Freelance", type: "Receita", category: "Trabalho", amount: 2500.00, date: "2026-06-05" },
-        { id: "fin-2", desc: "Assinatura Servidor Cloud", type: "Despesa", category: "Tecnologia", amount: 89.90, date: "2026-06-10" },
-        { id: "fin-3", desc: "Almoço de Negócios", type: "Despesa", category: "Alimentação", amount: 120.00, date: "2026-06-18" }
-    ],
+    tasks: [],
+    projects: [],
+    goals: [],
+    calendarEvents: [],
+    habits: [],
+    finances: [],
+    libraryItems: [],
     apps: [
         { id: "app-1", name: "Spotify", url: "https://open.spotify.com/", desc: "Trilha sonora para foco", type: "spotify", active: true, logo: "spotify.png" },
         { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" },
@@ -3862,6 +3824,42 @@ function initSupabaseEventListeners() {
     // Backup download trigger
     if (backupBtn) {
         backupBtn.onclick = () => downloadBackup();
+    }
+
+    // App data reset trigger
+    const resetDataBtn = document.getElementById("app-reset-data-btn");
+    if (resetDataBtn) {
+        resetDataBtn.onclick = async () => {
+            if (confirm("⚠️ ATENÇÃO: Deseja realmente resetar TODOS os dados da aplicação? Isso apagará permanentemente suas anotações, diário, ideias, tarefas, projetos, metas, calendário, hábitos e finanças.")) {
+                if (confirm("🚨 TEM CERTEZA ABSOLUTA? Essa ação NÃO pode ser desfeita e todos os dados salvos localmente (e na nuvem, se conectado) serão perdidos.")) {
+                    try {
+                        // Reset local state to a fresh copy of SEED_DATA
+                        state = JSON.parse(JSON.stringify(SEED_DATA));
+                        saveState();
+                        
+                        // If connected to Supabase, update the remote database too
+                        if (supabaseClient && supabaseUser) {
+                            await uploadStateToSupabase(false);
+                        }
+                        
+                        // Run loadState to apply any migrations/app updates
+                        loadState();
+                        
+                        // Re-render UI elements
+                        updateUIElements();
+                        renderModuleContent(currentModule);
+                        
+                        // Close modal
+                        closeModal("modal-supabase-overlay");
+                        
+                        showMagicAlert("Aplicação Reiniciada! 🌟", "Todos os seus dados foram resetados com sucesso para hoje.");
+                    } catch (err) {
+                        console.error("Erro ao resetar dados:", err);
+                        showMagicAlert("Erro ao Resetar ❌", "Ocorreu um erro ao tentar resetar seus dados.");
+                    }
+                }
+            }
+        };
     }
 
     // Auth form submit (Sign In only)
