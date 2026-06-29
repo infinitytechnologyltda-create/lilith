@@ -3787,7 +3787,12 @@ function initSupabaseEventListeners() {
             const email = "andersonmoitinho@lilith.com";
             
             try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                // Ensure client is initialized
+                if(!supabaseClient) {
+                     supabaseClient = supabase.createClient(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
+                }
+
+                let { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: passInput
                 });
@@ -3806,6 +3811,12 @@ function initSupabaseEventListeners() {
                 } else if (error) {
                     throw error;
                 }
+
+                // Force app entry immediately regardless of session state event timing
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+                await loadStateFromSupabase(false);
+
             } catch (err) {
                 console.error(err);
                 showMagicAlert("Erro ❌", "Ocorreu um erro na autenticação.");
