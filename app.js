@@ -3835,6 +3835,40 @@ function initSupabaseEventListeners() {
     } else if (localFolderBtn) {
         localFolderBtn.onclick = () => showMagicAlert("Aviso ⚠️", "Seu navegador não suporta seleção de pastas locais (File System Access API).");
     }
+    function generateTextReport(state) {
+        let report = `====================================================\n`;
+        report += `              RELATÓRIO LILITH\n`;
+        report += `              Data: ${new Date().toLocaleString()}\n`;
+        report += `====================================================\n\n`;
+
+        report += `[ PERFIL ]\n`;
+        report += `- Nível Atual: ${state.user ? state.user.level : 1}\n`;
+        report += `- Experiência: ${state.user ? state.user.xp : 0} XP\n\n`;
+
+        report += `[ TAREFAS DIÁRIAS ]\n`;
+        if (!state.tasks || state.tasks.length === 0) report += `- Nenhuma tarefa.\n`;
+        else state.tasks.forEach(t => report += `- [${t.completed ? 'X' : ' '}] ${t.text}\n`);
+        report += `\n`;
+
+        report += `[ PROJETOS ]\n`;
+        if (!state.projects || state.projects.length === 0) report += `- Nenhum projeto.\n`;
+        else state.projects.forEach(p => {
+            report += `- ${p.title} (Status: ${p.status || 'Em andamento'})\n`;
+        });
+        report += `\n`;
+
+        report += `[ FINANÇAS ]\n`;
+        report += `- Saldo Atual: R$ ${state.finance ? state.finance.balance : 0}\n`;
+        report += `\n`;
+
+        report += `[ ANOTAÇÕES E IDEIAS ]\n`;
+        report += `- Total de Anotações: ${state.notes ? state.notes.length : 0}\n`;
+        report += `- Total de Ideias: ${state.ideas ? state.ideas.length : 0}\n`;
+        
+        report += `\n====================================================\n`;
+        report += `Relatório gerado automaticamente por Lilith OS.`;
+        return report;
+    }
 
     // Backup download triggers
     if (backupBtn) {
@@ -3844,42 +3878,40 @@ function initSupabaseEventListeners() {
     const backupNotepadBtn = document.getElementById("backup-notepad-btn");
     if (backupNotepadBtn) {
         backupNotepadBtn.onclick = () => {
-            const textContent = `BACKUP LILITH (BLOCO DE NOTAS) - ${new Date().toLocaleString()}\n\nESTADO ATUAL:\n${JSON.stringify(state, null, 2)}`;
-            const blob = new Blob([textContent], { type: "text/plain" });
+            const textContent = generateTextReport(state);
+            const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `lilith_backup_${new Date().toISOString().split('T')[0]}.txt`;
+            a.download = `lilith_relatorio_${new Date().toISOString().split('T')[0]}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showMagicAlert("Backup Concluído! 📄", "Arquivo de texto (.txt) baixado com sucesso.");
+            showMagicAlert("Backup Concluído! 📄", "Relatório simples de texto (.txt) baixado.");
         };
     }
 
     const backupWordpadBtn = document.getElementById("backup-wordpad-btn");
     if (backupWordpadBtn) {
         backupWordpadBtn.onclick = () => {
-            const rtfContent = `{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1046{\\fonttbl{\\f0\\fnil\\fcharset0 Calibri;}}
+            const rawText = generateTextReport(state);
+            const formattedText = rawText.replace(/\n/g, "\\par\n");
+            const rtfContent = `{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1046{\\fonttbl{\\f0\\fnil\\fcharset0 Consolas;}}
 {\\*\\generator Riched20 10.0.19041}\\viewkind4\\uc1 
-\\pard\\sa200\\sl276\\slmult1\\b\\f0\\fs28 BACKUP LILITH - ${new Date().toLocaleString()}\\par
-\\b0\\fs22\\par
-Este arquivo contém os dados no formato RTF (Rich Text Format). \\par
-\\par
-DADOS SALVOS: \\par
-${JSON.stringify(state, null, 2).replace(/\\n/g, "\\par\n")}
+\\pard\\sa200\\sl276\\slmult1\\f0\\fs22\\par
+${formattedText}
 }`;
-            const blob = new Blob([rtfContent], { type: "application/rtf" });
+            const blob = new Blob([rtfContent], { type: "application/rtf;charset=utf-8" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `lilith_backup_${new Date().toISOString().split('T')[0]}.rtf`;
+            a.download = `lilith_relatorio_${new Date().toISOString().split('T')[0]}.rtf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showMagicAlert("Backup Concluído! 📝", "Documento WordPad (.rtf) baixado com sucesso.");
+            showMagicAlert("Backup Concluído! 📝", "Relatório simples formatado (.rtf) baixado.");
         };
     }
 
@@ -3893,25 +3925,43 @@ ${JSON.stringify(state, null, 2).replace(/\\n/g, "\\par\n")}
             const modal = document.getElementById("modal-supabase-overlay");
             if (modal) modal.style.display = "none";
             
-            showMagicAlert("Capturando...", "Preparando a imagem do seu painel. Aguarde...");
+            showMagicAlert("Gerando...", "Criando imagem do relatório simples...");
+            
+            // Create a temporary hidden div for the report
+            const tempDiv = document.createElement("div");
+            tempDiv.style.position = "absolute";
+            tempDiv.style.left = "-9999px";
+            tempDiv.style.top = "0";
+            tempDiv.style.width = "800px";
+            tempDiv.style.padding = "40px";
+            tempDiv.style.backgroundColor = "#ffffff";
+            tempDiv.style.color = "#000000";
+            tempDiv.style.fontFamily = "monospace";
+            tempDiv.style.fontSize = "16px";
+            tempDiv.style.whiteSpace = "pre-wrap";
+            tempDiv.style.lineHeight = "1.5";
+            tempDiv.textContent = generateTextReport(state);
+            document.body.appendChild(tempDiv);
             
             setTimeout(async () => {
                 try {
-                    const canvas = await html2canvas(document.body, {
-                        backgroundColor: "#0d0a0b",
+                    const canvas = await html2canvas(tempDiv, {
+                        backgroundColor: "#ffffff",
                         scale: 2
                     });
                     const url = canvas.toDataURL("image/png");
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `lilith_relatorio_visual_${new Date().toISOString().split('T')[0]}.png`;
+                    a.download = `lilith_relatorio_${new Date().toISOString().split('T')[0]}.png`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                    showMagicAlert("Backup Visual Concluído! 🖼️", "Imagem baixada com sucesso.");
+                    showMagicAlert("Relatório Visual Concluído! 🖼️", "Imagem do relatório baixada.");
                 } catch (err) {
                     console.error("Error generating image:", err);
                     showMagicAlert("Erro ❌", "Falha ao gerar o relatório em imagem.");
+                } finally {
+                    document.body.removeChild(tempDiv);
                 }
             }, 500);
         };
