@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lilith - Produtividade e Gerenciamento Pessoal</title>
+    <meta name="description" content="Centralize informações, projetos, ideias, tarefas, hábitos, finanças e objetivos pessoais em um painel elegante, gamificado e minimalista.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <video id="bg-video" autoplay loop muted playsinline>
+        <source src="fundodashboard.mp4" type="video/mp4">
+    </video>
+
+    <!-- Page Transition Overlay -->
+    <div id="page-transition-overlay">
+        <img src="logo.png" id="transition-logo" alt="Lilith Transition Logo">
+    </div>
+
+    <!-- SIDEBAR / TOPBAR -->
+    <header class="topbar" id="sidebar">
+
+
+        <div class="sidebar-logo">
+            <div class="logo-icon" style="background: transparent; box-shadow: none;">
+                <img src="logo.png" alt="Lilith Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: inherit;">
+            </div>
+            <span class="logo-text">Lilith</span>
+        </div>
+        <nav class="sidebar-menu">
+            <a class="menu-item active" data-module="dashboard" id="nav-dashboard">
+                <i data-lucide="layout-dashboard"></i><span class="tooltip-text">Dashboard</span>
+            </a>
+            <a class="menu-item" data-module="notes" id="nav-notes">
+                <i data-lucide="notebook"></i><span class="tooltip-text">Anotações</span>
+            </a>
+            <a class="menu-item" data-module="diary" id="nav-diary">
+                <i data-lucide="book-open"></i><span class="tooltip-text">Diário Pessoal</span>
+            </a>
+            <a class="menu-item" data-module="ideas" id="nav-ideas">
+                <i data-lucide="lightbulb"></i><span class="tooltip-text">Insights & Ideias</span>
+            </a>
+            <a class="menu-item" data-module="whiteboard" id="nav-whiteboard">
+                <i data-lucide="palette"></i><span class="tooltip-text">Quadro Negro</span>
+            </a>
+            <a class="menu-item" data-module="quests" id="nav-quests">
+                <i data-lucide="swords"></i><span class="tooltip-text">Quests & Missões</span>
+            </a>
+            <a class="menu-item" data-module="tasks" id="nav-tasks">
+                <i data-lucide="check-square"></i><span class="tooltip-text">Tarefas</span>
+            </a>
+
+            <!-- Visor Tecnológico Cyberpunk -->
+            <div class="menu-visor" id="menu-visor">PAINEL GERAL</div>
+
+            <a class="menu-item" data-module="projects" id="nav-projects">
+                <i data-lucide="folder-git"></i><span class="tooltip-text">Projetos</span>
+            </a>
+            <a class="menu-item" data-module="goals" id="nav-goals">
+                <i data-lucide="target"></i><span class="tooltip-text">Metas</span>
+            </a>
+            <a class="menu-item" data-module="calendar" id="nav-calendar">
+                <i data-lucide="calendar"></i><span class="tooltip-text">Calendário</span>
+            </a>
+            <a class="menu-item" data-module="habits" id="nav-habits">
+                <i data-lucide="activity"></i><span class="tooltip-text">Hábitos</span>
+            </a>
+            <a class="menu-item" data-module="library" id="nav-library">
+                <i data-lucide="library"></i><span class="tooltip-text">Biblioteca</span>
+            </a>
+            <a class="menu-item" data-module="finances" id="nav-finances">
+                <i data-lucide="dollar-sign"></i><span class="tooltip-text">Finanças</span>
+            </a>
+            <a class="menu-item" data-module="appcenter" id="nav-appcenter">
+                <i data-lucide="grid"></i><span class="tooltip-text">Central de Apps</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-avatar" id="avatar-circle">L</div>
+            <div class="user-info">
+                <span class="user-name" id="user-name-display">Usuário Lilith</span>
+                <span class="user-level" id="level-display">Nível 1</span>
+            </div>
+            <button class="supabase-status-btn" id="supabase-status-btn" title="Configurar Supabase">
+                <i data-lucide="cloud-off" id="supabase-cloud-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="main-content">
+        <!-- HEADER BAR -->
+        <header class="header-bar">
+            <button class="mobile-menu-btn" id="mobile-toggle" aria-label="Abrir Menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <h1 class="page-title" id="page-title">Dashboard</h1>
+            <div class="header-actions" id="header-action-container">
+                <button class="action-btn" id="global-action-btn">
+                    <i data-lucide="plus"></i> <span id="global-action-text">Nova Ação</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ==================== MODULES ==================== -->
+
+        <!-- 1. DASHBOARD INICIAL -->
+        <section class="module-panel active" id="module-dashboard">
+            <div class="dashboard-grid">
+                <div class="dashboard-left">
+                    <!-- Gamification status -->
+                    <div class="level-container">
+                        <div class="level-badge">
+                            <span class="lbl">Nível</span>
+                            <span class="num" id="dash-level">1</span>
+                        </div>
+                        <div class="level-info">
+                            <h3 class="level-name">Produtividade no Máximo</h3>
+                            <div class="xp-bar-wrapper">
+                                <div class="xp-bar-fill" id="dash-xp-bar" style="width: 0%;"></div>
+                            </div>
+                            <div class="xp-text">
+                                <span id="dash-xp-text">0 / 100 XP</span>
+                                <span>Próximo nível</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-title">Tarefas Pendentes</span>
+                            <span class="stat-value" id="stat-pending-tasks">0</span>
+                            <span class="stat-desc">Foco no dia de hoje</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-title">Hábitos Cumpridos</span>
+                            <span class="stat-value" id="stat-completed-habits">0</span>
+                            <span class="stat-desc">Esta semana</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-title">Saldo Financeiro</span>
+                            <span class="stat-value" id="stat-financial-balance">R$ 0,00</span>
+                            <span class="stat-desc">Faturamento do mês</span>
+                        </div>
+                    </div>
+
+                    <!-- Pending tasks and Quick notes -->
+                    <div class="glass-panel">
+                        <h2 class="section-title" style="margin-bottom:16px;">Próximas Tarefas</h2>
+                        <table class="task-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Tarefa</th>
+                                    <th>Prioridade</th>
+                                    <th>Vencimento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-tasks-list">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dashboard-right">
+                    <!-- Resumo do Calendário -->
+                    <div class="glass-panel">
+                        <h3 class="section-title" style="margin-bottom:16px;">Calendário</h3>
+                        <div class="calendar-widget" style="padding:10px; border:none; background:transparent;">
+                            <div class="calendar-grid" id="dash-mini-calendar">
+                                <!-- Auto-generated small calendar -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Últimas Notas -->
+                    <div class="glass-panel">
+                        <h3 class="section-title" style="margin-bottom:16px;">Anotações Recentes</h3>
+                        <div class="notes-grid" style="grid-template-columns: 1fr; gap: 12px;" id="dash-notes-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Minhas Metas -->
+                    <div class="glass-panel">
+                        <h3 class="section-title" style="margin-bottom:16px;">Minhas Metas</h3>
+                        <div class="dash-goals-list" id="dash-goals-list" style="display:flex; flex-direction:column; gap:12px;">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ANOTAÇÕES -->
+        <section class="module-panel" id="module-notes">
+            <div class="glass-panel">
+                <div class="search-bar-container">
+                    <input type="text" class="search-input" id="notes-search" placeholder="Buscar anotações por título ou conteúdo...">
+                    <select class="form-select" id="notes-filter-category" style="width: 180px;">
+                        <option value="">Todas Categorias</option>
+                        <option value="Pessoal">Pessoal</option>
+                        <option value="Trabalho">Trabalho</option>
+                        <option value="Estudo">Estudo</option>
+                        <option value="Inspiração">Inspiração</option>
+                    </select>
+                </div>
+                <div class="notes-grid" id="notes-grid-container">
+                    <!-- Dyn cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. DIÁRIO PESSOAL -->
+        <section class="module-panel" id="module-diary">
+            <div class="glass-panel">
+                <div class="diary-layout">
+                    <div class="diary-sidebar">
+                        <div class="form-group">
+                            <div class="form-label" id="diary-selected-date-label">Dia Selecionado: 19/06/2026</div>
+                            <div class="calendar-widget" style="padding: 10px; margin-bottom: 12px; border-radius: var(--border-radius-md); background: var(--bg-card); border: 1px solid var(--border-color);">
+                                <div class="calendar-header" style="margin-bottom: 8px;">
+                                    <button type="button" class="calendar-nav-btn" id="diary-prev-month" style="width:24px; height:24px;">
+                                        <i data-lucide="chevron-left" style="width:12px; height:12px;"></i>
+                                    </button>
+                                    <h4 id="diary-calendar-month-year" style="font-size:12px; font-weight:700; text-align:center; flex:1;">Junho 2026</h4>
+                                    <button type="button" class="calendar-nav-btn" id="diary-next-month" style="width:24px; height:24px;">
+                                        <i data-lucide="chevron-right" style="width:12px; height:12px;"></i>
+                                    </button>
+                                </div>
+                                <div class="calendar-grid" style="gap: 4px; grid-template-columns: repeat(7, 1fr);">
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">D</div>
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">S</div>
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">T</div>
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">Q</div>
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">Q</div>
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">S</div>
+                                    <div class="calendar-day-label" style="font-size: 9px; padding: 2px 0;">S</div>
+                                </div>
+                                <div class="calendar-grid" id="diary-calendar-days" style="gap: 4px; margin-top: 4px; grid-template-columns: repeat(7, 1fr);">
+                                    <!-- Dynamic days -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="diary-date-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Humor do Dia</label>
+                            <div class="mood-selector" style="gap: 4px;">
+                                <button class="mood-btn" data-mood="excited" title="Animado">🤩</button>
+                                <button class="mood-btn" data-mood="happy" title="Feliz">😊</button>
+                                <button class="mood-btn" data-mood="neutral" title="Neutro">😐</button>
+                                <button class="mood-btn" data-mood="tired" title="Cansado">🥱</button>
+                                <button class="mood-btn" data-mood="sad" title="Triste">😢</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="diary-editor" style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="form-group" style="flex:1; display:flex; flex-direction:column; margin-bottom:0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; gap: 12px; flex-wrap: wrap;">
+                                <label class="form-label" id="diary-label-title" style="font-size: 18px; text-transform: none; letter-spacing: normal; margin-bottom: 0; font-weight: 700; color: var(--primary); transition: font-family 0.3s ease;">Como foi o seu dia? Reflexões e aprendizados</label>
+                                <div style="display:flex; gap: 8px; align-items: center;">
+                                    <div class="font-selector-container" style="position: relative; display: inline-block;">
+                                        <button class="action-btn-secondary" id="change-font-btn" style="padding: 6px 12px; font-size: 12px; border-color: var(--border-color); display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="type" style="width: 14px; height: 14px;"></i> Fonte: <span id="current-font-name">Padrão</span>
+                                        </button>
+                                        <select id="diary-font-select" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                            <option value="default">Padrão (Outfit)</option>
+                                            <option value="cinzel">Cinzel (Épico)</option>
+                                            <option value="cinzel-dec">Cinzel Dec. (Regal)</option>
+                                            <option value="medieval">Medieval (Gótico)</option>
+                                            <option value="playfair">Playfair (Clássico)</option>
+                                            <option value="cormorant">Cormorant (Refinado)</option>
+                                            <option value="lora">Lora (Poético)</option>
+                                            <option value="great-vibes">Great Vibes (Curinga)</option>
+                                            <option value="alex-brush">Alex Brush (Pincel)</option>
+                                            <option value="dancing">Dancing Script (Descontraído)</option>
+                                            <option value="montserrat">Montserrat (Clean)</option>
+                                        </select>
+                                    </div>
+                                    <button class="action-btn" id="diary-save-btn" style="padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; margin-top: 0;">
+                                        <i data-lucide="save" style="width: 14px; height: 14px;"></i> Salvar Diário
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea class="form-textarea" id="diary-content-input" style="flex:1; min-height: 220px; resize:none;" placeholder="Escreva livremente sobre seus pensamentos, conquistas e aprendizados do dia..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HISTÓRICO DE REGISTROS HORIZONTAL -->
+                <div class="diary-history-container">
+                    <label class="form-label">Histórico de Registros (Arraste para os lados)</label>
+                    <div class="diary-list-horizontal" id="diary-history-list">
+                        <!-- Dyn horizontal cards -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. INSIGHTS E IDEIAS -->
+        <section class="module-panel" id="module-ideas">
+            <div class="glass-panel">
+                <div class="notes-grid" id="ideas-grid-container">
+                    <!-- Dyn idea cards with "Convert to project / task" buttons -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. QUADRO NEGRO -->
+        <section class="module-panel" id="module-whiteboard">
+            <div class="glass-panel canvas-wrapper">
+                <div class="canvas-toolbar">
+                    <div class="toolbar-group">
+                        <button class="action-btn-secondary" id="whiteboard-tool-draw" title="Pincel" style="border-color: var(--primary);">
+                            <i data-lucide="pencil"></i>
+                        </button>
+                        <button class="action-btn-secondary" id="whiteboard-tool-erase" title="Borracha">
+                            <i data-lucide="eraser"></i>
+                        </button>
+                        <div style="width: 1px; height: 24px; background: var(--border-color);"></div>
+                        <button class="action-btn-secondary" id="whiteboard-undo-btn" title="Desfazer (Ctrl+Z)">
+                            <i data-lucide="undo-2"></i>
+                        </button>
+                        <button class="action-btn-secondary" id="whiteboard-redo-btn" title="Refazer (Ctrl+Y)">
+                            <i data-lucide="redo-2"></i>
+                        </button>
+                        <div style="width: 1px; height: 24px; background: var(--border-color);"></div>
+                        <div class="color-dot active" data-color="#F7EFEF" style="background:#F7EFEF;"></div>
+                        <div class="color-dot" data-color="#F6C6D3" style="background:#F6C6D3;"></div>
+                        <div class="color-dot" data-color="#F2A7BD" style="background:#F2A7BD;"></div>
+                        <div class="color-dot" data-color="#D97A9A" style="background:#D97A9A;"></div>
+                        <div class="color-dot" data-color="#2E2A2D" style="background:#2E2A2D;"></div>
+                        <div style="width: 1px; height: 24px; background: var(--border-color);"></div>
+                        <button class="action-btn-secondary wb-shape-btn" id="whiteboard-tool-text" title="Texto">
+                            <i data-lucide="type"></i>
+                        </button>
+                        <button class="action-btn-secondary wb-shape-btn" id="whiteboard-tool-line" title="Linha">
+                            <i data-lucide="minus"></i>
+                        </button>
+                        <button class="action-btn-secondary wb-shape-btn" id="whiteboard-tool-rect" title="Retângulo">
+                            <i data-lucide="square"></i>
+                        </button>
+                        <button class="action-btn-secondary wb-shape-btn" id="whiteboard-tool-circle" title="Círculo">
+                            <i data-lucide="circle"></i>
+                        </button>
+                        <button class="action-btn-secondary wb-shape-btn" id="whiteboard-tool-triangle" title="Triângulo">
+                            <i data-lucide="triangle"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <label class="form-label" style="margin-bottom:0; margin-right:8px;">Espessura</label>
+                        <select class="form-select" id="whiteboard-brush-size" style="width: 80px; padding: 6px;">
+                            <option value="2">2px</option>
+                            <option value="5" selected>5px</option>
+                            <option value="10">10px</option>
+                            <option value="20">20px</option>
+                        </select>
+                        <button class="action-btn-secondary" id="whiteboard-clear-btn" title="Limpar Tudo">
+                            <i data-lucide="trash-2"></i> Limpar
+                        </button>
+                        <button class="action-btn-secondary" id="whiteboard-export-btn" title="Exportar imagem">
+                            <i data-lucide="download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                <!-- Text tool input bar (hidden by default) -->
+                <div class="canvas-toolbar wb-text-bar" id="wb-text-bar" style="display: none;">
+                    <div class="toolbar-group" style="flex: 1; gap: 8px;">
+                        <i data-lucide="type" style="width:16px; height:16px; color: var(--primary); flex-shrink:0;"></i>
+                        <input type="text" class="form-input" id="wb-text-input" placeholder="Digite seu texto ou frase aqui..." style="flex:1; padding: 6px 12px; font-size: 14px;">
+                        <label class="form-label" style="margin-bottom:0; white-space:nowrap;">Tamanho:</label>
+                        <select class="form-select" id="wb-text-size" style="width: 80px; padding: 6px;">
+                            <option value="16">16px</option>
+                            <option value="20">20px</option>
+                            <option value="28" selected>28px</option>
+                            <option value="36">36px</option>
+                            <option value="48">48px</option>
+                            <option value="64">64px</option>
+                        </select>
+                        <span class="form-label" style="margin-bottom:0; opacity:0.6; font-size:12px; white-space:nowrap;">👆 Clique no quadro para posicionar</span>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <canvas class="canvas-element" id="whiteboard-canvas"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. QUESTS E MISSÕES -->
+        <section class="module-panel" id="module-quests">
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2 class="section-title">Quests Diárias</h2>
+                </div>
+                <div class="quest-list" id="quests-daily-list">
+                    <!-- Dyn daily quests -->
+                </div>
+
+                <div class="section-header" style="margin-top: 32px;">
+                    <h2 class="section-title">Quests Semanais</h2>
+                </div>
+                <div class="quest-list" id="quests-weekly-list">
+                    <!-- Dyn weekly quests -->
+                </div>
+
+                <div class="section-header" style="margin-top: 32px;">
+                    <h2 class="section-title">Quests Mensais</h2>
+                </div>
+                <div class="quest-list" id="quests-monthly-list">
+                    <!-- Dyn monthly quests -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. TAREFAS -->
+        <section class="module-panel" id="module-tasks">
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2 class="section-title">Tarefas Ativas</h2>
+                </div>
+                <div class="search-bar-container">
+                    <input type="text" class="search-input" id="tasks-search" placeholder="Pesquisar tarefas...">
+                    <select class="form-select" id="tasks-filter-priority" style="width: 160px;">
+                        <option value="">Todas Prioridades</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Média">Média</option>
+                        <option value="Baixa">Baixa</option>
+                    </select>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"></th>
+                                <th>Tarefa</th>
+                                <th>Categoria</th>
+                                <th>Prioridade</th>
+                                <th>Data Limite</th>
+                                <th style="width: 80px; text-align:right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasks-table-body">
+                            <!-- Dyn populated tasks -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- COMPLETED TASKS HISTORY PANEL -->
+            <div class="glass-panel" style="margin-top: 24px;">
+                <div class="section-header">
+                    <h2 class="section-title">Histórico de Tarefas Concluídas</h2>
+                    <button class="action-btn-secondary" id="tasks-clear-history-btn" style="border-color: var(--danger); color: var(--danger); font-size:13px; padding: 6px 12px;">
+                        <i data-lucide="trash-2" style="width:14px; height:14px;"></i> Limpar Histórico
+                    </button>
+                </div>
+                <div class="search-bar-container">
+                    <input type="text" class="search-input" id="tasks-history-search" placeholder="Pesquisar tarefas concluídas...">
+                    <select class="form-select" id="tasks-history-filter-priority" style="width: 160px;">
+                        <option value="">Todas Prioridades</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Média">Média</option>
+                        <option value="Baixa">Baixa</option>
+                    </select>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"></th>
+                                <th>Tarefa</th>
+                                <th>Categoria</th>
+                                <th>Prioridade</th>
+                                <th>Data Limite</th>
+                                <th style="width: 80px; text-align:right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasks-history-table-body">
+                            <!-- Dyn populated completed tasks -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. PROJETOS -->
+        <section class="module-panel" id="module-projects">
+            <div class="projects-grid" id="projects-grid-container">
+                <!-- Dyn project cards -->
+            </div>
+        </section>
+
+        <!-- 9. METAS -->
+        <section class="module-panel" id="module-goals">
+            <div class="glass-panel">
+                <div class="search-bar-container">
+                    <select class="form-select" id="goals-filter-type" style="width: 220px;">
+                        <option value="">Todos os Prazos</option>
+                        <option value="Curto Prazo">Curto Prazo (até 3 meses)</option>
+                        <option value="Médio Prazo">Médio Prazo (até 1 ano)</option>
+                        <option value="Longo Prazo">Longo Prazo (mais de 1 ano)</option>
+                    </select>
+                </div>
+                <div class="goals-list" id="goals-list-container">
+                    <!-- Dyn goal cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. CALENDÁRIO -->
+        <section class="module-panel" id="module-calendar">
+            <div class="glass-panel">
+                <div class="calendar-widget">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" id="calendar-prev-month">
+                            <i data-lucide="chevron-left"></i>
+                        </button>
+                        <h2 class="section-title" id="calendar-month-year">Junho 2026</h2>
+                        <button class="calendar-nav-btn" id="calendar-next-month">
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day-label">Dom</div>
+                        <div class="calendar-day-label">Seg</div>
+                        <div class="calendar-day-label">Ter</div>
+                        <div class="calendar-day-label">Qua</div>
+                        <div class="calendar-day-label">Qui</div>
+                        <div class="calendar-day-label">Sex</div>
+                        <div class="calendar-day-label">Sáb</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-days-grid">
+                        <!-- Dynamic Month Days -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. HÁBITOS -->
+        <section class="module-panel" id="module-habits">
+            <div class="glass-panel">
+                <div class="habits-table-container">
+                    <table class="habits-table">
+                        <thead>
+                            <tr id="habits-header-row">
+                                <th style="text-align: left; padding-left: 16px;">Hábito</th>
+                                <!-- Days will be populated dynamically (e.g. Seg 19, Ter 20) -->
+                                <th style="width: 100px;">Streak</th>
+                                <th style="width: 80px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="habits-table-body">
+                            <!-- Dyn populated habits -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 12. BIBLIOTECA PESSOAL -->
+        <section class="module-panel" id="module-library">
+            <div class="glass-panel">
+                <div class="search-bar-container">
+                    <select class="form-select" id="library-filter-category" style="width: 220px;">
+                        <option value="">Todas Categorias</option>
+                        <option value="Documentos">Documentos</option>
+                        <option value="Links Úteis">Links Úteis</option>
+                        <option value="Livros/Artigos">Livros & Artigos</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="library-grid" id="library-grid-container">
+                    <!-- Dyn library links cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 13. FINANÇAS -->
+        <section class="module-panel" id="module-finances">
+            <div class="finance-summary">
+                <div class="finance-card income">
+                    <span class="stat-title">Receitas</span>
+                    <span class="stat-value amount-income" id="finance-total-income">R$ 0,00</span>
+                    <span class="stat-desc">Entradas registradas</span>
+                </div>
+                <div class="finance-card expense">
+                    <span class="stat-title">Despesas</span>
+                    <span class="stat-value amount-expense" id="finance-total-expense">R$ 0,00</span>
+                    <span class="stat-desc">Saídas registradas</span>
+                </div>
+                <div class="finance-card balance">
+                    <span class="stat-title">Saldo Líquido</span>
+                    <span class="stat-value" id="finance-net-balance">R$ 0,00</span>
+                    <span class="stat-desc">Balanço geral</span>
+                </div>
+            </div>
+            
+            <div class="glass-panel">
+                <h2 class="section-title" style="margin-bottom:16px;">Histórico de Transações</h2>
+                <div style="overflow-x: auto;">
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th style="width: 80px; text-align:right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="finance-ledger-body">
+                            <!-- Dyn transactions -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 14. CENTRAL DE APLICAÇÕES -->
+        <section class="module-panel" id="module-appcenter">
+            <div class="app-center-layout">
+                <!-- Left panel: app tiles grid -->
+                <div class="app-center-sidebar" style="max-height: calc(100vh - 160px); overflow-y: auto; padding-right: 8px;">
+                    <div class="app-center-grid" id="appcenter-grid-container" style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                        <!-- Preset integrations and user integrations -->
+                    </div>
+                </div>
+                <!-- Right panel: iframe visualizer -->
+                <div class="app-visualizer-container">
+                    <div class="app-visualizer-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span id="app-visualizer-title" style="font-weight: 700; color: var(--primary);">Selecione um Aplicativo</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button id="app-visualizer-reload" class="action-btn-secondary" style="padding: 6px; display: none; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--border-radius-sm); border: 1px solid rgba(255,255,255,0.1); background: transparent; color: white; cursor: pointer; transition: all 0.2s;" title="Recarregar aplicativo">
+                                <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                            </button>
+                            <a id="app-visualizer-external" href="#" target="_blank" class="action-btn" style="padding: 6px 12px; font-size: 12px; display: none; text-decoration: none; align-items: center; gap: 6px; box-shadow: none;">
+                                <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Abrir em Nova Guia
+                            </a>
+                        </div>
+                    </div>
+                    <div class="app-visualizer-body">
+                        <div id="app-visualizer-placeholder" style="position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; color: var(--text-dim);">
+                            <i data-lucide="monitor" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                            <span>Nenhum aplicativo carregado no painel visual</span>
+                        </div>
+                        <iframe id="app-visualizer-iframe" src="" style="width: 100%; height: 100%; border: none; display: none; background: white;"></iframe>
+                        <div id="app-visualizer-image-container" style="width: 100%; height: 100%; overflow-y: auto; display: none; background: #121212;">
+                            <img id="app-visualizer-image" src="" style="width: 100%; height: auto; display: block; border: none;">
+                        </div>
+                        <div id="app-visualizer-assisted" style="width: 100%; height: 100%; display: none; overflow-y: auto; background: #0c0f12; color: #eef2f6; position: relative;"></div>
+                        <video id="app-visualizer-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: contain; background: #000; display: none; border: none; outline: none;"></video>
+                        <div id="app-visualizer-video-controls" style="position: absolute; top: 12px; right: 12px; z-index: 100; display: none; background: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(8px); display: flex; gap: 8px;">
+                            <button id="app-visualizer-pip" class="action-btn" style="background: #3b82f6; color: white; border: none; font-size: 11px; padding: 4px 10px; border-radius: 4px; box-shadow: none; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <i data-lucide="picture-in-picture" style="width: 12px; height: 12px;"></i> Janela Externa (PiP)
+                            </button>
+                            <button id="app-visualizer-float" class="action-btn" style="background: #8b5cf6; color: white; border: none; font-size: 11px; padding: 4px 10px; border-radius: 4px; box-shadow: none; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Janela Flutuante
+                            </button>
+                            <button id="app-visualizer-stop-stream" class="action-btn" style="background: #ef4444; color: white; border: none; font-size: 11px; padding: 4px 10px; border-radius: 4px; box-shadow: none; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <i data-lucide="video-off" style="width: 12px; height: 12px;"></i> Desconectar Transmissão
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Note Modal -->
+    <div class="modal-overlay" id="modal-notes-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="note-modal-title">Nova Anotação</h3>
+                <button class="modal-close" onclick="closeModal('modal-notes-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="note-form">
+                <input type="hidden" id="note-id-input">
+                <div class="form-group">
+                    <label class="form-label" for="note-title-input">Título</label>
+                    <input type="text" class="form-input" id="note-title-input" required placeholder="Título da anotação">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="note-category-input">Categoria</label>
+                    <select class="form-select" id="note-category-input">
+                        <option value="Pessoal">Pessoal</option>
+                        <option value="Trabalho">Trabalho</option>
+                        <option value="Estudo">Estudo</option>
+                        <option value="Inspiração">Inspiração</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="note-content-input">Conteúdo</label>
+                    <textarea class="form-textarea" id="note-content-input" rows="6" required placeholder="Escreva sua nota aqui..."></textarea>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Anotação</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="modal-tasks-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="task-modal-title">Nova Tarefa</h3>
+                <button class="modal-close" onclick="closeModal('modal-tasks-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="task-form">
+                <input type="hidden" id="task-id-input">
+                <div class="form-group">
+                    <label class="form-label" for="task-title-input">Título da Tarefa</label>
+                    <input type="text" class="form-input" id="task-title-input" required placeholder="O que precisa ser feito?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="task-category-input">Categoria</label>
+                    <input type="text" class="form-input" id="task-category-input" placeholder="Ex: Trabalho, Compras, Saúde">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="task-priority-input">Prioridade</label>
+                    <select class="form-select" id="task-priority-input">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="task-date-input">Data de Vencimento</label>
+                    <input type="date" class="form-input" id="task-date-input" required>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Tarefa</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal-overlay" id="modal-projects-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="project-modal-title">Novo Projeto</h3>
+                <button class="modal-close" onclick="closeModal('modal-projects-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="project-form">
+                <input type="hidden" id="project-id-input">
+                <div class="form-group">
+                    <label class="form-label" for="project-title-input">Título do Projeto</label>
+                    <input type="text" class="form-input" id="project-title-input" required placeholder="Nome do projeto">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="project-category-input">Área / Categoria</label>
+                    <input type="text" class="form-input" id="project-category-input" placeholder="Ex: Profissional, Pessoal, Faculdade">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="project-desc-input">Descrição rápida</label>
+                    <textarea class="form-textarea" id="project-desc-input" rows="3" placeholder="Qual o foco desse projeto?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="project-steps-input">Etapas/Metas (uma por linha)</label>
+                    <textarea class="form-textarea" id="project-steps-input" rows="4" placeholder="Ex: Planejar escopo&#10;Criar protótipo&#10;Desenvolver MVP&#10;Testar e publicar"></textarea>
+                </div>
+                <button type="submit" class="action-btn" id="project-submit-btn" style="width: 100%; justify-content: center;">Criar Projeto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Idea Modal -->
+    <div class="modal-overlay" id="modal-ideas-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Insight / Ideia</h3>
+                <button class="modal-close" onclick="closeModal('modal-ideas-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="idea-form">
+                <div class="form-group">
+                    <label class="form-label" for="idea-title-input">Título da Ideia</label>
+                    <input type="text" class="form-input" id="idea-title-input" required placeholder="Qual é o estalo?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="idea-theme-input">Tema / Tags</label>
+                    <input type="text" class="form-input" id="idea-theme-input" placeholder="Ex: Criatividade, Startup, Livro, Viagem">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="idea-content-input">Descrição detalhada</label>
+                    <textarea class="form-textarea" id="idea-content-input" rows="5" required placeholder="Descreva sua inspiração, referências e potencial..."></textarea>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Registrar Ideia</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Goal Modal -->
+    <div class="modal-overlay" id="modal-goals-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Meta</h3>
+                <button class="modal-close" onclick="closeModal('modal-goals-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="goal-form">
+                <div class="form-group">
+                    <label class="form-label" for="goal-title-input">Objetivo / Meta</label>
+                    <input type="text" class="form-input" id="goal-title-input" required placeholder="Ex: Aprender inglês fluentemente">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="goal-type-input">Prazo</label>
+                    <select class="form-select" id="goal-type-input">
+                        <option value="Curto Prazo">Curto Prazo (até 3 meses)</option>
+                        <option value="Médio Prazo">Médio Prazo (até 1 ano)</option>
+                        <option value="Longo Prazo">Longo Prazo (mais de 1 ano)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="goal-date-input">Data Limite Alvo</label>
+                    <input type="date" class="form-input" id="goal-date-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="goal-image-input">Imagem da Meta</label>
+                    <input type="file" class="form-input" id="goal-image-input" accept="image/*">
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Criar Meta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Habit Modal -->
+    <div class="modal-overlay" id="modal-habits-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Hábito</h3>
+                <button class="modal-close" onclick="closeModal('modal-habits-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="habit-form">
+                <div class="form-group">
+                    <label class="form-label" for="habit-title-input">Nome do Hábito</label>
+                    <input type="text" class="form-input" id="habit-title-input" required placeholder="Ex: Ler 15 páginas, Meditar">
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Hábito</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Library Modal -->
+    <div class="modal-overlay" id="modal-library-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Adicionar Item à Biblioteca</h3>
+                <button class="modal-close" onclick="closeModal('modal-library-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="library-form">
+                <div class="form-group">
+                    <label class="form-label" for="library-title-input">Título / Nome</label>
+                    <input type="text" class="form-input" id="library-title-input" required placeholder="Ex: Planilha de Finanças 2026, Livro Sapiens">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="library-category-input">Categoria</label>
+                    <select class="form-select" id="library-category-input">
+                        <option value="Documentos">Documento / Arquivo</option>
+                        <option value="Links Úteis">Link Útil</option>
+                        <option value="Livros/Artigos">Livro / Artigo</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="library-url-input">URL / Link do Documento (Opcional)</label>
+                    <input type="url" class="form-input" id="library-url-input" placeholder="https://exemplo.com/documento">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="library-notes-input">Observações</label>
+                    <textarea class="form-textarea" id="library-notes-input" rows="3" placeholder="Informações relevantes sobre este arquivo ou link..."></textarea>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar na Biblioteca</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Finance Modal -->
+    <div class="modal-overlay" id="modal-finances-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Transação</h3>
+                <button class="modal-close" onclick="closeModal('modal-finances-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="finance-form">
+                <div class="form-group">
+                    <label class="form-label" for="finance-desc-input">Descrição</label>
+                    <input type="text" class="form-input" id="finance-desc-input" required placeholder="Ex: Compra de supermercado, Salário CLT">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="finance-type-input">Tipo</label>
+                    <select class="form-select" id="finance-type-input">
+                        <option value="Receita">Receita (Entrada)</option>
+                        <option value="Despesa" selected>Despesa (Saída)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="finance-category-input">Categoria</label>
+                    <input type="text" class="form-input" id="finance-category-input" required placeholder="Ex: Alimentação, Lazer, Transporte, Salário">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="finance-amount-input">Valor (R$)</label>
+                    <input type="number" step="0.01" min="0.01" class="form-input" id="finance-amount-input" required placeholder="0,00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="finance-date-input">Data</label>
+                    <input type="date" class="form-input" id="finance-date-input" required>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Transação</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Integration Modal -->
+    <div class="modal-overlay" id="modal-appcenter-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Adicionar Integração</h3>
+                <button class="modal-close" onclick="closeModal('modal-appcenter-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="app-form">
+                <div class="form-group">
+                    <label class="form-label" for="app-name-input">Nome do Serviço / Ferramenta</label>
+                    <input type="text" class="form-input" id="app-name-input" required placeholder="Ex: Trello, Slack, Figma">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="app-url-input">URL de Acesso</label>
+                    <input type="url" class="form-input" id="app-url-input" required placeholder="https://app.trello.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="app-desc-input">Descrição rápida</label>
+                    <input type="text" class="form-input" id="app-desc-input" placeholder="Ex: Quadro de atividades compartilhadas">
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Integração</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Calendar Event Modal -->
+    <div class="modal-overlay" id="modal-calendar-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="calendar-modal-title">Novo Evento</h3>
+                <button class="modal-close" onclick="closeModal('modal-calendar-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="calendar-event-form">
+                <input type="hidden" id="calendar-event-date-input">
+                <div class="form-group">
+                    <label class="form-label" id="calendar-event-label" for="calendar-event-title-input">Adicionar evento para o dia:</label>
+                    <input type="text" class="form-input" id="calendar-event-title-input" required placeholder="Título do evento ou compromisso">
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Evento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase Integration Modal -->
+    <div class="modal-overlay" id="modal-supabase-overlay">
+        <div class="modal-container" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="database" style="color:var(--primary); width:20px; height:20px;"></i>
+                    Configurações de Armazenamento
+                </h3>
+                <button class="modal-close" onclick="closeModal('modal-supabase-overlay')"><i data-lucide="x"></i></button>
+            </div>
+
+            <!-- Global Storage Mode Selector -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="lilith-storage-mode" style="margin-bottom:6px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="save" style="width:14px; height:14px; color:var(--primary);"></i>
+                        Destino do Armazenamento
+                    </label>
+                    <select class="form-select" id="lilith-storage-mode" style="width:100%;">
+                        <option value="local">Apenas Local (Navegador - LocalStorage)</option>
+                        <option value="cloud">Nuvem + Local (Supabase Cloud + LocalStorage)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Panel 1: Credentials Setup -->
+            <div class="supabase-panel" id="supabase-panel-config">
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+                    Conecte a Lilith ao banco de dados Supabase para sincronizar suas informações na nuvem em tempo real.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="supabase-url-input">Supabase Project URL</label>
+                    <input type="url" class="form-input" id="supabase-url-input" placeholder="https://xxxx.supabase.co" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="supabase-key-input">Supabase Anon Key</label>
+                    <input type="password" class="form-input" id="supabase-key-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required>
+                </div>
+                
+                <button type="button" class="action-btn" id="supabase-save-config-btn" style="width: 100%; justify-content: center; margin-top:8px;">
+                    <i data-lucide="link" style="width:16px; height:16px;"></i> Conectar Projeto
+                </button>
+            </div>
+
+            <!-- Panel 2: Auth Screen (Sign In only - Registration removed) -->
+            <div class="supabase-panel" id="supabase-panel-auth" style="display:none;">
+                <h4 style="font-size:14px; font-weight:600; color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+                    <i data-lucide="log-in" style="width:16px; height:16px; color:var(--primary);"></i>
+                    Entrar na Conta Supabase
+                </h4>
+                
+                <form id="supabase-auth-form">
+                    <div class="form-group">
+                        <label class="form-label" for="supabase-email-input">E-mail</label>
+                        <input type="email" class="form-input" id="supabase-email-input" placeholder="seu-email@exemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="supabase-password-input">Senha</label>
+                        <input type="password" class="form-input" id="supabase-password-input" placeholder="••••••••" required minlength="6">
+                    </div>
+                    
+                    <button type="submit" class="action-btn" id="supabase-auth-submit-btn" style="width: 100%; justify-content: center; margin-top:8px;">
+                        Entrar na Conta
+                    </button>
+                </form>
+                
+                <div style="text-align:center; margin-top:16px;">
+                    <button type="button" class="action-btn-secondary" id="supabase-disconnect-project-btn" style="font-size:12px; padding:6px 12px;">
+                        <i data-lucide="unlink" style="width:12px; height:12px;"></i> Desconectar Projeto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel 3: Dashboard & Sync Controls (Sync buttons removed, backup button added) -->
+            <div class="supabase-panel" id="supabase-panel-dashboard" style="display:none;">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">E-mail do Usuário:</span>
+                        <span style="font-size:13px; font-weight:600; color:#fff;" id="supabase-user-email">email@exemplo.com</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">Status da Nuvem:</span>
+                        <span class="status-badge" style="font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600; background:rgba(34, 197, 94, 0.1); color:#22c55e;" id="supabase-sync-status">Sincronizado</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">Último Backup:</span>
+                        <span style="font-size:12px; color:#fff;" id="supabase-last-sync-time">Nunca</span>
+                    </div>
+                </div>
+
+                <!-- Backup Button to download everything organized -->
+                <div style="margin-bottom:16px;">
+                    <button type="button" class="action-btn" id="supabase-backup-btn" style="width:100%; justify-content:center; gap:8px; background:linear-gradient(to right, var(--primary), var(--accent));">
+                        <i data-lucide="download" style="width:16px; height:16px;"></i> Fazer Backup Geral (Markdown + JSON)
+                    </button>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:16px;">
+                    <button type="button" class="action-btn-secondary" id="supabase-signout-btn" style="font-size:12px; padding:6px 12px; color:var(--danger); border-color:rgba(239, 68, 68, 0.2);">
+                        <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair da Conta
+                    </button>
+                    <button type="button" class="action-btn-secondary" id="supabase-change-keys-btn" style="font-size:12px; padding:6px 12px;">
+                        <i data-lucide="settings" style="width:12px; height:12px;"></i> Configurar Chaves
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAGIC TOUR & ALERTS ELEMENT TARGETS -->
+    <div class="magic-toast-container" id="magic-toast-container"></div>
+    <div class="magic-tour-overlay" id="magic-tour-overlay"></div>
+    <div class="magic-spotlight" id="magic-spotlight" style="display: none;"></div>
+    <div class="magic-tour-card" id="magic-tour-card" style="display: none;">
+        <div class="magic-tour-card-header">
+            <i data-lucide="wand-2" style="width: 18px; height: 18px; color: var(--primary);"></i>
+            <h4 class="magic-tour-card-title" id="magic-tour-title">Tour Mágico</h4>
+        </div>
+        <p class="magic-tour-card-desc" id="magic-tour-desc">Texto de instrução...</p>
+        <div class="magic-tour-card-actions">
+            <span class="magic-tour-step-indicator" id="magic-tour-step">1 / 5</span>
+            <div style="display: flex; gap: 8px;">
+                <button class="action-btn-secondary" id="magic-tour-prev" style="padding: 4px 8px; font-size: 11px;">Voltar</button>
+                <button class="action-btn" id="magic-tour-next" style="padding: 4px 12px; font-size: 11px; box-shadow: none;">Próximo</button>
+            </div>
+        </div>
+    <!-- FLOATING STREAM PANEL -->
+    <div id="app-floating-stream-container" style="position: fixed; bottom: 24px; right: 24px; width: 340px; height: 210px; z-index: 9999; display: none; background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; backdrop-filter: blur(12px); display: flex; flex-direction: column;">
+        <div class="floating-header" style="height: 36px; background: rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; padding: 0 12px; cursor: move; border-bottom: 1px solid rgba(255,255,255,0.08); user-select: none;">
+            <span style="font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; box-shadow:0 0 8px #ef4444;"></span>
+                Transmissão Flutuante Ativa
+            </span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="floating-dock-btn" title="Restaurar para o Painel" style="background: transparent; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; padding: 4px;"><i data-lucide="maximize-2" style="width: 12px; height: 12px;"></i></button>
+                <button id="floating-close-btn" title="Desconectar Transmissão" style="background: transparent; border: none; color: #ef4444; cursor: pointer; display: flex; align-items: center; padding: 4px;"><i data-lucide="x" style="width: 12px; height: 12px;"></i></button>
+            </div>
+        </div>
+        <div id="floating-video-wrapper" style="flex: 1; position: relative; background: #000; display: flex; align-items: center; justify-content: center;">
+            <!-- The video element will move here dynamically -->
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
