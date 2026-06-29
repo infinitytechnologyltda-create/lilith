@@ -109,10 +109,9 @@ h1, h2, h3, h4, h5, h6 {
     height: 72px;
     background-color: rgba(46, 42, 45, 0.45);
     border-bottom: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     padding: 0 32px;
     position: fixed;
     left: 0;
@@ -143,6 +142,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     gap: 12px;
+    justify-self: start;
 }
 
 .logo-icon {
@@ -246,6 +246,10 @@ h1, h2, h3, h4, h5, h6 {
 .menu-item i {
     width: 20px;
     height: 20px;
+}
+
+.sidebar-footer {
+    justify-self: end;
 }
 
 .menu-item:hover {
