@@ -3836,36 +3836,157 @@ function initSupabaseEventListeners() {
         localFolderBtn.onclick = () => showMagicAlert("Aviso ⚠️", "Seu navegador não suporta seleção de pastas locais (File System Access API).");
     }
     function generateTextReport(state) {
-        let report = `====================================================\n`;
-        report += `              RELATÓRIO LILITH\n`;
-        report += `              Data: ${new Date().toLocaleString()}\n`;
-        report += `====================================================\n\n`;
+        let report = `========================================================\n`;
+        report += `    LILITH LIFE ORGANIZER - RELATÓRIO GERAL DE DADOS\n`;
+        report += `    Gerado em: ${new Date().toLocaleString("pt-BR")}\n`;
+        report += `    Perfil: Nível ${state.user ? state.user.level : 1} | XP: ${state.user ? state.user.xp : 0}\n`;
+        report += `========================================================\n\n`;
 
-        report += `[ PERFIL ]\n`;
-        report += `- Nível Atual: ${state.user ? state.user.level : 1}\n`;
-        report += `- Experiência: ${state.user ? state.user.xp : 0} XP\n\n`;
+        // 1. NOTES
+        report += `[ 🎯 ANOTAÇÕES ]\n\n`;
+        if (state.notes && state.notes.length > 0) {
+            state.notes.forEach(note => {
+                report += `TÍTULO: ${note.title || "Sem título"}\n`;
+                report += `Categoria: ${note.category || "Sem categoria"} | Data: ${note.date ? note.date.split('T')[0] : ""}\n`;
+                report += `Conteúdo:\n${note.content || ""}\n`;
+                report += `--------------------------------------------------------\n\n`;
+            });
+        } else {
+            report += `Nenhuma anotação registrada.\n\n`;
+        }
 
-        report += `[ TAREFAS DIÁRIAS ]\n`;
-        if (!state.tasks || state.tasks.length === 0) report += `- Nenhuma tarefa.\n`;
-        else state.tasks.forEach(t => report += `- [${t.completed ? 'X' : ' '}] ${t.text}\n`);
-        report += `\n`;
+        // 2. DIARY
+        report += `[ 📖 DIÁRIO PESSOAL ]\n\n`;
+        const diaryKeys = Object.keys(state.diary || {});
+        if (diaryKeys.length > 0) {
+            diaryKeys.sort().forEach(dateKey => {
+                const entry = state.diary[dateKey];
+                report += `Entrada de ${dateKey.split('T')[0]}\n`;
+                report += `Mood/Humor: ${entry.mood || "Neutro"}\n`;
+                report += `Texto: ${entry.text || ""}\n`;
+                report += `--------------------------------------------------------\n\n`;
+            });
+        } else {
+            report += `Nenhuma entrada no diário pessoal.\n\n`;
+        }
 
-        report += `[ PROJETOS ]\n`;
-        if (!state.projects || state.projects.length === 0) report += `- Nenhum projeto.\n`;
-        else state.projects.forEach(p => {
-            report += `- ${p.title} (Status: ${p.status || 'Em andamento'})\n`;
-        });
-        report += `\n`;
+        // 3. IDEAS
+        report += `[ 💡 INSIGHTS & IDEIAS ]\n\n`;
+        if (state.ideas && state.ideas.length > 0) {
+            state.ideas.forEach(idea => {
+                report += `Ideia: ${idea.title || idea.text || "Sem título"}\n`;
+                report += `Tema/Categoria: ${idea.theme || idea.category || "Geral"}\n`;
+                report += `Conteúdo:\n${idea.content || ""}\n`;
+                report += `--------------------------------------------------------\n\n`;
+            });
+        } else {
+            report += `Nenhuma ideia registrada.\n\n`;
+        }
 
-        report += `[ FINANÇAS ]\n`;
-        report += `- Saldo Atual: R$ ${state.finance ? state.finance.balance : 0}\n`;
-        report += `\n`;
+        // 4. TASKS
+        report += `[ 📋 QUADRO DE TAREFAS ]\n\n`;
+        if (state.tasks && state.tasks.length > 0) {
+            state.tasks.forEach(task => {
+                report += `[${task.completed ? "X" : " "}] ${task.title || task.text} (Prioridade: ${task.priority || "Média"} | Cat: ${task.category || "Pessoal"})\n`;
+            });
+            report += `\n`;
+        } else {
+            report += `Nenhuma tarefa registrada.\n\n`;
+        }
 
-        report += `[ ANOTAÇÕES E IDEIAS ]\n`;
-        report += `- Total de Anotações: ${state.notes ? state.notes.length : 0}\n`;
-        report += `- Total de Ideias: ${state.ideas ? state.ideas.length : 0}\n`;
+        // 5. PROJECTS
+        report += `[ 🚀 PROJETOS ]\n\n`;
+        if (state.projects && state.projects.length > 0) {
+            state.projects.forEach(proj => {
+                report += `Projeto: ${proj.title}\n`;
+                report += `Categoria: ${proj.category || "Geral"}\n`;
+                report += `Status: ${proj.status || "Em andamento"}\n`;
+                report += `Descrição: ${proj.desc || "Sem descrição"}\n`;
+                if (proj.steps && proj.steps.length > 0) {
+                    report += `Passos/Etapas:\n`;
+                    proj.steps.forEach(step => {
+                        report += `  - [${step.completed ? "x" : " "}] ${step.text}\n`;
+                    });
+                } else if (proj.tasks && proj.tasks.length > 0) {
+                    report += `Tarefas:\n`;
+                    proj.tasks.forEach(task => {
+                        report += `  - [${task.completed ? "x" : " "}] ${task.text}\n`;
+                    });
+                }
+                report += `--------------------------------------------------------\n\n`;
+            });
+        } else {
+            report += `Nenhum projeto registrado.\n\n`;
+        }
+
+        // 6. GOALS
+        report += `[ 🎯 METAS & OBJETIVOS ]\n\n`;
+        if (state.goals && state.goals.length > 0) {
+            state.goals.forEach(goal => {
+                report += `Meta: ${goal.title}\n`;
+                report += `Prazo: ${goal.type || "Curto Prazo"}\n`;
+                report += `Progresso: ${goal.progress}%\n`;
+                report += `--------------------------------------------------------\n\n`;
+            });
+        } else {
+            report += `Nenhuma meta cadastrada.\n\n`;
+        }
+
+        // 7. HABITS
+        report += `[ ⚡ CONTROLE DE HÁBITOS ]\n\n`;
+        if (state.habits && state.habits.length > 0) {
+            state.habits.forEach(habit => {
+                report += `Hábito: ${habit.name}\n`;
+                const completedDates = Object.keys(habit.tracking || {}).filter(dateKey => habit.tracking[dateKey]);
+                if (completedDates.length > 0) {
+                    report += `Dias concluídos: ${completedDates.length}\n`;
+                } else {
+                    report += `Sem histórico de conclusões.\n`;
+                }
+                report += `--------------------------------------------------------\n\n`;
+            });
+        } else {
+            report += `Nenhum hábito cadastrado.\n\n`;
+        }
+
+        // 8. FINANCES
+        report += `[ 💰 FINANÇAS PESSOAIS ]\n\n`;
+        if (state.finances && state.finances.length > 0) {
+            let total = 0;
+            state.finances.forEach(fin => {
+                report += `${fin.type === "receita" ? "+" : "-"} R$ ${parseFloat(fin.amount).toFixed(2)} | ${fin.category} | ${fin.desc}\n`;
+                if(fin.type === "receita") total += parseFloat(fin.amount);
+                else total -= parseFloat(fin.amount);
+            });
+            report += `\nSaldo Calculado das Transações: R$ ${total.toFixed(2)}\n`;
+        } else if (state.finance && state.finance.balance !== undefined) {
+             report += `Saldo Atual: R$ ${state.finance.balance}\n`;
+        } else {
+            report += `Nenhuma transação financeira registrada.\n\n`;
+        }
+
+        // 9. APP CENTER
+        report += `\n[ 🔌 INTEGRAÇÕES & APPS ]\n\n`;
+        if (state.apps && state.apps.length > 0) {
+            state.apps.forEach(app => {
+                report += `${app.name} (${app.active ? "Ativo" : "Inativo"})\n`;
+            });
+        } else {
+            report += `Nenhuma integração cadastrada.\n\n`;
+        }
+
+        // 10. CALENDAR EVENTS
+        report += `\n[ 📅 EVENTOS DO CALENDÁRIO ]\n\n`;
+        if (state.calendarEvents && state.calendarEvents.length > 0) {
+            state.calendarEvents.forEach(ev => {
+                report += `Data: ${ev.date ? ev.date.split('T')[0] : ""} | Evento: ${ev.title}\n`;
+            });
+            report += `\n`;
+        } else {
+            report += `Nenhum evento registrado no calendário.\n\n`;
+        }
         
-        report += `\n====================================================\n`;
+        report += `========================================================\n`;
         report += `Relatório gerado automaticamente por Lilith OS.`;
         return report;
     }
