@@ -558,9 +558,17 @@ function renderModuleContent(moduleName) {
 
 function updateUIElements() {
     // XP and levels
-    document.getElementById("level-display").textContent = `Nível ${state.user.level}`;
+    const levelDisplay = document.getElementById("level-display");
+    if(levelDisplay) levelDisplay.textContent = `Nível ${state.user.level}`;
+    
     const dashLevel = document.getElementById("dash-level");
     if(dashLevel) dashLevel.textContent = state.user.level;
+
+    const avatarCircle = document.getElementById("avatar-circle");
+    if(avatarCircle && state.user.avatar) {
+        avatarCircle.style.backgroundImage = `url(${state.user.avatar})`;
+        avatarCircle.textContent = "";
+    }
 
     const target = state.user.level * 100;
     const xpPct = (state.user.xp / target) * 100;
@@ -3296,25 +3304,11 @@ const DEFAULT_SUPABASE_KEY = "sb_publishable_SJK5ZSK5NbItigRZkXuByw_5QVV2lNT";
 
 // Initialize Supabase Client
 async function initSupabase() {
-    const storageMode = localStorage.getItem("lilith_storage_mode") || "cloud";
-    
-    // If local only storage mode, don't initialize client or authenticate
-    if (storageMode === "local") {
-        supabaseClient = null;
-        supabaseUser = null;
-        updateSupabaseUI();
-        return;
-    }
+    // Force cloud mode always
+    localStorage.setItem("lilith_storage_mode", "cloud");
 
-    const url = localStorage.getItem("lilith_supabase_url") || DEFAULT_SUPABASE_URL;
-    const key = localStorage.getItem("lilith_supabase_key") || DEFAULT_SUPABASE_KEY;
-
-    if (!url || !key) {
-        supabaseClient = null;
-        supabaseUser = null;
-        updateSupabaseUI();
-        return;
-    }
+    const url = DEFAULT_SUPABASE_URL;
+    const key = DEFAULT_SUPABASE_KEY;
 
     try {
         if (typeof supabase === 'undefined') {
@@ -3330,13 +3324,22 @@ async function initSupabase() {
                 supabaseUser = session.user;
                 updateSupabaseUI();
                 
-                // On sign in, fetch state from Supabase
+                const loginScreen = document.getElementById('login-screen');
+                const appContainer = document.getElementById('app-container');
+                if(loginScreen) loginScreen.style.display = 'none';
+                if(appContainer) appContainer.style.display = 'block';
+
                 if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && isNewUser)) {
                     await loadStateFromSupabase(false);
                 }
             } else {
                 supabaseUser = null;
                 updateSupabaseUI();
+                
+                const loginScreen = document.getElementById('login-screen');
+                const appContainer = document.getElementById('app-container');
+                if(loginScreen) loginScreen.style.display = 'flex';
+                if(appContainer) appContainer.style.display = 'none';
             }
         });
         
@@ -3344,13 +3347,22 @@ async function initSupabase() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && session.user) {
             supabaseUser = session.user;
+            const loginScreen = document.getElementById('login-screen');
+            const appContainer = document.getElementById('app-container');
+            if(loginScreen) loginScreen.style.display = 'none';
+            if(appContainer) appContainer.style.display = 'block';
             await loadStateFromSupabase(false);
+        } else {
+            const loginScreen = document.getElementById('login-screen');
+            const appContainer = document.getElementById('app-container');
+            if(loginScreen) loginScreen.style.display = 'flex';
+            if(appContainer) appContainer.style.display = 'none';
         }
         
         updateSupabaseUI();
     } catch (err) {
         console.error("Erro ao inicializar Supabase:", err);
-        showMagicAlert("Erro na Nuvem ☁️", "Não foi possível conectar ao projeto Supabase. Verifique a URL e a Chave.");
+        showMagicAlert("Erro na Nuvem ☁️", "Não foi possível conectar ao projeto Supabase.");
         supabaseClient = null;
         supabaseUser = null;
         updateSupabaseUI();
@@ -3752,28 +3764,84 @@ function initSupabaseEventListeners() {
     const changeKeysBtn = document.getElementById("supabase-change-keys-btn");
     const signOutBtn = document.getElementById("supabase-signout-btn");
     const backupBtn = document.getElementById("supabase-backup-btn");
-    const storageModeSelect = document.getElementById("lilith-storage-mode");
-
-    const authForm = document.getElementById("supabase-auth-form");
-    const authSubmitBtn = document.getElementById("supabase-auth-submit-btn");
-
-    // Initialize Storage Mode Select
-    if (storageModeSelect) {
-        const storedMode = localStorage.getItem("lilith_storage_mode") || "cloud";
-        storageModeSelect.value = storedMode;
-        
-        storageModeSelect.onchange = async (e) => {
-            const selectedMode = e.target.value;
-            localStorage.setItem("lilith_storage_mode", selectedMode);
-            showMagicAlert("Configuração Salva! 💾", `Modo de armazenamento alterado para: ${selectedMode === 'cloud' ? 'Nuvem + Local' : 'Apenas Local'}`);
+    
+    // Login Screen Logic
+    const loginForm = document.getElementById("auth-login-form");
+    if (loginForm) {
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const userInput = document.getElementById("login-username").value;
+            const passInput = document.getElementById("login-password").value;
             
-            if (selectedMode === 'cloud') {
-                await initSupabase();
-            } else {
-                supabaseClient = null;
-                supabaseUser = null;
-                updateSupabaseUI();
+            if (userInput !== "AndersonMoitinho" || passInput !== "A@147896325@a") {
+                showMagicAlert("Acesso Negado ❌", "Usuário ou senha incorretos.");
+                return;
             }
+
+            const btn = document.getElementById("login-submit-btn");
+            const originalText = btn.textContent;
+            btn.textContent = "Autenticando...";
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+
+            const email = "andersonmoitinho@lilith.com";
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: passInput
+                });
+                
+                if (error && error.message.includes("Invalid login credentials")) {
+                    // Try silent signup
+                    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: passInput
+                    });
+                    
+                    if (signUpError) {
+                        throw signUpError;
+                    }
+                    showMagicAlert("Conta Criada! 🎉", "Sua conta exclusiva foi configurada e logada.");
+                } else if (error) {
+                    throw error;
+                }
+            } catch (err) {
+                console.error(err);
+                showMagicAlert("Erro ❌", "Ocorreu um erro na autenticação.");
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }
+        };
+    }
+    
+    // Avatar Upload Logic
+    const avatarCircle = document.getElementById("avatar-circle");
+    const profileUpload = document.getElementById("profile-image-upload");
+    if (avatarCircle && profileUpload) {
+        avatarCircle.onclick = () => profileUpload.click();
+        
+        profileUpload.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64Str = event.target.result;
+                // Save to state
+                if(!state.user) state.user = { level: 1, xp: 0 };
+                state.user.avatar = base64Str;
+                saveState(); // Trigger sync
+                
+                // Update UI
+                avatarCircle.style.backgroundImage = `url(${base64Str})`;
+                avatarCircle.textContent = "";
+                
+                showMagicAlert("Perfil Atualizado! 👤", "Sua imagem de perfil foi salva com sucesso.");
+            };
+            reader.readAsDataURL(file);
         };
     }
 

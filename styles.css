@@ -322,22 +322,9 @@ h1, h2, h3, h4, h5, h6 {
     border: 2px solid var(--border-color);
 }
 
-.user-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.user-name {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.user-level {
-    font-size: 10px;
-    color: var(--accent);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.user-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 /* Main Viewport */
