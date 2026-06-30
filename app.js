@@ -54,17 +54,17 @@ const SEED_DATA = {
     finances: [],
     libraryItems: [],
     apps: [
-        { id: "app-1", name: "Spotify", url: "https://open.spotify.com/", desc: "Trilha sonora para foco", type: "spotify", active: true, logo: "spotify.png" },
-        { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" },
+        { id: "app-7", name: "Espaço Terapêutico", url: "https://paginaterapeutaanderson.vercel.app/espaco.html", desc: "Espaço Terapêutico", type: "espaco", active: true, logo: "espacoterapeutico.png" },
         { id: "app-5", name: "Phantom Troupe", url: "https://phantomtroupe.vercel.app", desc: "Projeto Phantom Troupe", type: "phantom", active: true, logo: "phantomtroupe.jpg" },
         { id: "app-6", name: "Sonoridade", url: "https://sonoridade-psi.vercel.app/", desc: "Plataforma Sonoridade", type: "sonoridade", active: true, logo: "sonoridade.png" },
-        { id: "app-7", name: "Espaço Terapêutico", url: "https://paginaterapeutaanderson.vercel.app/espaco.html", desc: "Espaço Terapêutico", type: "espaco", active: true, logo: "espacoterapeutico.png" },
         { id: "app-8", name: "Estética X", url: "https://zero-delta-one.vercel.app", desc: "Estética X", type: "esteticax", active: true, logo: "esteticaX.png" },
         { id: "app-9", name: "Zero Signal", url: "#", desc: "Aplicativo", type: "zerosignal", active: true, logo: "zerosignal_logo.jpeg" },
         { id: "app-10", name: "Infinity Technology", url: "https://www.infinitytechnologyltda.com.br", desc: "Infinity Technology", type: "infinity", active: true, logo: "infinitytechnologylogo.png" },
         { id: "app-11", name: "WhatsApp", url: "https://web.whatsapp.com", desc: "Conectar ao WhatsApp Web", type: "whatsapp", active: true, logo: "whatsapp.png" },
         { id: "app-12", name: "SupaBase", url: "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", desc: "Banco de dados SupaBase", type: "supabase", active: true, logo: "supabase.png" },
-        { id: "app-13", name: "Vercel Hospedagens", url: "https://vercel.com/infinitytechnologyltda-creates-projects", desc: "Vercel Hospedagens", type: "vercel", active: true, logo: "vercel.png" }
+        { id: "app-13", name: "Vercel Hospedagens", url: "https://vercel.com/infinitytechnologyltda-creates-projects", desc: "Vercel Hospedagens", type: "vercel", active: true, logo: "vercel.png" },
+        { id: "app-1", name: "Spotify", url: "https://open.spotify.com/", desc: "Trilha sonora para foco", type: "spotify", active: true, logo: "spotify.png" },
+        { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" }
     ]
 };
 
@@ -141,6 +141,25 @@ function loadState() {
         addAppIfMissing("WhatsApp", "https://web.whatsapp.com", "Conectar ao WhatsApp Web", "whatsapp", "whatsapp.png");
         addAppIfMissing("SupaBase", "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", "Banco de dados SupaBase", "supabase", "supabase.png");
         addAppIfMissing("Vercel Hospedagens", "https://vercel.com/infinitytechnologyltda-creates-projects", "Vercel Hospedagens", "vercel", "vercel.png");
+
+        // Reorder apps for existing users: Espaço Terapêutico first, Spotify & GitHub last
+        const espacoApp = state.apps.find(a => a.name.toLowerCase().includes("terapêutico") || a.type === "espaco");
+        const spotifyApp = state.apps.find(a => a.type === "spotify" || a.name.toLowerCase().includes("spotify"));
+        const githubApp = state.apps.find(a => a.type === "github" || a.name.toLowerCase().includes("github"));
+        
+        let others = state.apps.filter(a => 
+            a !== espacoApp && 
+            a !== spotifyApp && 
+            a !== githubApp
+        );
+        
+        const newApps = [];
+        if (espacoApp) newApps.push(espacoApp);
+        newApps.push(...others);
+        if (spotifyApp) newApps.push(spotifyApp);
+        if (githubApp) newApps.push(githubApp);
+        
+        state.apps = newApps;
 
         saveState();
     }
@@ -2991,11 +3010,12 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
     }
 
     const isSpecialApp = (
-        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" ||
+        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" ||
         app.name.toLowerCase().includes("spotify") ||
         app.name.toLowerCase().includes("github") ||
         app.name.toLowerCase().includes("supabase") ||
-        app.name.toLowerCase().includes("vercel")
+        app.name.toLowerCase().includes("vercel") ||
+        app.name.toLowerCase().includes("whatsapp")
     );
 
     if (isSpecialApp) {
@@ -3008,6 +3028,7 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
             else if (nameLower.includes("github")) matchedType = "github";
             else if (nameLower.includes("supabase")) matchedType = "supabase";
             else if (nameLower.includes("vercel")) matchedType = "vercel";
+            else if (nameLower.includes("whatsapp")) matchedType = "whatsapp";
         }
 
         // Initialize activeAppStreams if not present
