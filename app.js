@@ -1199,6 +1199,9 @@ document.getElementById("diary-save-btn").onclick = () => {
     
     if(isNew) {
         addXP(25);
+        addSystemLog("📖 Novo Diário Pessoal registrado!");
+    } else {
+        addSystemLog("📖 Diário Pessoal editado!");
     }
     
     showMagicAlert("✨ Diário Salvo!", "Seu diário e humor diários foram gravados com sucesso!");
@@ -1701,8 +1704,10 @@ function toggleQuestStatus(categoryElementId, questId) {
         quest.completed = !quest.completed;
         if(quest.completed) {
             addXP(quest.xp); // Reward XP instantly
+            addSystemLog(`⚔️ Quest concluída: "${quest.text}" (+${quest.xp} XP)`);
         } else {
             addXP(-quest.xp); // Deduct XP if unchecked
+            addSystemLog(`🔄 Quest reaberta: "${quest.text}"`);
         }
         saveState();
         renderQuests();
@@ -1741,6 +1746,7 @@ document.getElementById("quest-form").addEventListener("submit", (e) => {
     });
 
     saveState();
+    addSystemLog(`⚔️ Nova quest criada: "${text}"`);
     closeModal("modal-quests-overlay");
     document.getElementById("quest-form").reset();
     renderQuests();
@@ -1858,6 +1864,7 @@ document.getElementById("task-form").addEventListener("submit", (e) => {
             task.category = category;
             task.priority = priority;
             task.date = date;
+            addSystemLog(`✏️ Tarefa editada: "${title}"`);
         }
     } else {
         state.tasks.push({
@@ -1869,6 +1876,7 @@ document.getElementById("task-form").addEventListener("submit", (e) => {
             completed: false
         });
         addXP(10);
+        addSystemLog(`🆕 Nova tarefa adicionada: "${title}"`);
     }
     saveState();
     closeModal("modal-tasks-overlay");
@@ -1885,8 +1893,13 @@ function toggleTaskStatus(id) {
     const task = state.tasks.find(t => t.id === id);
     if(task) {
         task.completed = !task.completed;
-        if(task.completed) addXP(15);
-        else addXP(-15);
+        if(task.completed) {
+            addXP(15);
+            addSystemLog(`✅ Tarefa concluída: "${task.title}" (+15 XP)`);
+        } else {
+            addXP(-15);
+            addSystemLog(`🔄 Tarefa reaberta: "${task.title}"`);
+        }
         saveState();
         
         if(currentModule === "dashboard") renderDashboard();
@@ -2465,6 +2478,7 @@ document.getElementById("calendar-event-form").addEventListener("submit", (e) =>
         });
         addXP(5);
         saveState();
+        addSystemLog(`📅 Evento adicionado: "${title.trim()}" para o dia ${formatDateString(dateStr)}`);
         closeModal("modal-calendar-overlay");
         
         if (currentModule === "calendar") {
@@ -2547,6 +2561,7 @@ document.getElementById("habit-form").addEventListener("submit", (e) => {
 
     addXP(10);
     saveState();
+    addSystemLog(`⚡ Novo hábito criado: "${name}"`);
     closeModal("modal-habits-overlay");
     document.getElementById("habit-form").reset();
     renderHabits();
@@ -2560,8 +2575,10 @@ function toggleHabitDay(habitId, dateStr) {
         
         if(habit.tracking[dateStr]) {
             addXP(5); // Fast action points
+            addSystemLog(`⚡ Hábito cumprido: "${habit.name}" em ${formatDateString(dateStr)}`);
         } else {
             addXP(-5);
+            addSystemLog(`🔄 Hábito descumprido: "${habit.name}" em ${formatDateString(dateStr)}`);
         }
         
         saveState();
@@ -4932,28 +4949,112 @@ function playNotificationSound() {
 }
 window.playNotificationSound = playNotificationSound;
 
+let activeBlinkOverlay = null;
+let activeBlinkTimeout = null;
+let activeBlinkCleanups = [];
+
 function triggerCyberpunkBlink() {
+    // Clean up any existing active blink overlay first
+    cleanupCyberpunkBlink();
+
     const overlay = document.createElement("div");
+    overlay.id = "cyberpunk-alert-overlay";
     overlay.style.position = "fixed";
     overlay.style.inset = "0";
-    overlay.style.backgroundColor = "rgba(0, 242, 254, 0.15)";
+    // Pulsing cyber border + tint
+    overlay.style.border = "8px solid rgba(0, 242, 254, 0.8)";
+    overlay.style.boxShadow = "inset 0 0 40px rgba(0, 242, 254, 0.4)";
+    overlay.style.backgroundColor = "rgba(0, 242, 254, 0.08)";
     overlay.style.zIndex = "99999";
     overlay.style.pointerEvents = "none";
-    document.body.appendChild(overlay);
+    overlay.style.transition = "opacity 0.2s ease-out, border-width 0.2s ease-out";
     
-    let visible = true;
-    let blinks = 0;
-    const interval = setInterval(() => {
-        visible = !visible;
-        overlay.style.display = visible ? "block" : "none";
-        blinks++;
-        if (blinks > 6) {
-            clearInterval(interval);
-            document.body.removeChild(overlay);
+    // Add pulsing keyframe-like effect in JS
+    let pulseState = true;
+    const pulseInterval = setInterval(() => {
+        pulseState = !pulseState;
+        overlay.style.opacity = pulseState ? "1" : "0.5";
+        overlay.style.borderWidth = pulseState ? "8px" : "4px";
+    }, 400);
+
+    document.body.appendChild(overlay);
+    activeBlinkOverlay = overlay;
+
+    // Cleanup function
+    const cleanup = () => {
+        clearInterval(pulseInterval);
+        if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
         }
-    }, 70);
+        if (activeBlinkOverlay === overlay) {
+            activeBlinkOverlay = null;
+        }
+        // Remove event listeners
+        activeBlinkCleanups.forEach(fn => fn());
+        activeBlinkCleanups = [];
+        if (activeBlinkTimeout) {
+            clearTimeout(activeBlinkTimeout);
+            activeBlinkTimeout = null;
+        }
+    };
+
+    // Auto-remove after 10 seconds
+    activeBlinkTimeout = setTimeout(cleanup, 10000);
+
+    // Stop when moving mouse or pressing keyboard keys
+    const onActivity = () => {
+        cleanup();
+    };
+
+    window.addEventListener("mousemove", onActivity, { once: true });
+    window.addEventListener("keydown", onActivity, { once: true });
+
+    // Store removal functions to clean up correctly
+    activeBlinkCleanups.push(() => {
+        window.removeEventListener("mousemove", onActivity);
+        window.removeEventListener("keydown", onActivity);
+    });
 }
 window.triggerCyberpunkBlink = triggerCyberpunkBlink;
+
+function cleanupCyberpunkBlink() {
+    if (activeBlinkOverlay) {
+        if (activeBlinkOverlay.parentNode) {
+            activeBlinkOverlay.parentNode.removeChild(activeBlinkOverlay);
+        }
+        activeBlinkOverlay = null;
+    }
+    if (activeBlinkTimeout) {
+        clearTimeout(activeBlinkTimeout);
+        activeBlinkTimeout = null;
+    }
+    activeBlinkCleanups.forEach(fn => fn());
+    activeBlinkCleanups = [];
+}
+
+function addSystemLog(text) {
+    if (!state.notifications) state.notifications = [];
+    
+    const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = `${formatDateString(getTodayString())} às ${timeStr}`;
+    
+    state.notifications.unshift({
+        id: "log-" + Date.now(),
+        text: text,
+        timestamp: timestamp
+    });
+    
+    if (state.notifications.length > 100) { // Keep up to 100 log entries
+        state.notifications.pop();
+    }
+    
+    saveState();
+    
+    if (typeof currentModule !== 'undefined' && currentModule === "notifications") {
+        renderAlarmsAndNotifications();
+    }
+}
+window.addSystemLog = addSystemLog;
 
 // ==================== ALARMS & NOTIFICATIONS ====================
 function triggerNotification(text) {
