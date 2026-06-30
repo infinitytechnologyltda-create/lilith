@@ -500,6 +500,8 @@ function openModal(id) {
 function closeModal(id) {
     document.getElementById(id).classList.remove("active");
 }
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 // Global hook for modal closing click on outer overlay
 window.addEventListener("click", (e) => {
@@ -507,7 +509,6 @@ window.addEventListener("click", (e) => {
         e.target.classList.remove("active");
     }
 });
-
 
 // ==================== MODULAR RENDERERS ====================
 
@@ -3432,6 +3433,16 @@ function updateSupabaseUI() {
             cloudBtn.classList.add("connected");
             cloudBtn.title = "Supabase: Conectado à Nuvem";
             cloudIcon.setAttribute("data-lucide", "cloud");
+            
+            const forceSyncBtn = document.getElementById("force-sync-btn");
+            if (forceSyncBtn) {
+                forceSyncBtn.onclick = () => {
+                    if (supabaseClient && supabaseUser) {
+                        showMagicAlert("Sincronizando...", "Buscando dados da nuvem...");
+                        loadStateFromSupabase(false);
+                    }
+                };
+            }
             
             if (userEmailEl) {
                 const slot = localStorage.getItem("lilith_active_slot") || "lilith_state";

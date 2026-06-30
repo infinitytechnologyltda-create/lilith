@@ -116,6 +116,11 @@
             </a>
         </nav>
         <div class="sidebar-footer" style="display: flex; align-items: center; gap: 12px; padding: 0 24px;">
+            <!-- Force Sync -->
+            <button class="supabase-status-btn" id="force-sync-btn" title="Atualizar Dados" style="margin-left: 0;">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+            </button>
+
             <!-- Cloud Icon (Left) -->
             <button class="supabase-status-btn" id="supabase-status-btn" title="Configurar Supabase" style="margin-left: 0;">
                 <i data-lucide="cloud-off" id="supabase-cloud-icon"></i>
@@ -731,11 +736,11 @@
             <form id="note-form">
                 <input type="hidden" id="note-id-input">
                 <div class="form-group">
-                    <label class="form-label" for="note-title-input">Título</label>
+                    <label class="form-label" for="note-title-input" style="text-align: center;">Título</label>
                     <input type="text" class="form-input" id="note-title-input" required placeholder="Título da anotação">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="note-category-input">Categoria</label>
+                    <label class="form-label" for="note-category-input" style="text-align: center;">Categoria</label>
                     <select class="form-select" id="note-category-input">
                         <option value="Pessoal">Pessoal</option>
                         <option value="Trabalho">Trabalho</option>
@@ -744,7 +749,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="note-content-input">Conteúdo</label>
+                    <label class="form-label" for="note-content-input" style="text-align: center;">Conteúdo</label>
                     <textarea class="form-textarea" id="note-content-input" rows="6" required placeholder="Escreva sua nota aqui..."></textarea>
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Anotação</button>
@@ -790,25 +795,25 @@
     <div class="modal-overlay" id="modal-projects-overlay">
         <div class="modal-container">
             <div class="modal-header">
-                <h3 class="modal-title" id="project-modal-title">Novo Projeto</h3>
+                <h3 class="modal-title" id="project-modal-title" style="text-align: center; width: 100%;">Novo Projeto</h3>
                 <button class="modal-close" onclick="closeModal('modal-projects-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="project-form">
                 <input type="hidden" id="project-id-input">
                 <div class="form-group">
-                    <label class="form-label" for="project-title-input">Título do Projeto</label>
+                    <label class="form-label" for="project-title-input" style="text-align: center; display: block;">Título do Projeto</label>
                     <input type="text" class="form-input" id="project-title-input" required placeholder="Nome do projeto">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="project-category-input">Área / Categoria</label>
+                    <label class="form-label" for="project-category-input" style="text-align: center; display: block;">Área / Categoria</label>
                     <input type="text" class="form-input" id="project-category-input" placeholder="Ex: Profissional, Pessoal, Faculdade">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="project-desc-input">Descrição rápida</label>
+                    <label class="form-label" for="project-desc-input" style="text-align: center; display: block;">Descrição rápida</label>
                     <textarea class="form-textarea" id="project-desc-input" rows="3" placeholder="Qual o foco desse projeto?"></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="project-steps-input">Etapas/Metas (uma por linha)</label>
+                    <label class="form-label" for="project-steps-input" style="text-align: center; display: block;">Etapas/Metas (uma por linha)</label>
                     <textarea class="form-textarea" id="project-steps-input" rows="4" placeholder="Ex: Planejar escopo&#10;Criar protótipo&#10;Desenvolver MVP&#10;Testar e publicar"></textarea>
                 </div>
                 <button type="submit" class="action-btn" id="project-submit-btn" style="width: 100%; justify-content: center;">Criar Projeto</button>
