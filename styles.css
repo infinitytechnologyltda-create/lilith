@@ -1463,6 +1463,16 @@ h1, h2, h3, h4, h5, h6 {
     flex: 1;
     background: rgba(0,0,0,0.15);
     position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-iframe {
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 !important;
+    border: none;
+    background: white;
 }
 
 @media (max-width: 1024px) {
