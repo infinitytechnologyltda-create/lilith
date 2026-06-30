@@ -2587,7 +2587,7 @@ if (practiceForm) {
     practiceForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const name = document.getElementById("practice-title-input").value;
-        const note = document.getElementById("practice-note-input").value;
+        const note = "";
         const checkedCheckboxes = document.querySelectorAll("input[name='practice-days']:checked");
         const days = Array.from(checkedCheckboxes).map(cb => cb.value);
 
@@ -2686,17 +2686,26 @@ function renderLibrary() {
     libFiltered.forEach(item => {
         const card = document.createElement("div");
         card.className = "library-card";
+        
+        // Build download button or url resource link
+        let actionLinkHTML = "";
+        if (item.fileData) {
+            actionLinkHTML = `<a href="#" onclick="downloadLibraryFile('${item.id}'); return false;" class="library-link"><i data-lucide="download" style="width:12px; height:12px; margin-right: 4px;"></i> Baixar Arquivo (${item.fileName || 'Anexo'})</a>`;
+        } else if (item.url) {
+            actionLinkHTML = `<a href="${item.url}" target="_blank" class="library-link"><i data-lucide="external-link" style="width:12px; height:12px;"></i> Acessar Recurso</a>`;
+        }
+
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div class="library-card-icon">
-                    <i data-lucide="${item.category === 'Documentos' ? 'file-text' : item.category === 'Links Úteis' ? 'link' : 'book'}"></i>
+                    <i data-lucide="${item.fileData ? 'file-text' : (item.category === 'Links Úteis' ? 'link' : 'book')}"></i>
                 </div>
                 <button class="note-action delete" onclick="deleteLibraryItem('${item.id}')" title="Excluir"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
             </div>
             <h3 class="section-title" style="margin-bottom:0px; font-size:16px;">${item.title}</h3>
             <span style="font-size:10px; text-transform:uppercase; color: var(--text-dim); font-weight:700;">${item.category}</span>
             <p style="font-size:12px; color: var(--text-muted); flex:1;">${item.notes || "Sem observações."}</p>
-            ${item.url ? `<a href="${item.url}" target="_blank" class="library-link"><i data-lucide="external-link" style="width:12px; height:12px;"></i> Acessar Recurso</a>` : ''}
+            ${actionLinkHTML}
         `;
         container.appendChild(card);
     });
@@ -2704,12 +2713,57 @@ function renderLibrary() {
 
 document.getElementById("library-filter-category").addEventListener("change", renderLibrary);
 
+function handleLibraryFileSelect(input) {
+    const file = input.files[0];
+    const infoDiv = document.getElementById("library-file-info");
+    if (!file) {
+        infoDiv.textContent = "Nenhum arquivo anexo";
+        document.getElementById("library-file-data-hidden").value = "";
+        document.getElementById("library-file-name-hidden").value = "";
+        document.getElementById("library-file-size-hidden").value = "";
+        document.getElementById("library-file-type-hidden").value = "";
+        return;
+    }
+
+    const sizeKB = (file.size / 1024).toFixed(1);
+    infoDiv.textContent = `📎 ${file.name} (${sizeKB} KB)`;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById("library-file-data-hidden").value = e.target.result;
+        document.getElementById("library-file-name-hidden").value = file.name;
+        document.getElementById("library-file-size-hidden").value = file.size;
+        document.getElementById("library-file-type-hidden").value = file.type;
+    };
+    reader.readAsDataURL(file);
+}
+window.handleLibraryFileSelect = handleLibraryFileSelect;
+
+function downloadLibraryFile(id) {
+    const item = state.libraryItems.find(x => x.id === id);
+    if (item && item.fileData) {
+        const link = document.createElement("a");
+        link.href = item.fileData;
+        link.download = item.fileName || "arquivo";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+window.downloadLibraryFile = downloadLibraryFile;
+
 document.getElementById("library-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const title = document.getElementById("library-title-input").value;
     const category = document.getElementById("library-category-input").value;
     const url = document.getElementById("library-url-input").value;
     const notes = document.getElementById("library-notes-input").value;
+    
+    // File inputs
+    const fileData = document.getElementById("library-file-data-hidden").value;
+    const fileName = document.getElementById("library-file-name-hidden").value;
+    const fileSize = document.getElementById("library-file-size-hidden").value;
+    const fileType = document.getElementById("library-file-type-hidden").value;
 
     if(!state.libraryItems) state.libraryItems = [];
 
@@ -2718,13 +2772,25 @@ document.getElementById("library-form").addEventListener("submit", (e) => {
         title,
         category,
         url,
-        notes
+        notes,
+        fileData,
+        fileName,
+        fileSize,
+        fileType
     });
 
     addXP(10);
     saveState();
     closeModal("modal-library-overlay");
+    
+    // Reset form and reset file attachments inputs
     document.getElementById("library-form").reset();
+    document.getElementById("library-file-data-hidden").value = "";
+    document.getElementById("library-file-name-hidden").value = "";
+    document.getElementById("library-file-size-hidden").value = "";
+    document.getElementById("library-file-type-hidden").value = "";
+    document.getElementById("library-file-info").textContent = "Nenhum arquivo anexo";
+    
     renderLibrary();
 });
 
