@@ -131,7 +131,7 @@
             </button>
 
             <!-- Theme Settings Trigger -->
-            <button class="supabase-status-btn" id="theme-select-btn" title="Selecionar Tema" style="margin-left: 0;">
+            <button class="supabase-status-btn" id="theme-select-btn" onclick="document.getElementById('modal-themes-overlay').classList.add('active')" title="Selecionar Tema" style="margin-left: 0;">
                 <i data-lucide="palette" style="width: 18px; height: 18px;"></i>
             </button>
 
@@ -1324,16 +1324,16 @@
         <div class="modal-container" style="max-width: 400px; text-align: center;">
             <div class="modal-header">
                 <h3 class="modal-title" style="text-align: center; width: 100%;">Selecionar Tema Lilith OS</h3>
-                <button class="modal-close" id="theme-modal-close-btn"><i data-lucide="x"></i></button>
+                <button class="modal-close" id="theme-modal-close-btn" onclick="document.getElementById('modal-themes-overlay').classList.remove('active')"><i data-lucide="x"></i></button>
             </div>
             <div style="display: flex; flex-direction: column; gap: 16px; padding: 15px 0;">
-                <button class="action-btn" id="theme-btn-default" style="justify-content: center; width: 100%;">
+                <button class="action-btn" id="theme-btn-default" onclick="if(window.selectSystemTheme){window.selectSystemTheme('default');}else{alert('Carregando sistema...');}" style="justify-content: center; width: 100%;">
                     🔮 Lilith Cyberpunk (Customizado)
                 </button>
-                <button class="action-btn" id="theme-btn-gundam" style="justify-content: center; width: 100%; background: linear-gradient(to right, #ff0055, #00f2fe);">
+                <button class="action-btn" id="theme-btn-gundam" onclick="if(window.selectSystemTheme){window.selectSystemTheme('gundam');}else{alert('Carregando sistema...');}" style="justify-content: center; width: 100%; background: linear-gradient(to right, #ff0055, #00f2fe);">
                     🤖 Neon Overdrive (Mecha Gundam)
                 </button>
-                <button class="action-btn" id="theme-btn-decepticon" style="justify-content: center; width: 100%; background: linear-gradient(to right, #b026ff, #39ff14);">
+                <button class="action-btn" id="theme-btn-decepticon" onclick="if(window.selectSystemTheme){window.selectSystemTheme('decepticon');}else{alert('Carregando sistema...');}" style="justify-content: center; width: 100%; background: linear-gradient(to right, #b026ff, #39ff14);">
                     👾 Obsidian Engine (Decepticon Mech)
                 </button>
             </div>
@@ -1343,6 +1343,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=2.4"></script>
 </body>
 </html>
