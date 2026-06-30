@@ -4145,23 +4145,20 @@ function downloadBackup() {
     }
 
     // 7. HABITS
-    md += `## ⚡ CONTROLE DE HÁBITOS\n\n`;
+    md += `## ⚡ PRÁTICAS E DISCIPLINA\n\n`;
     if (state.habits && state.habits.length > 0) {
-        state.habits.forEach(habit => {
-            md += `### Hábito: ${habit.name}\n`;
-            md += `**Histórico de Conclusões:**\n`;
-            const completedDates = Object.keys(habit.tracking || {}).filter(dateKey => habit.tracking[dateKey]);
-            if (completedDates.length > 0) {
-                completedDates.sort().forEach(d => {
-                    md += `* Concluído em: ${formatDateString(d)}\n`;
-                });
-            } else {
-                md += `Sem histórico de conclusões registradas.\n`;
-            }
-            md += `\n--------------------------------------------------------\n\n`;
+        state.habits.forEach(item => {
+            const isPractice = item.type === "practice";
+            const createdTime = item.createdAt || Date.now();
+            const diffMs = Math.abs(Date.now() - createdTime);
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+            md += `### ${isPractice ? 'Prática' : 'Regra de Disciplina'}: ${item.name}\n`;
+            if (item.note) md += `**Nota:** ${item.note}\n`;
+            if (item.days) md += `**Dias:** ${item.days.join(', ')}\n`;
+            md += `**Streak (Criado há):** ${diffDays} dias\n\n`;
         });
     } else {
-        md += `Nenhum hábito cadastrado.\n\n`;
+        md += `Nenhuma prática ou regra de disciplina cadastrada.\n\n`;
     }
 
     // 8. FINANCES
@@ -4497,20 +4494,21 @@ function initSupabaseEventListeners() {
         }
 
         // 7. HABITS
-        report += `[ ⚡ CONTROLE DE HÁBITOS ]\n\n`;
+        report += `[ ⚡ PRÁTICAS E DISCIPLINA ]\n\n`;
         if (state.habits && state.habits.length > 0) {
-            state.habits.forEach(habit => {
-                report += `Hábito: ${habit.name}\n`;
-                const completedDates = Object.keys(habit.tracking || {}).filter(dateKey => habit.tracking[dateKey]);
-                if (completedDates.length > 0) {
-                    report += `Dias concluídos: ${completedDates.length}\n`;
-                } else {
-                    report += `Sem histórico de conclusões.\n`;
-                }
+            state.habits.forEach(item => {
+                const isPractice = item.type === "practice";
+                const createdTime = item.createdAt || Date.now();
+                const diffMs = Math.abs(Date.now() - createdTime);
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+                report += `${isPractice ? 'Prática' : 'Regra'}: ${item.name}\n`;
+                if (item.note) report += `Nota: ${item.note}\n`;
+                if (item.days) report += `Dias: ${item.days.join(', ')}\n`;
+                report += `Streak: ${diffDays} dias\n`;
                 report += `--------------------------------------------------------\n\n`;
             });
         } else {
-            report += `Nenhum hábito cadastrado.\n\n`;
+            report += `Nenhuma prática ou regra cadastrada.\n\n`;
         }
 
         // 8. FINANCES
