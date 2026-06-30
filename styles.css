@@ -2580,3 +2580,49 @@ h1, h2, h3, h4, h5, h6 {
     --jewel-glow: rgba(192, 57, 43, 0.8);
 }
 
+/* ==================== PRÁTICAS E DISCIPLINA ==================== */
+@media (max-width: 1024px) {
+    .practices-discipline-container {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.premium-tooltip-trigger {
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dotted var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.premium-tooltip-trigger::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: rgba(10, 8, 12, 0.96);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 12px;
+    border-radius: var(--border-radius-sm);
+    font-size: 12px;
+    white-space: normal;
+    width: 240px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9), 0 0 10px var(--primary-glow);
+    z-index: 9999;
+    text-align: left;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.premium-tooltip-trigger:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+

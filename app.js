@@ -35,7 +35,7 @@ const SEED_DATA = {
         daily: [
             { id: "qd-1", text: "Fazer análise diária geral", xp: 30, completed: false },
             { id: "qd-2", text: "Registrar humor no diário", xp: 15, completed: false },
-            { id: "qd-3", text: "Marcar pelo menos 1 hábito, escrever no diário pessoal, supervisionar Controle de Hábitos", xp: 20, completed: false }
+            { id: "qd-3", text: "Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina", xp: 20, completed: false }
         ],
         weekly: [
             { id: "qw-1", text: "Cumprir todas as metas de hábitos", xp: 80, completed: false },
@@ -93,8 +93,8 @@ function loadState() {
             saveState();
         }
         const q3 = state.quests.daily.find(q => q.id === "qd-3");
-        if (q3 && q3.text === "Marcar pelo menos 1 hábito") {
-            q3.text = "Marcar pelo menos 1 hábito, escrever no diário pessoal, supervisionar Controle de Hábitos";
+        if (q3 && (q3.text === "Marcar pelo menos 1 hábito" || q3.text.includes("Controle de Hábitos"))) {
+            q3.text = "Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina";
             saveState();
         }
     }
@@ -251,7 +251,7 @@ function initRouter() {
         projects: "Projetos",
         goals: "Metas & Objetivos",
         calendar: "Calendário",
-        habits: "Controle de Hábitos",
+        habits: "Práticas e Disciplina",
         library: "Biblioteca & Arquivos",
         finances: "Finanças Pessoais",
         appcenter: "Central de Aplicações"
@@ -387,7 +387,7 @@ function executeModuleSwitch(moduleName) {
         projects: "Projetos",
         goals: "Metas & Objetivos",
         calendar: "Calendário",
-        habits: "Controle de Hábitos",
+        habits: "Práticas e Disciplina",
         library: "Biblioteca & Arquivos",
         finances: "Finanças Pessoais",
         appcenter: "Central de Aplicações"
@@ -443,16 +443,16 @@ function checkDailyHabitsQuest() {
     // 2. Fazer algo em Finanças Pessoais (transaction exists with today's date)
     const didFinance = state.finances.some(f => f.date === todayStr);
 
-    // 3. Marcar pelo menos 1 hábito
-    const markedHabit = state.habits.some(h => h.tracking && h.tracking[todayStr]);
+    // 3. Ter pelo menos 1 prática ou disciplina
+    const markedHabit = state.habits && state.habits.length > 0;
 
-    // 4. Supervisionar Controle de Hábitos (visited the habits module)
+    // 4. Supervisionar Práticas e Disciplina (visited the habits module)
     const visitedHabits = visitedModules.has("habits");
 
     if (wroteDiary && didFinance && markedHabit && visitedHabits) {
         quest.completed = true;
         addXP(quest.xp);
-        showMagicAlert("🏆 Quest Concluída!", "Quest 'Marcar pelo menos 1 hábito, escrever no diário pessoal, supervisionar Controle de Hábitos' concluída! +" + quest.xp + " XP!");
+        showMagicAlert("🏆 Quest Concluída!", "Quest 'Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina' concluída! +" + quest.xp + " XP!");
         renderQuests();
         saveState();
     }
@@ -506,8 +506,8 @@ function setupGlobalActionBtn(moduleName) {
             btn.onclick = () => openModal("modal-goals-overlay");
             break;
         case "habits":
-            label.textContent = "Novo Hábito";
-            btn.onclick = () => openModal("modal-habits-overlay");
+            label.textContent = "Nova Prática";
+            btn.onclick = () => openModal("modal-practices-overlay");
             break;
         case "library":
             label.textContent = "Salvar Recurso";
@@ -695,14 +695,10 @@ function updateUIElements() {
     const statPending = document.getElementById("stat-pending-tasks");
     if(statPending) statPending.textContent = pendingTasks;
 
-    // Completed habits counter
-    let completedHabits = 0;
-    const todayStr = getTodayString();
-    state.habits.forEach(h => {
-        if(h.tracking && h.tracking[todayStr]) completedHabits++;
-    });
+    // Total active practices/disciplines counter
+    const totalHabits = state.habits ? state.habits.length : 0;
     const statHabits = document.getElementById("stat-completed-habits");
-    if(statHabits) statHabits.textContent = completedHabits;
+    if(statHabits) statHabits.textContent = totalHabits;
 
     // Financial balance
     let income = 0;
@@ -2489,130 +2485,180 @@ document.getElementById("calendar-event-form").addEventListener("submit", (e) =>
     }
 });
 
-// 11. HÁBITOS (CONTROLE DE FREQUÊNCIA)
+// 11. PRÁTICAS E DISCIPLINA (MANUAL DE HÁBITOS E REGRAS)
 function renderHabits() {
-    const tbody = document.getElementById("habits-table-body");
-    const headerRow = document.getElementById("habits-header-row");
-    tbody.innerHTML = "";
-    
-    // Clear and rebuild headers with past 7 days
-    headerRow.innerHTML = `<th style="text-align: left; padding-left: 16px;">Hábito</th>`;
-    
-    const dates = [];
-    const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    
-    for(let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateStr = getFormatDateString(d);
-        dates.push(dateStr);
-        
-        const th = document.createElement("th");
-        th.style.width = "60px";
-        th.innerHTML = `<span style="font-size:10px; color:var(--text-dim);">${weekdays[d.getDay()]}</span><br><span style="font-size:13px;">${d.getDate()}</span>`;
-        headerRow.appendChild(th);
-    }
-    
-    headerRow.innerHTML += `<th style="width: 100px;">Streak</th><th style="width: 80px;">Ações</th>`;
+    const practicesBody = document.getElementById("practices-table-body");
+    const disciplineBody = document.getElementById("discipline-table-body");
+    if (!practicesBody || !disciplineBody) return;
 
-    if(state.habits.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color: var(--text-dim); padding: 30px;">Nenhum hábito cadastrado. Crie um clicando no botão no topo.</td></tr>`;
-        return;
-    }
+    practicesBody.innerHTML = "";
+    disciplineBody.innerHTML = "";
 
-    state.habits.forEach(habit => {
-        const tr = document.createElement("tr");
-        
-        let colsHTML = `<td style="text-align: left; padding-left: 16px; font-weight:600;">${habit.name}</td>`;
-        
-        dates.forEach(dateStr => {
-            const isChecked = habit.tracking && habit.tracking[dateStr];
-            colsHTML += `
-                <td>
-                    <div class="habit-checkbox ${isChecked ? 'checked' : ''}" onclick="toggleHabitDay('${habit.id}', '${dateStr}')">
-                        ${isChecked ? '<i data-lucide="check" style="width:12px; height:12px;"></i>' : ''}
-                    </div>
+    // 1. Data Migration & Normalization
+    if (!state.habits) state.habits = [];
+    state.habits.forEach(h => {
+        if (!h.type) {
+            h.type = h.id && h.id.startsWith("ds-") ? "discipline" : "practice";
+        }
+        if (!h.createdAt) {
+            h.createdAt = Date.now();
+        }
+        if (!h.days) {
+            h.days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+        }
+        if (!h.note) {
+            h.note = "";
+        }
+    });
+
+    const practices = state.habits.filter(h => h.type === "practice");
+    const disciplines = state.habits.filter(h => h.type === "discipline");
+
+    const allWeekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+    // Helper to render lists
+    const populateList = (tbody, items, isPractice) => {
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-dim); padding: 24px;">Nenhuma ${isPractice ? 'prática cadastrada' : 'regra de disciplina cadastrada'}.</td></tr>`;
+            return;
+        }
+
+        items.forEach(item => {
+            const tr = document.createElement("tr");
+
+            // 1. Title/Name with Tooltip/Click Notes
+            let nameHTML = "";
+            const sanitizedNote = (item.note || "").trim().replace(/"/g, '&quot;').replace(/'/g, "\\'");
+            
+            if (sanitizedNote) {
+                nameHTML = `
+                    <span class="premium-tooltip-trigger" data-tooltip="${sanitizedNote}" onclick="showMagicAlert('${isPractice ? 'Prática' : 'Regra de Disciplina'}', '${sanitizedNote}')" style="cursor: pointer; font-weight: 600;">
+                        ${item.name}
+                        <i data-lucide="help-circle" style="width: 13px; height: 13px; opacity: 0.6; display: inline-block; vertical-align: middle; margin-left: 4px;"></i>
+                    </span>
+                `;
+            } else {
+                nameHTML = `<span style="font-weight: 600;">${item.name}</span>`;
+            }
+
+            // 2. Scheduled normal days circles
+            let daysHTML = `<div style="display:flex; gap:3px; justify-content:center;">`;
+            allWeekDays.forEach(day => {
+                const active = !item.days || item.days.includes(day);
+                const activeColor = isPractice ? "var(--secondary)" : "var(--accent)";
+                const activeStyle = active 
+                    ? `background: ${activeColor}; color: #0d0a0b; font-weight: 700; border: 1px solid ${activeColor};` 
+                    : `background: rgba(255, 255, 255, 0.02); color: var(--text-dim); border: 1px solid rgba(255, 255, 255, 0.05);`;
+                daysHTML += `<span style="width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; ${activeStyle}" title="${day}">${day[0]}</span>`;
+            });
+            daysHTML += `</div>`;
+
+            // 3. Streak (Days since created)
+            const createdTime = item.createdAt || Date.now();
+            const diffMs = Math.abs(Date.now() - createdTime);
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1; // Count today as day 1
+            const streakHTML = `<td><span class="streak-badge" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 12px; font-size: 11px;">🔥 ${diffDays}d</span></td>`;
+
+            tr.innerHTML = `
+                <td style="text-align: left; padding: 12px 8px;">${nameHTML}</td>
+                <td style="padding: 12px 8px;">${daysHTML}</td>
+                ${streakHTML}
+                <td style="padding: 12px 8px; text-align: center;">
+                    <button class="note-action delete" onclick="deleteHabit('${item.id}')" title="Excluir"><i data-lucide="trash-2" style="width:14px; height:14px;"></i></button>
                 </td>
             `;
+
+            tbody.appendChild(tr);
+        });
+    };
+
+    populateList(practicesBody, practices, true);
+    populateList(disciplineBody, disciplines, false);
+
+    // Re-render Lucide icons
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+// Bind Practices Submit Form
+const practiceForm = document.getElementById("practice-form");
+if (practiceForm) {
+    practiceForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("practice-title-input").value;
+        const note = document.getElementById("practice-note-input").value;
+        const checkedCheckboxes = document.querySelectorAll("input[name='practice-days']:checked");
+        const days = Array.from(checkedCheckboxes).map(cb => cb.value);
+
+        if (!state.habits) state.habits = [];
+        state.habits.push({
+            id: "pr-" + Date.now(),
+            type: "practice",
+            name: name,
+            note: note,
+            days: days,
+            createdAt: Date.now(),
+            tracking: {}
         });
 
-        const streak = calculateStreak(habit);
-        colsHTML += `
-            <td><span class="streak-badge">🔥 ${streak} dias</span></td>
-            <td>
-                <button class="note-action delete" onclick="deleteHabit('${habit.id}')" title="Excluir"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
-            </td>
-        `;
-
-        tr.innerHTML = colsHTML;
-        tbody.appendChild(tr);
-    });
-}
-
-document.getElementById("habit-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = document.getElementById("habit-title-input").value;
-    
-    state.habits.push({
-        id: "hb-" + Date.now(),
-        name,
-        tracking: {}
-    });
-
-    addXP(10);
-    saveState();
-    addSystemLog(`⚡ Novo hábito criado: "${name}"`);
-    closeModal("modal-habits-overlay");
-    document.getElementById("habit-form").reset();
-    renderHabits();
-});
-
-function toggleHabitDay(habitId, dateStr) {
-    const habit = state.habits.find(h => h.id === habitId);
-    if(habit) {
-        if(!habit.tracking) habit.tracking = {};
-        habit.tracking[dateStr] = !habit.tracking[dateStr];
-        
-        if(habit.tracking[dateStr]) {
-            addXP(5); // Fast action points
-            addSystemLog(`⚡ Hábito cumprido: "${habit.name}" em ${formatDateString(dateStr)}`);
-        } else {
-            addXP(-5);
-            addSystemLog(`🔄 Hábito descumprido: "${habit.name}" em ${formatDateString(dateStr)}`);
-        }
-        
+        addXP(10);
         saveState();
-        checkDailyHabitsQuest();
+        addSystemLog(`⚡ Nova prática cadastrada: "${name}"`);
+        closeModal("modal-practices-overlay");
+        practiceForm.reset();
         renderHabits();
-    }
+        
+        // Re-check Daily Habits Quest
+        checkDailyHabitsQuest();
+    });
 }
 
-function calculateStreak(habit) {
-    if(!habit.tracking) return 0;
-    
-    let streak = 0;
-    let checkDate = new Date();
-    
-    while(true) {
-        const dateStr = getFormatDateString(checkDate);
-        if(habit.tracking[dateStr]) {
-            streak++;
-            // Check day before
-            checkDate.setDate(checkDate.getDate() - 1);
-        } else {
-            break;
-        }
-    }
-    return streak;
+// Bind Discipline Rules Submit Form
+const disciplineForm = document.getElementById("discipline-form");
+if (disciplineForm) {
+    disciplineForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("discipline-title-input").value;
+        const note = document.getElementById("discipline-note-input").value;
+        const checkedCheckboxes = document.querySelectorAll("input[name='discipline-days']:checked");
+        const days = Array.from(checkedCheckboxes).map(cb => cb.value);
+
+        if (!state.habits) state.habits = [];
+        state.habits.push({
+            id: "ds-" + Date.now(),
+            type: "discipline",
+            name: name,
+            note: note,
+            days: days,
+            createdAt: Date.now(),
+            tracking: {}
+        });
+
+        addXP(10);
+        saveState();
+        addSystemLog(`🛡️ Nova regra de disciplina cadastrada: "${name}"`);
+        closeModal("modal-discipline-overlay");
+        disciplineForm.reset();
+        renderHabits();
+        
+        // Re-check Daily Habits Quest
+        checkDailyHabitsQuest();
+    });
 }
 
 function deleteHabit(id) {
-    if(confirm("Excluir este hábito?")) {
+    const item = state.habits.find(h => h.id === id);
+    const isPractice = item && item.type === "practice";
+    if (confirm(`Excluir esta ${isPractice ? 'prática' : 'regra de disciplina'}?`)) {
         state.habits = state.habits.filter(h => h.id !== id);
         saveState();
+        addSystemLog(`🗑️ ${isPractice ? 'Prática' : 'Regra de disciplina'} excluída`);
         renderHabits();
+        checkDailyHabitsQuest();
     }
 }
+window.deleteHabit = deleteHabit;
 
 // 12. BIBLIOTECA
 function renderLibrary() {

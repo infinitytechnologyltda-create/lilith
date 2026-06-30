@@ -107,7 +107,7 @@
                 <i data-lucide="calendar"></i><span class="tooltip-text">Calendário</span>
             </a>
             <a class="menu-item" data-module="habits" id="nav-habits">
-                <i data-lucide="activity"></i><span class="tooltip-text">Hábitos</span>
+                <i data-lucide="activity"></i><span class="tooltip-text">Práticas e Disciplina</span>
             </a>
             <a class="menu-item" data-module="library" id="nav-library">
                 <i data-lucide="library"></i><span class="tooltip-text">Biblioteca</span>
@@ -622,23 +622,67 @@
             </div>
         </section>
 
-        <!-- 11. HÁBITOS -->
+        <!-- 11. PRÁTICAS E DISCIPLINA -->
         <section class="module-panel" id="module-habits">
-            <div class="glass-panel">
-                <div class="habits-table-container">
-                    <table class="habits-table">
-                        <thead>
-                            <tr id="habits-header-row">
-                                <th style="text-align: left; padding-left: 16px;">Hábito</th>
-                                <!-- Days will be populated dynamically (e.g. Seg 19, Ter 20) -->
-                                <th style="width: 100px;">Streak</th>
-                                <th style="width: 80px;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="habits-table-body">
-                            <!-- Dyn populated habits -->
-                        </tbody>
-                    </table>
+            <div class="glass-panel" style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="font-family: 'Orbitron', sans-serif; letter-spacing: 2px; margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase;">🛡️ Práticas e Disciplina</h2>
+                </div>
+                
+                <div class="practices-discipline-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%;">
+                    <!-- Panel 1: Práticas -->
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="margin: 0; font-family: 'Orbitron', sans-serif; display: flex; align-items: center; gap: 8px; color: var(--secondary); font-size: 18px; text-transform: uppercase;">
+                                <i data-lucide="book-open" style="width: 20px; height: 20px;"></i> Práticas
+                            </h3>
+                            <button class="action-btn" onclick="openModal('modal-practices-overlay')" style="padding: 6px 12px; font-size: 13px;">
+                                <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Adicionar Prática
+                            </button>
+                        </div>
+                        <div style="overflow-x: auto; width: 100%;">
+                            <table class="habits-table" style="width: 100%; min-width: 400px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; padding: 10px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Prática</th>
+                                        <th style="text-align: center; width: 110px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Dias</th>
+                                        <th style="text-align: center; width: 90px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Streak</th>
+                                        <th style="text-align: center; width: 60px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="practices-table-body">
+                                    <!-- Dyn populated practices -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Disciplina (Regras) -->
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="margin: 0; font-family: 'Orbitron', sans-serif; display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 18px; text-transform: uppercase;">
+                                <i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i> Disciplina (Regras)
+                            </h3>
+                            <button class="action-btn" onclick="openModal('modal-discipline-overlay')" style="padding: 6px 12px; font-size: 13px;">
+                                <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Adicionar Regra
+                            </button>
+                        </div>
+                        <div style="overflow-x: auto; width: 100%;">
+                            <table class="habits-table" style="width: 100%; min-width: 400px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; padding: 10px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Regra</th>
+                                        <th style="text-align: center; width: 110px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Dias</th>
+                                        <th style="text-align: center; width: 90px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Streak</th>
+                                        <th style="text-align: center; width: 60px; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="discipline-table-body">
+                                    <!-- Dyn populated rules -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -949,19 +993,68 @@
         </div>
     </div>
 
-    <!-- Habit Modal -->
-    <div class="modal-overlay" id="modal-habits-overlay">
-        <div class="modal-container">
+    <!-- Practices Modal -->
+    <div class="modal-overlay" id="modal-practices-overlay">
+        <div class="modal-container" style="max-width: 450px;">
             <div class="modal-header">
-                <h3 class="modal-title">Novo Hábito</h3>
-                <button class="modal-close" onclick="closeModal('modal-habits-overlay')"><i data-lucide="x"></i></button>
+                <h3 class="modal-title">Nova Prática</h3>
+                <button class="modal-close" onclick="closeModal('modal-practices-overlay')"><i data-lucide="x"></i></button>
             </div>
-            <form id="habit-form">
+            <form id="practice-form">
                 <div class="form-group">
-                    <label class="form-label" for="habit-title-input">Nome do Hábito</label>
-                    <input type="text" class="form-input" id="habit-title-input" required placeholder="Ex: Ler 15 páginas, Meditar">
+                    <label class="form-label" for="practice-title-input">Nome da Prática</label>
+                    <input type="text" class="form-input" id="practice-title-input" required placeholder="Ex: Meditação matinal, Exercícios físicos">
                 </div>
-                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Hábito</button>
+                <div class="form-group">
+                    <label class="form-label" for="practice-note-input">Nota / Instruções</label>
+                    <textarea class="form-input" id="practice-note-input" rows="3" placeholder="Nota explicativa (aparece ao passar o mouse)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="display: block; margin-bottom: 8px;">Dias Normais (Dias de Execução)</label>
+                    <div class="days-selector" style="display: flex; gap: 6px; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Seg" checked> Seg</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Ter" checked> Ter</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Qua" checked> Qua</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Qui" checked> Qui</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Sex" checked> Sex</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Sáb"> Sáb</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="practice-days" value="Dom"> Dom</label>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Prática</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Discipline Modal -->
+    <div class="modal-overlay" id="modal-discipline-overlay">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Regra de Disciplina</h3>
+                <button class="modal-close" onclick="closeModal('modal-discipline-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="discipline-form">
+                <div class="form-group">
+                    <label class="form-label" for="discipline-title-input">Regra / Disciplina</label>
+                    <input type="text" class="form-input" id="discipline-title-input" required placeholder="Ex: Não comer açúcar, Dormir até 23h">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="discipline-note-input">Nota / Instruções / Consequências</label>
+                    <textarea class="form-input" id="discipline-note-input" rows="3" placeholder="Nota explicativa (aparece ao passar o mouse)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="display: block; margin-bottom: 8px;">Dias Normais (Dias de Execução)</label>
+                    <div class="days-selector" style="display: flex; gap: 6px; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Seg" checked> Seg</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Ter" checked> Ter</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Qua" checked> Qua</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Qui" checked> Qui</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Sex" checked> Sex</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Sáb" checked> Sáb</label>
+                        <label style="display:flex; flex-direction:column; align-items:center; font-size:11px; cursor:pointer; gap:4px; color: var(--text-main);"><input type="checkbox" name="discipline-days" value="Dom" checked> Dom</label>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Regra</button>
             </form>
         </div>
     </div>
@@ -1343,6 +1436,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js?v=2.5"></script>
+    <script type="module" src="app.js?v=2.6"></script>
 </body>
 </html>
