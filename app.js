@@ -5127,6 +5127,12 @@ function selectSystemTheme(themeName) {
     state.systemTheme = themeName;
     saveState();
     applySystemTheme();
+    
+    // Immediately refresh the current module to apply theme-specific layout, jewels, and armor bolts
+    if (typeof currentModule !== "undefined") {
+        renderModuleContent(currentModule);
+    }
+    
     closeModal('modal-themes-overlay');
     showMagicAlert("Transformação Completa! 🤖", `Sistema reconfigurado para o tema ${themeName.toUpperCase()}.`);
 }
