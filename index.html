@@ -130,6 +130,11 @@
                 <i data-lucide="sliders" style="width: 18px; height: 18px;"></i>
             </button>
 
+            <!-- Theme Settings Trigger -->
+            <button class="supabase-status-btn" id="theme-select-btn" onclick="openModal('modal-themes-overlay')" title="Selecionar Tema" style="margin-left: 0;">
+                <i data-lucide="palette" style="width: 18px; height: 18px;"></i>
+            </button>
+
             <!-- Global Background Selector -->
             <button class="supabase-status-btn" id="global-bg-btn" onclick="document.getElementById('global-bg-input').click()" title="Fundo das Páginas" style="margin-left: 0;">
                 <i data-lucide="image" style="width: 18px; height: 18px;"></i>
@@ -1058,9 +1063,9 @@
 
     <!-- Calendar Event Modal -->
     <div class="modal-overlay" id="modal-calendar-overlay">
-        <div class="modal-container">
+        <div class="modal-container" style="max-width: 400px; text-align: center;">
             <div class="modal-header">
-                <h3 class="modal-title" id="calendar-modal-title">Novo Evento</h3>
+                <h3 class="modal-title" id="calendar-modal-title" style="text-align: center; width: 100%;">Novo Evento</h3>
                 <button class="modal-close" onclick="closeModal('modal-calendar-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="calendar-event-form">
@@ -1076,6 +1081,24 @@
                         <option value="2" selected>Média (Nível 2)</option>
                         <option value="3">Alta (Nível 3)</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 8px;">Escolha a Cor do Evento</label>
+                    <div id="event-color-selector" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 12px;">
+                        <div class="color-dot active-color" data-color="#ff007f" style="width: 24px; height: 24px; border-radius: 50%; background: #ff007f; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 8px #ff007f;"></div>
+                        <div class="color-dot" data-color="#00f2fe" style="width: 24px; height: 24px; border-radius: 50%; background: #00f2fe; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#39ff14" style="width: 24px; height: 24px; border-radius: 50%; background: #39ff14; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#fffb00" style="width: 24px; height: 24px; border-radius: 50%; background: #fffb00; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#ff5e00" style="width: 24px; height: 24px; border-radius: 50%; background: #ff5e00; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#b026ff" style="width: 24px; height: 24px; border-radius: 50%; background: #b026ff; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#00e5ff" style="width: 24px; height: 24px; border-radius: 50%; background: #00e5ff; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#ff0055" style="width: 24px; height: 24px; border-radius: 50%; background: #ff0055; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#a6ff00" style="width: 24px; height: 24px; border-radius: 50%; background: #a6ff00; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#ffc400" style="width: 24px; height: 24px; border-radius: 50%; background: #ffc400; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#f48fb1" style="width: 24px; height: 24px; border-radius: 50%; background: #f48fb1; cursor: pointer; border: 2px solid transparent;"></div>
+                        <div class="color-dot" data-color="#008080" style="width: 24px; height: 24px; border-radius: 50%; background: #008080; cursor: pointer; border: 2px solid transparent;"></div>
+                    </div>
+                    <input type="hidden" id="calendar-event-color-input" value="#ff007f">
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Evento</button>
             </form>
@@ -1293,6 +1316,27 @@
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Definir Alarme</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Themes Modal -->
+    <div class="modal-overlay" id="modal-themes-overlay">
+        <div class="modal-container" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="text-align: center; width: 100%;">Selecionar Tema Lilith OS</h3>
+                <button class="modal-close" onclick="closeModal('modal-themes-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px; padding: 15px 0;">
+                <button class="action-btn" onclick="selectSystemTheme('default')" style="justify-content: center; width: 100%;">
+                    🔮 Lilith Cyberpunk (Customizado)
+                </button>
+                <button class="action-btn" onclick="selectSystemTheme('gundam')" style="justify-content: center; width: 100%; background: linear-gradient(to right, #ff0055, #00f2fe);">
+                    🤖 Neon Overdrive (Mecha Gundam)
+                </button>
+                <button class="action-btn" onclick="selectSystemTheme('decepticon')" style="justify-content: center; width: 100%; background: linear-gradient(to right, #b026ff, #39ff14);">
+                    👾 Obsidian Engine (Decepticon Mech)
+                </button>
+            </div>
         </div>
     </div>
 

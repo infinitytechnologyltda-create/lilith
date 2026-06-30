@@ -164,6 +164,9 @@ function loadState() {
     if (typeof applyMenuOpacity === "function") {
         applyMenuOpacity();
     }
+    if (typeof applySystemTheme === "function") {
+        applySystemTheme();
+    }
     checkDailyQuestsReset();
 }
 
@@ -584,6 +587,66 @@ function renderModuleContent(moduleName) {
             renderAlarmsAndNotifications();
             break;
     }
+    
+    // Inject the active page jewel dynamically
+    const activePanel = document.getElementById("module-" + moduleName);
+    if (activePanel) {
+        const glassPanel = activePanel.querySelector(".glass-panel") || activePanel;
+        if (glassPanel) {
+            // Remove existing jewel first
+            const oldJewel = glassPanel.querySelector(".jewel");
+            if (oldJewel) oldJewel.remove();
+            
+            const jewelMap = {
+                dashboard: 'diamond',
+                notes: 'emerald',
+                diary: 'ruby',
+                ideas: 'sapphire',
+                whiteboard: 'amethyst',
+                quests: 'topaz',
+                tasks: 'opal',
+                projects: 'turquoise',
+                goals: 'jasper',
+                calendar: 'jade',
+                habits: 'quartz',
+                library: 'obsidian',
+                finances: 'citrine',
+                appcenter: 'aquamarine',
+                notifications: 'garnet'
+            };
+            const jewelType = jewelMap[moduleName] || 'diamond';
+            const jewelNamesMap = {
+                diamond: 'Diamante Real',
+                emerald: 'Esmeralda Natural',
+                ruby: 'Rubi de Sangue',
+                sapphire: 'Safira Estrela',
+                amethyst: 'Ametista Imperial',
+                topaz: 'Topázio Imperial',
+                opal: 'Opala Nobre',
+                turquoise: 'Turquesa Persa',
+                jasper: 'Jaspe Sanguíneo',
+                jade: 'Jade Imperial',
+                quartz: 'Quartzo Rosa',
+                obsidian: 'Obsidiana Negra',
+                citrine: 'Citrino Dourado',
+                aquamarine: 'Água-Marinha Azul',
+                garnet: 'Granada Almandina'
+            };
+            const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
+
+            const jewelEl = document.createElement("div");
+            jewelEl.className = `jewel ${jewelType}`;
+            jewelEl.title = `Gema Ativa: ${jewelName}`;
+            
+            // Ensure container has relative position to absolute position the jewel
+            if (getComputedStyle(glassPanel).position === 'static') {
+                glassPanel.style.position = 'relative';
+            }
+            
+            glassPanel.appendChild(jewelEl);
+        }
+    }
+
     // Re-trigger Lucide icons render
     if(window.lucide) {
         lucide.createIcons();
@@ -2284,15 +2347,16 @@ function renderCalendar() {
         dayEvents.forEach(ev => {
             let importanceLabel = "";
             let colorStyle = "";
+            const evColor = ev.color || "#ff007f";
             if (ev.importance === "3") {
-                importanceLabel = " [A]"; // Alta
-                colorStyle = "background-color: rgba(239, 68, 68, 0.25); border-left: 2px solid #ef4444; color: #ff9999;";
+                importanceLabel = " [A]";
+                colorStyle = `background-color: ${evColor}25; border-left: 2px solid ${evColor}; color: ${evColor}; font-weight: 700; text-shadow: 0 0 4px ${evColor}40;`;
             } else if (ev.importance === "2") {
-                importanceLabel = " [M]"; // Média
-                colorStyle = "background-color: rgba(245, 158, 11, 0.25); border-left: 2px solid #f59e0b; color: #ffdb99;";
+                importanceLabel = " [M]";
+                colorStyle = `background-color: ${evColor}18; border-left: 2px solid ${evColor}; color: ${evColor};`;
             } else {
-                importanceLabel = " [B]"; // Baixa
-                colorStyle = "background-color: rgba(59, 130, 246, 0.25); border-left: 2px solid #3b82f6; color: #99ccff;";
+                importanceLabel = " [B]";
+                colorStyle = `background-color: ${evColor}10; border-left: 2px solid ${evColor}80; color: ${evColor}bb;`;
             }
             eventsHTML += `<span class="event-dot event" style="${colorStyle}" title="${ev.title}">${ev.title}${importanceLabel}</span>`;
         });
@@ -2301,6 +2365,14 @@ function renderCalendar() {
             <span class="day-number">${d}</span>
             <div class="day-events">${eventsHTML}</div>
         `;
+        
+        // If there's a Level 3 (Alta) event, customize the calendar day cell wrapper
+        const hasHighImportanceEvent = dayEvents.some(ev => ev.importance === "3");
+        if (hasHighImportanceEvent) {
+            cell.style.borderColor = "#ff0055";
+            cell.style.boxShadow = "inset 0 0 10px rgba(255, 0, 85, 0.3), 0 0 5px rgba(255, 0, 85, 0.2)";
+            cell.style.background = "rgba(255, 0, 85, 0.12)";
+        }
         
         cell.onclick = () => addCalendarEventPrompt(dateStr);
         grid.appendChild(cell);
@@ -2320,16 +2392,51 @@ function addCalendarEventPrompt(dateStr) {
     document.getElementById("calendar-event-date-input").value = dateStr;
     document.getElementById("calendar-event-title-input").value = "";
     document.getElementById("calendar-event-importance-input").value = "2";
+    
+    // Reset color selector to default (#ff007f)
+    document.getElementById("calendar-event-color-input").value = "#ff007f";
+    const dots = document.querySelectorAll("#event-color-selector .color-dot");
+    dots.forEach(dot => {
+        if(dot.getAttribute("data-color") === "#ff007f") {
+            dot.classList.add("active-color");
+            dot.style.border = "2px solid #fff";
+            dot.style.boxShadow = "0 0 8px #ff007f";
+        } else {
+            dot.classList.remove("active-color");
+            dot.style.border = "2px solid transparent";
+            dot.style.boxShadow = "none";
+        }
+    });
+
     document.getElementById("calendar-event-label").textContent = `Adicionar evento para o dia (${formatDateString(dateStr)}):`;
     openModal("modal-calendar-overlay");
 }
 window.addCalendarEventPrompt = addCalendarEventPrompt;
+
+// Setup color selector clicking listeners once
+document.querySelectorAll("#event-color-selector .color-dot").forEach(dot => {
+    dot.onclick = () => {
+        // remove active from all
+        document.querySelectorAll("#event-color-selector .color-dot").forEach(d => {
+            d.classList.remove("active-color");
+            d.style.border = "2px solid transparent";
+            d.style.boxShadow = "none";
+        });
+        // add active to clicked
+        dot.classList.add("active-color");
+        const color = dot.getAttribute("data-color");
+        dot.style.border = "2px solid #fff";
+        dot.style.boxShadow = `0 0 8px ${color}`;
+        document.getElementById("calendar-event-color-input").value = color;
+    };
+});
 
 document.getElementById("calendar-event-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const dateStr = document.getElementById("calendar-event-date-input").value;
     const title = document.getElementById("calendar-event-title-input").value;
     const importance = document.getElementById("calendar-event-importance-input").value;
+    const color = document.getElementById("calendar-event-color-input").value;
 
     if(title && title.trim()) {
         state.calendarEvents.push({
@@ -2337,6 +2444,7 @@ document.getElementById("calendar-event-form").addEventListener("submit", (e) =>
             title: title.trim(),
             date: dateStr,
             importance: importance,
+            color: color,
             notifiedOneDayBefore: false,
             type: "event"
         });
@@ -3810,6 +3918,9 @@ async function loadStateFromSupabase(showAlert = true) {
             if (typeof applyMenuOpacity === "function") {
                 applyMenuOpacity();
             }
+            if (typeof applySystemTheme === "function") {
+                applySystemTheme();
+            }
             
             // Re-render dashboard/active module
             updateUIElements();
@@ -4995,3 +5106,51 @@ document.getElementById("alarm-form").addEventListener("submit", (e) => {
         closeModal("modal-alarms-overlay");
     }
 });
+
+// ==================== SYSTEM THEMES SWITCHING ====================
+function selectSystemTheme(themeName) {
+    state.systemTheme = themeName;
+    saveState();
+    applySystemTheme();
+    closeModal('modal-themes-overlay');
+    showMagicAlert("Transformação Completa! 🤖", `Sistema reconfigurado para o tema ${themeName.toUpperCase()}.`);
+}
+window.selectSystemTheme = selectSystemTheme;
+
+function applySystemTheme() {
+    const theme = state.systemTheme || 'default';
+    const root = document.documentElement;
+    
+    root.classList.remove('theme-gundam', 'theme-decepticon');
+    
+    if (theme === 'gundam') {
+        root.classList.add('theme-gundam');
+        root.style.setProperty('--primary', '#ff0055');
+        root.style.setProperty('--primary-glow', 'rgba(255, 0, 85, 0.35)');
+        root.style.setProperty('--secondary', '#00f2fe');
+        root.style.setProperty('--secondary-glow', 'rgba(0, 242, 254, 0.35)');
+        root.style.setProperty('--accent', '#fffb00');
+        root.style.setProperty('--accent-glow', 'rgba(255, 251, 0, 0.35)');
+        root.style.setProperty('--border-color', 'rgba(0, 242, 254, 0.5)');
+        root.style.setProperty('--bg-panel', 'rgba(13, 17, 23, 0.88)');
+        root.style.setProperty('--border-hover', '#00f2fe');
+        root.style.setProperty('--text-muted', '#fffb00');
+    } else if (theme === 'decepticon') {
+        root.classList.add('theme-decepticon');
+        root.style.setProperty('--primary', '#b026ff');
+        root.style.setProperty('--primary-glow', 'rgba(176, 38, 255, 0.35)');
+        root.style.setProperty('--secondary', '#39ff14');
+        root.style.setProperty('--secondary-glow', 'rgba(57, 255, 20, 0.35)');
+        root.style.setProperty('--accent', '#ff5e00');
+        root.style.setProperty('--accent-glow', 'rgba(255, 94, 0, 0.35)');
+        root.style.setProperty('--border-color', 'rgba(176, 38, 255, 0.5)');
+        root.style.setProperty('--bg-panel', 'rgba(10, 8, 12, 0.92)');
+        root.style.setProperty('--border-hover', '#39ff14');
+        root.style.setProperty('--text-muted', '#ff5e00');
+    } else {
+        // Default: restore theme color selected by picker
+        const savedColor = localStorage.getItem("lilith_theme_color") || "#D97A9A";
+        setThemeColor(savedColor);
+    }
+}
+window.applySystemTheme = applySystemTheme;

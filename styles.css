@@ -2234,3 +2234,194 @@ h1, h2, h3, h4, h5, h6 {
 #cyber-logo-container {
     animation: cyberpunk-glitch-blink 4s infinite;
 }
+
+/* ==================== THEME RECONSTRUCTION & ROBOTIC ARMOR ==================== */
+
+/* Transformation Animation for active panels */
+@keyframes mecha-transform {
+    0% {
+        transform: perspective(1200px) rotateX(15deg) rotateY(-40deg) translateZ(-150px) scale(0.85);
+        opacity: 0;
+        filter: brightness(0.5) contrast(1.5);
+    }
+    40% {
+        transform: perspective(1200px) rotateX(-5deg) rotateY(15deg) translateZ(50px) scale(0.95);
+        opacity: 0.7;
+    }
+    75% {
+        transform: perspective(1200px) rotateX(2deg) rotateY(-5deg) translateZ(-10px) scale(1.02);
+        filter: brightness(1.2);
+    }
+    100% {
+        transform: perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
+        opacity: 1;
+        filter: brightness(1) contrast(1);
+    }
+}
+
+.module-panel.active {
+    animation: mecha-transform 0.65s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Theme 1: Gundam / Neon Overdrive Armor */
+.theme-gundam .glass-panel {
+    border: 2px solid var(--border-color) !important;
+    background: linear-gradient(135deg, rgba(13, 17, 23, 0.9) 0%, rgba(20, 24, 35, 0.85) 100%) !important;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.25), inset 0 0 20px rgba(0, 242, 254, 0.15) !important;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px)) !important;
+    border-radius: 0px !important;
+}
+
+.theme-gundam .glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff0055, #00f2fe, #fffb00) !important;
+    z-index: 5;
+}
+
+/* Theme 2: Decepticon / Dark Obsidian Armor */
+.theme-decepticon .glass-panel {
+    border: 2px solid var(--border-color) !important;
+    background: linear-gradient(135deg, rgba(8, 6, 10, 0.95) 0%, rgba(18, 12, 24, 0.92) 100%) !important;
+    box-shadow: 0 0 25px rgba(176, 38, 255, 0.3), inset 0 0 30px rgba(176, 38, 255, 0.2) !important;
+    position: relative;
+    border-radius: 8px !important;
+}
+
+.theme-decepticon .glass-panel::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 30px;
+    right: 30px;
+    height: 3px;
+    background: #39ff14;
+    box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    z-index: 5;
+}
+
+.theme-decepticon .glass-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 30px;
+    right: 30px;
+    height: 3px;
+    background: #39ff14;
+    box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    z-index: 5;
+}
+
+/* ==================== REAL JEWELS FOR MODULE WINDOWS ==================== */
+.jewel {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 15px;
+    height: 15px;
+    z-index: 99;
+    cursor: pointer;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    transition: transform 0.3s ease, filter 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.jewel:hover {
+    transform: scale(1.4) rotate(15deg);
+    filter: brightness(1.3) contrast(1.1);
+}
+
+/* Jewel 1: Diamond (Diamante) */
+.jewel.diamond {
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #d6f5ff 50%, #7ec8e3 100%);
+    filter: drop-shadow(0 0 8px #ffffff);
+}
+
+/* Jewel 2: Emerald (Esmeralda) */
+.jewel.emerald {
+    background: radial-gradient(circle at 35% 35%, #a3ffa3 0%, #2ecc71 50%, #196f3d 100%);
+    filter: drop-shadow(0 0 8px #2ecc71);
+}
+
+/* Jewel 3: Ruby (Rubi) */
+.jewel.ruby {
+    background: radial-gradient(circle at 35% 35%, #ff9999 0%, #e74c3c 50%, #7b241c 100%);
+    filter: drop-shadow(0 0 8px #e74c3c);
+}
+
+/* Jewel 4: Sapphire (Safira) */
+.jewel.sapphire {
+    background: radial-gradient(circle at 35% 35%, #99ccff 0%, #3498db 50%, #1b4f72 100%);
+    filter: drop-shadow(0 0 8px #3498db);
+}
+
+/* Jewel 5: Amethyst (Ametista) */
+.jewel.amethyst {
+    background: radial-gradient(circle at 35% 35%, #e8daef 0%, #9b59b6 50%, #4a235a 100%);
+    filter: drop-shadow(0 0 8px #9b59b6);
+}
+
+/* Jewel 6: Topaz (Topázio) */
+.jewel.topaz {
+    background: radial-gradient(circle at 35% 35%, #fdebd0 0%, #f39c12 50%, #7e5109 100%);
+    filter: drop-shadow(0 0 8px #f39c12);
+}
+
+/* Jewel 7: Opal (Opala) */
+.jewel.opal {
+    background: linear-gradient(135deg, #fef5e7 0%, #ebf5fb 40%, #fadbd8 80%, #d6eaf8 100%);
+    filter: drop-shadow(0 0 8px #fadbd8);
+}
+
+/* Jewel 8: Turquoise (Turquesa) */
+.jewel.turquoise {
+    background: radial-gradient(circle at 35% 35%, #e0f7fa 0%, #17a589 50%, #0e6251 100%);
+    filter: drop-shadow(0 0 8px #17a589);
+}
+
+/* Jewel 9: Jasper (Jaspe) */
+.jewel.jasper {
+    background: radial-gradient(circle at 35% 35%, #f5b041 0%, #ba4a00 50%, #6e2c00 100%);
+    filter: drop-shadow(0 0 8px #ba4a00);
+}
+
+/* Jewel 10: Jade (Jade) */
+.jewel.jade {
+    background: radial-gradient(circle at 35% 35%, #d5f5e3 0%, #27ae60 50%, #145a32 100%);
+    filter: drop-shadow(0 0 8px #27ae60);
+}
+
+/* Jewel 11: Quartz (Quartzo Rosa) */
+.jewel.quartz {
+    background: radial-gradient(circle at 35% 35%, #fde2e4 0%, #ffb3c1 50%, #fb6f92 100%);
+    filter: drop-shadow(0 0 8px #ffb3c1);
+}
+
+/* Jewel 12: Obsidian (Obsidiana) */
+.jewel.obsidian {
+    background: radial-gradient(circle at 35% 35%, #566573 0%, #2c3e50 50%, #1c2833 100%);
+    filter: drop-shadow(0 0 8px #2c3e50);
+}
+
+/* Jewel 13: Citrine (Citrino) */
+.jewel.citrine {
+    background: radial-gradient(circle at 35% 35%, #fef9e7 0%, #f4d03f 50%, #7d6608 100%);
+    filter: drop-shadow(0 0 8px #f4d03f);
+}
+
+/* Jewel 14: Aquamarine (Água-Marinha) */
+.jewel.aquamarine {
+    background: radial-gradient(circle at 35% 35%, #e8f8f5 0%, #76d7c4 50%, #117864 100%);
+    filter: drop-shadow(0 0 8px #76d7c4);
+}
+
+/* Jewel 15: Garnet (Granada) */
+.jewel.garnet {
+    background: radial-gradient(circle at 35% 35%, #f9ebd2 0%, #c0392b 50%, #641e16 100%);
+    filter: drop-shadow(0 0 8px #c0392b);
+}
