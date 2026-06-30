@@ -63,6 +63,7 @@ const SEED_DATA = {
         { id: "app-11", name: "WhatsApp", url: "https://web.whatsapp.com", desc: "Conectar ao WhatsApp Web", type: "whatsapp", active: true, logo: "whatsapp.png" },
         { id: "app-12", name: "SupaBase", url: "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", desc: "Banco de dados SupaBase", type: "supabase", active: true, logo: "supabase.png" },
         { id: "app-13", name: "Vercel Hospedagens", url: "https://vercel.com/infinitytechnologyltda-creates-projects", desc: "Vercel Hospedagens", type: "vercel", active: true, logo: "vercel.png" },
+        { id: "app-14", name: "Instagram", url: "https://www.instagram.com", desc: "Acessar o Instagram", type: "instagram", active: true, logo: "instagram.png" },
         { id: "app-1", name: "Spotify", url: "https://open.spotify.com/", desc: "Trilha sonora para foco", type: "spotify", active: true, logo: "spotify.png" },
         { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" }
     ]
@@ -141,14 +142,17 @@ function loadState() {
         addAppIfMissing("WhatsApp", "https://web.whatsapp.com", "Conectar ao WhatsApp Web", "whatsapp", "whatsapp.png");
         addAppIfMissing("SupaBase", "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", "Banco de dados SupaBase", "supabase", "supabase.png");
         addAppIfMissing("Vercel Hospedagens", "https://vercel.com/infinitytechnologyltda-creates-projects", "Vercel Hospedagens", "vercel", "vercel.png");
+        addAppIfMissing("Instagram", "https://www.instagram.com", "Acessar o Instagram", "instagram", "instagram.png");
 
-        // Reorder apps for existing users: Espaço Terapêutico first, Spotify & GitHub last
+        // Reorder apps for existing users: Espaço Terapêutico first, Instagram, Spotify & GitHub last
         const espacoApp = state.apps.find(a => a.name.toLowerCase().includes("terapêutico") || a.type === "espaco");
+        const instagramApp = state.apps.find(a => a.type === "instagram" || a.name.toLowerCase().includes("instagram"));
         const spotifyApp = state.apps.find(a => a.type === "spotify" || a.name.toLowerCase().includes("spotify"));
         const githubApp = state.apps.find(a => a.type === "github" || a.name.toLowerCase().includes("github"));
         
         let others = state.apps.filter(a => 
             a !== espacoApp && 
+            a !== instagramApp &&
             a !== spotifyApp && 
             a !== githubApp
         );
@@ -156,6 +160,7 @@ function loadState() {
         const newApps = [];
         if (espacoApp) newApps.push(espacoApp);
         newApps.push(...others);
+        if (instagramApp) newApps.push(instagramApp);
         if (spotifyApp) newApps.push(spotifyApp);
         if (githubApp) newApps.push(githubApp);
         
@@ -3010,12 +3015,13 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
     }
 
     const isSpecialApp = (
-        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" ||
+        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" ||
         app.name.toLowerCase().includes("spotify") ||
         app.name.toLowerCase().includes("github") ||
         app.name.toLowerCase().includes("supabase") ||
         app.name.toLowerCase().includes("vercel") ||
-        app.name.toLowerCase().includes("whatsapp")
+        app.name.toLowerCase().includes("whatsapp") ||
+        app.name.toLowerCase().includes("instagram")
     );
 
     if (isSpecialApp) {
@@ -3029,6 +3035,7 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
             else if (nameLower.includes("supabase")) matchedType = "supabase";
             else if (nameLower.includes("vercel")) matchedType = "vercel";
             else if (nameLower.includes("whatsapp")) matchedType = "whatsapp";
+            else if (nameLower.includes("instagram")) matchedType = "instagram";
         }
 
         // Initialize activeAppStreams if not present
@@ -5228,6 +5235,11 @@ function checkNotificationsAndAlarms() {
                 triggerNotification(`⏰ ALARME: ${alarm.label || 'Sem nome'}`);
                 alarm.triggeredToday = true;
                 alarmTriggered = true;
+                
+                // Ring despertador!
+                if (window.triggerAlarmRinging) {
+                    window.triggerAlarmRinging(alarm.label || 'Sem nome');
+                }
             }
         });
         if (alarmTriggered) {
@@ -5291,6 +5303,69 @@ function deleteAlarm(id) {
     }
 }
 window.deleteAlarm = deleteAlarm;
+
+// --- CYBERPUNK SYNTH ALARM SOUND SYSTEM ---
+let alarmAudioContext = null;
+let alarmInterval = null;
+
+function startAlarmSound() {
+    try {
+        if (!alarmAudioContext) {
+            alarmAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        stopAlarmSound();
+        alarmInterval = setInterval(() => {
+            if (alarmAudioContext.state === 'suspended') {
+                alarmAudioContext.resume();
+            }
+            const osc = alarmAudioContext.createOscillator();
+            const gain = alarmAudioContext.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(880, alarmAudioContext.currentTime); // Pitch A5
+            osc.frequency.exponentialRampToValueAtTime(1760, alarmAudioContext.currentTime + 0.45); // Frequency sweep
+            
+            gain.gain.setValueAtTime(0.25, alarmAudioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, alarmAudioContext.currentTime + 0.45);
+            
+            osc.connect(gain);
+            gain.connect(alarmAudioContext.destination);
+            
+            osc.start();
+            osc.stop(alarmAudioContext.currentTime + 0.48);
+        }, 500);
+    } catch (err) {
+        console.error("Audio Context error:", err);
+    }
+}
+
+function stopAlarmSound() {
+    if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+    }
+}
+
+function triggerAlarmRinging(label) {
+    const labelEl = document.getElementById("ringing-alarm-label");
+    if (labelEl) labelEl.textContent = label;
+    
+    const ringOverlay = document.getElementById("modal-alarm-ringing-overlay");
+    if (ringOverlay) ringOverlay.style.display = "flex";
+    
+    startAlarmSound();
+    
+    // Pulse light effect for 10 seconds or until stopped
+    triggerCyberpunkBlink();
+}
+window.triggerAlarmRinging = triggerAlarmRinging;
+
+function silenceAlarm() {
+    stopAlarmSound();
+    const ringOverlay = document.getElementById("modal-alarm-ringing-overlay");
+    if (ringOverlay) ringOverlay.style.display = "none";
+}
+window.silenceAlarm = silenceAlarm;
 
 function renderAlarmsAndNotifications() {
     // Render Alarms

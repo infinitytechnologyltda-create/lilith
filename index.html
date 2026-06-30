@@ -69,55 +69,59 @@
             <span class="logo-text">Lilith</span>
         </div>
         <nav class="sidebar-menu">
-            <a class="menu-item active" data-module="dashboard" id="nav-dashboard">
-                <i data-lucide="layout-dashboard"></i><span class="tooltip-text">Dashboard</span>
-            </a>
-            <a class="menu-item" data-module="notes" id="nav-notes">
-                <i data-lucide="notebook"></i><span class="tooltip-text">Anotações</span>
-            </a>
-            <a class="menu-item" data-module="diary" id="nav-diary">
-                <i data-lucide="book-open"></i><span class="tooltip-text">Diário Pessoal</span>
-            </a>
-            <a class="menu-item" data-module="ideas" id="nav-ideas">
-                <i data-lucide="lightbulb"></i><span class="tooltip-text">Insights & Ideias</span>
-            </a>
-            <a class="menu-item" data-module="whiteboard" id="nav-whiteboard">
-                <i data-lucide="palette"></i><span class="tooltip-text">Quadro Negro</span>
-            </a>
-            <a class="menu-item" data-module="quests" id="nav-quests">
-                <i data-lucide="swords"></i><span class="tooltip-text">Quests & Missões</span>
-            </a>
-            <a class="menu-item" data-module="tasks" id="nav-tasks">
-                <i data-lucide="check-square"></i><span class="tooltip-text">Tarefas</span>
-            </a>
-            <a class="menu-item" data-module="notifications" id="nav-notifications">
-                <i data-lucide="bell"></i><span class="tooltip-text">Notificações & Alarmes</span>
-            </a>
+            <div class="sidebar-menu-left" style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1 1 0%;">
+                <a class="menu-item" data-module="notifications" id="nav-notifications">
+                    <i data-lucide="bell"></i><span class="tooltip-text">Notificações & Alarmes</span>
+                </a>
+                <a class="menu-item active" data-module="dashboard" id="nav-dashboard">
+                    <i data-lucide="layout-dashboard"></i><span class="tooltip-text">Dashboard</span>
+                </a>
+                <a class="menu-item" data-module="notes" id="nav-notes">
+                    <i data-lucide="notebook"></i><span class="tooltip-text">Anotações</span>
+                </a>
+                <a class="menu-item" data-module="diary" id="nav-diary">
+                    <i data-lucide="book-open"></i><span class="tooltip-text">Diário Pessoal</span>
+                </a>
+                <a class="menu-item" data-module="ideas" id="nav-ideas">
+                    <i data-lucide="lightbulb"></i><span class="tooltip-text">Insights & Ideias</span>
+                </a>
+                <a class="menu-item" data-module="whiteboard" id="nav-whiteboard">
+                    <i data-lucide="palette"></i><span class="tooltip-text">Quadro Negro</span>
+                </a>
+                <a class="menu-item" data-module="quests" id="nav-quests">
+                    <i data-lucide="swords"></i><span class="tooltip-text">Quests & Missões</span>
+                </a>
+                <a class="menu-item" data-module="tasks" id="nav-tasks">
+                    <i data-lucide="check-square"></i><span class="tooltip-text">Tarefas</span>
+                </a>
+            </div>
 
             <!-- Visor Tecnológico Cyberpunk -->
             <div class="menu-visor" id="menu-visor">PAINEL GERAL</div>
 
-            <a class="menu-item" data-module="projects" id="nav-projects">
-                <i data-lucide="folder-git"></i><span class="tooltip-text">Projetos</span>
-            </a>
-            <a class="menu-item" data-module="goals" id="nav-goals">
-                <i data-lucide="target"></i><span class="tooltip-text">Metas</span>
-            </a>
-            <a class="menu-item" data-module="calendar" id="nav-calendar">
-                <i data-lucide="calendar"></i><span class="tooltip-text">Calendário</span>
-            </a>
-            <a class="menu-item" data-module="habits" id="nav-habits">
-                <i data-lucide="activity"></i><span class="tooltip-text">Práticas e Disciplina</span>
-            </a>
-            <a class="menu-item" data-module="library" id="nav-library">
-                <i data-lucide="library"></i><span class="tooltip-text">Biblioteca</span>
-            </a>
-            <a class="menu-item" data-module="finances" id="nav-finances">
-                <i data-lucide="dollar-sign"></i><span class="tooltip-text">Finanças</span>
-            </a>
-            <a class="menu-item" data-module="appcenter" id="nav-appcenter">
-                <i data-lucide="grid"></i><span class="tooltip-text">Central de Apps</span>
-            </a>
+            <div class="sidebar-menu-right" style="display: flex; align-items: center; gap: 8px; justify-content: flex-start; flex: 1 1 0%;">
+                <a class="menu-item" data-module="projects" id="nav-projects">
+                    <i data-lucide="folder-git"></i><span class="tooltip-text">Projetos</span>
+                </a>
+                <a class="menu-item" data-module="goals" id="nav-goals">
+                    <i data-lucide="target"></i><span class="tooltip-text">Metas</span>
+                </a>
+                <a class="menu-item" data-module="calendar" id="nav-calendar">
+                    <i data-lucide="calendar"></i><span class="tooltip-text">Calendário</span>
+                </a>
+                <a class="menu-item" data-module="habits" id="nav-habits">
+                    <i data-lucide="activity"></i><span class="tooltip-text">Práticas e Disciplina</span>
+                </a>
+                <a class="menu-item" data-module="library" id="nav-library">
+                    <i data-lucide="library"></i><span class="tooltip-text">Biblioteca</span>
+                </a>
+                <a class="menu-item" data-module="finances" id="nav-finances">
+                    <i data-lucide="dollar-sign"></i><span class="tooltip-text">Finanças</span>
+                </a>
+                <a class="menu-item" data-module="appcenter" id="nav-appcenter">
+                    <i data-lucide="grid"></i><span class="tooltip-text">Central de Apps</span>
+                </a>
+            </div>
         </nav>
         <div class="sidebar-footer" style="display: flex; align-items: center; gap: 12px; padding: 0 24px;">
             <!-- Force Sync -->
@@ -1423,6 +1427,18 @@
         </div>
     </div>
 
+    <!-- Despertador Ringing Overlay -->
+    <div class="modal-overlay" id="modal-alarm-ringing-overlay" style="z-index: 5000; background: rgba(13, 10, 11, 0.95); display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+        <div class="modal-container" style="max-width: 400px; text-align: center; border: 2px solid var(--danger); box-shadow: 0 0 30px var(--danger-glow); padding: 30px; animation: cyberpunk-pulse 1s infinite alternate;">
+            <div style="font-size: 50px; margin-bottom: 15px; color: var(--danger);">🚨</div>
+            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 800; color: var(--danger); text-shadow: 0 0 10px var(--danger-glow); margin-bottom: 10px;">ALARME DISPARADO!</h2>
+            <div id="ringing-alarm-label" style="font-size: 18px; font-weight: 600; color: var(--text-main); margin-bottom: 25px;">Nome do Alarme</div>
+            <button class="action-btn" onclick="silenceAlarm()" style="width: 100%; justify-content: center; background: var(--danger); border-color: var(--danger); font-size: 18px; padding: 12px; font-weight: bold; box-shadow: 0 0 15px var(--danger-glow);">
+                Parar
+            </button>
+        </div>
+    </div>
+
     <!-- Themes Modal -->
     <div class="modal-overlay" id="modal-themes-overlay">
         <div class="modal-container" style="max-width: 400px; text-align: center;">
@@ -1447,6 +1463,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js?v=2.8"></script>
+    <script type="module" src="app.js?v=2.9"></script>
 </body>
 </html>
