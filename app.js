@@ -55,17 +55,19 @@ const SEED_DATA = {
     libraryItems: [],
     apps: [
         { id: "app-7", name: "Espaço Terapêutico", url: "https://paginaterapeutaanderson.vercel.app/espaco.html", desc: "Espaço Terapêutico", type: "espaco", active: true, logo: "espacoterapeutico.png" },
-        { id: "app-5", name: "Phantom Troupe", url: "https://phantomtroupe.vercel.app", desc: "Projeto Phantom Troupe", type: "phantom", active: true, logo: "phantomtroupe.jpg" },
         { id: "app-6", name: "Sonoridade", url: "https://sonoridade-psi.vercel.app/", desc: "Plataforma Sonoridade", type: "sonoridade", active: true, logo: "sonoridade.png" },
-        { id: "app-8", name: "Estética X", url: "https://zero-delta-one.vercel.app", desc: "Estética X", type: "esteticax", active: true, logo: "esteticaX.png" },
-        { id: "app-9", name: "Zero Signal", url: "#", desc: "Aplicativo", type: "zerosignal", active: true, logo: "zerosignal_logo.jpeg" },
         { id: "app-10", name: "Infinity Technology", url: "https://www.infinitytechnologyltda.com.br", desc: "Infinity Technology", type: "infinity", active: true, logo: "infinitytechnologylogo.png" },
+        { id: "app-5", name: "Phantom Troupe", url: "https://phantomtroupe.vercel.app", desc: "Projeto Phantom Troupe", type: "phantom", active: true, logo: "phantomtroupe.jpg" },
         { id: "app-11", name: "WhatsApp", url: "https://web.whatsapp.com", desc: "Conectar ao WhatsApp Web", type: "whatsapp", active: true, logo: "whatsapp.png" },
-        { id: "app-12", name: "SupaBase", url: "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", desc: "Banco de dados SupaBase", type: "supabase", active: true, logo: "supabase.png" },
-        { id: "app-13", name: "Vercel Hospedagens", url: "https://vercel.com/infinitytechnologyltda-creates-projects", desc: "Vercel Hospedagens", type: "vercel", active: true, logo: "vercel.png" },
         { id: "app-14", name: "Instagram", url: "https://www.instagram.com", desc: "Acessar o Instagram", type: "instagram", active: true, logo: "instagram.png" },
+        { id: "app-15", name: "Facebook", url: "https://www.facebook.com", desc: "Acessar o Facebook", type: "facebook", active: true, logo: "facebook.png" },
+        { id: "app-9", name: "Zero Signal", url: "#", desc: "Transmitir aplicação do PC", type: "zerosignal", active: true, logo: "zerosignal_logo.jpeg" },
+        { id: "app-8", name: "Estética X", url: "https://zero-delta-one.vercel.app", desc: "Estética X", type: "esteticax", active: true, logo: "esteticaX.png" },
+        { id: "app-16", name: "Versátil", url: "#", desc: "Transmitir outra página", type: "versatil", active: true, logo: "versatil.png" },
         { id: "app-1", name: "Spotify", url: "https://open.spotify.com/", desc: "Trilha sonora para foco", type: "spotify", active: true, logo: "spotify.png" },
-        { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" }
+        { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" },
+        { id: "app-13", name: "Vercel Hospedagens", url: "https://vercel.com/infinitytechnologyltda-creates-projects", desc: "Vercel Hospedagens", type: "vercel", active: true, logo: "vercel.png" },
+        { id: "app-12", name: "SupaBase", url: "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", desc: "Banco de dados SupaBase", type: "supabase", active: true, logo: "supabase.png" }
     ]
 };
 
@@ -137,14 +139,16 @@ function loadState() {
         addAppIfMissing("Sonoridade", "https://sonoridade-psi.vercel.app/", "Plataforma Sonoridade", "sonoridade", "sonoridade.png");
         addAppIfMissing("Espaço Terapêutico", "https://paginaterapeutaanderson.vercel.app/espaco.html", "Espaço Terapêutico", "espaco", "espacoterapeutico.png");
         addAppIfMissing("Estética X", "https://zero-delta-one.vercel.app", "Estética X", "esteticax", "esteticaX.png");
-        addAppIfMissing("Zero Signal", "#", "Aplicativo", "zerosignal", "zerosignal_logo.jpeg");
+        addAppIfMissing("Zero Signal", "#", "Transmitir aplicação do PC", "zerosignal", "zerosignal_logo.jpeg");
         addAppIfMissing("Infinity Technology", "https://www.infinitytechnologyltda.com.br", "Infinity Technology", "infinity", "infinitytechnologylogo.png");
         addAppIfMissing("WhatsApp", "https://web.whatsapp.com", "Conectar ao WhatsApp Web", "whatsapp", "whatsapp.png");
         addAppIfMissing("SupaBase", "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", "Banco de dados SupaBase", "supabase", "supabase.png");
         addAppIfMissing("Vercel Hospedagens", "https://vercel.com/infinitytechnologyltda-creates-projects", "Vercel Hospedagens", "vercel", "vercel.png");
         addAppIfMissing("Instagram", "https://www.instagram.com", "Acessar o Instagram", "instagram", "instagram.png");
+        addAppIfMissing("Facebook", "https://www.facebook.com", "Acessar o Facebook", "facebook", "facebook.png");
+        addAppIfMissing("Versátil", "#", "Transmitir outra página", "versatil", "versatil.png");
 
-        // Deduplicate apps by name to prevent multiple Instagrams
+        // Deduplicate apps by name to prevent multiple instances
         const seenNames = new Set();
         state.apps = state.apps.filter(app => {
             const nameLower = app.name.toLowerCase().trim();
@@ -155,27 +159,30 @@ function loadState() {
             return true;
         });
 
-        // Reorder apps for existing users: Espaço Terapêutico first, Instagram, Spotify & GitHub last
-        const espacoApp = state.apps.find(a => a.name.toLowerCase().includes("terapêutico") || a.type === "espaco");
-        const instagramApp = state.apps.find(a => a.type === "instagram" || a.name.toLowerCase().includes("instagram"));
-        const spotifyApp = state.apps.find(a => a.type === "spotify" || a.name.toLowerCase().includes("spotify"));
-        const githubApp = state.apps.find(a => a.type === "github" || a.name.toLowerCase().includes("github"));
-        
-        let others = state.apps.filter(a => 
-            a !== espacoApp && 
-            a !== instagramApp &&
-            a !== spotifyApp && 
-            a !== githubApp
-        );
-        
-        const newApps = [];
-        if (espacoApp) newApps.push(espacoApp);
-        newApps.push(...others);
-        if (instagramApp) newApps.push(instagramApp);
-        if (spotifyApp) newApps.push(spotifyApp);
-        if (githubApp) newApps.push(githubApp);
-        
-        state.apps = newApps;
+        // Exact sorting order: Espaço Terapêutico, Sonoridade, Infinity Technology, Phantom Troupe, WhatsApp, Instagram, Facebook, Zero Signal, Estética X, Versátil, Spotify, GitHub, Vercel, SupaBase
+        const getAppOrderIndex = (appItem) => {
+            const nameLower = appItem.name.toLowerCase();
+            const type = appItem.type ? appItem.type.toLowerCase() : "";
+            
+            if (nameLower.includes("terapêutico") || type === "espaco") return 0;
+            if (nameLower.includes("sonoridade") || type === "sonoridade") return 1;
+            if (nameLower.includes("infinity") || type === "infinity") return 2;
+            if (nameLower.includes("phantom") || type === "phantom") return 3;
+            if (nameLower.includes("whatsapp") || type === "whatsapp") return 4;
+            if (nameLower.includes("instagram") || type === "instagram") return 5;
+            if (nameLower.includes("facebook") || type === "facebook") return 6;
+            if (nameLower.includes("zero") || type === "zerosignal") return 7;
+            if (nameLower.includes("estética") || type === "esteticax") return 8;
+            if (nameLower.includes("versátil") || type === "versatil") return 9;
+            if (nameLower.includes("spotify") || type === "spotify") return 10;
+            if (nameLower.includes("github") || type === "github") return 11;
+            if (nameLower.includes("vercel") || type === "vercel") return 12;
+            if (nameLower.includes("supabase") || type === "supabase") return 13;
+            
+            return 100;
+        };
+
+        state.apps.sort((a, b) => getAppOrderIndex(a) - getAppOrderIndex(b));
 
         saveState();
     }
@@ -3028,13 +3035,17 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
     }
 
     const isSpecialApp = (
-        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" ||
+        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" || app.type === "facebook" || app.type === "versatil" || app.type === "zerosignal" || app.type === "phantom" ||
         app.name.toLowerCase().includes("spotify") ||
         app.name.toLowerCase().includes("github") ||
         app.name.toLowerCase().includes("supabase") ||
         app.name.toLowerCase().includes("vercel") ||
         app.name.toLowerCase().includes("whatsapp") ||
-        app.name.toLowerCase().includes("instagram")
+        app.name.toLowerCase().includes("instagram") ||
+        app.name.toLowerCase().includes("facebook") ||
+        app.name.toLowerCase().includes("versatil") ||
+        app.name.toLowerCase().includes("zero") ||
+        app.name.toLowerCase().includes("phantom")
     );
 
     if (isSpecialApp) {
@@ -3049,6 +3060,10 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
             else if (nameLower.includes("vercel")) matchedType = "vercel";
             else if (nameLower.includes("whatsapp")) matchedType = "whatsapp";
             else if (nameLower.includes("instagram")) matchedType = "instagram";
+            else if (nameLower.includes("facebook")) matchedType = "facebook";
+            else if (nameLower.includes("versatil")) matchedType = "versatil";
+            else if (nameLower.includes("zero") || nameLower.includes("signal")) matchedType = "zerosignal";
+            else if (nameLower.includes("phantom")) matchedType = "phantom";
         }
 
         // Initialize activeAppStreams if not present
@@ -3139,6 +3154,16 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
 }
 
 function renderAssistedScreen(type, container, app) {
+    let instructionText = `Para visualizar e monitorar o <strong>${app.name}</strong> diretamente neste painel, clique no botão abaixo e selecione a aba aberta do navegador correspondente.`;
+    
+    if (type === "versatil") {
+        instructionText = `Para espelhar e transmitir <strong>qualquer outra página ou site</strong> que desejar diretamente neste painel, clique no botão abaixo e escolha a Guia do Navegador correspondente.`;
+    } else if (type === "zerosignal") {
+        instructionText = `Para projetar e streamar <strong>qualquer aplicativo aberto no seu computador</strong> (como VS Code, Word, Excel, Photoshop, etc.), clique no botão abaixo e escolha a Janela correspondente.`;
+    } else if (type === "phantom") {
+        instructionText = `Para transmitir o <strong>Phantom Troupe</strong> em tamanho total (100% da janela), clique no botão abaixo e selecione a aba correspondente.`;
+    }
+
     container.innerHTML = `
         <div class="assisted-layout" style="padding: 48px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 24px; background: #07090b; min-height: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
             <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: 8px;">
@@ -3148,7 +3173,7 @@ function renderAssistedScreen(type, container, app) {
             <div style="max-width: 420px; display: flex; flex-direction: column; gap: 8px;">
                 <h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">Transmissão Remota - ${app.name}</h3>
                 <p style="margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.6;">
-                    Para visualizar e monitorar o <strong>${app.name}</strong> diretamente neste painel, clique no botão abaixo e selecione a aba aberta do navegador correspondente.
+                    ${instructionText}
                 </p>
             </div>
 

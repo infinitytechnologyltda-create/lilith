@@ -1498,6 +1498,8 @@ h1, h2, h3, h4, h5, h6 {
 .app-supabase { background: rgba(63, 207, 142, 0.15); color: #3fcf8e; }
 .app-vercel { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
 .app-instagram { background: rgba(225, 48, 108, 0.15); color: #e1306c; }
+.app-facebook { background: rgba(24, 119, 242, 0.15); color: #1877f2; }
+.app-versatil { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
 
 .app-status {
     font-size: 11px;
