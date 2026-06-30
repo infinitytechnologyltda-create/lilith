@@ -2237,191 +2237,346 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ==================== THEME RECONSTRUCTION & ROBOTIC ARMOR ==================== */
 
-/* Transformation Animation for active panels */
+/* Transformation Animation for active panels - Robot assembly sequence */
 @keyframes mecha-transform {
     0% {
         transform: perspective(1200px) rotateX(15deg) rotateY(-40deg) translateZ(-150px) scale(0.85);
         opacity: 0;
-        filter: brightness(0.5) contrast(1.5);
+        filter: brightness(0.3) contrast(1.8) saturate(0);
     }
-    40% {
-        transform: perspective(1200px) rotateX(-5deg) rotateY(15deg) translateZ(50px) scale(0.95);
-        opacity: 0.7;
+    25% {
+        transform: perspective(1200px) rotateX(-8deg) rotateY(20deg) translateZ(60px) scale(0.9);
+        opacity: 0.5;
+        filter: brightness(0.6) contrast(1.4) saturate(0.5);
+    }
+    50% {
+        transform: perspective(1200px) rotateX(5deg) rotateY(-10deg) translateZ(-30px) scale(0.97);
+        opacity: 0.8;
+        filter: brightness(1.3) contrast(1.1) saturate(1.2);
     }
     75% {
-        transform: perspective(1200px) rotateX(2deg) rotateY(-5deg) translateZ(-10px) scale(1.02);
-        filter: brightness(1.2);
+        transform: perspective(1200px) rotateX(-2deg) rotateY(3deg) translateZ(10px) scale(1.03);
+        filter: brightness(1.1);
     }
     100% {
         transform: perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
         opacity: 1;
-        filter: brightness(1) contrast(1);
+        filter: brightness(1) contrast(1) saturate(1);
     }
+}
+
+@keyframes armor-lock {
+    0% { clip-path: inset(50% 50% 50% 50%); opacity: 0; }
+    30% { clip-path: inset(20% 20% 20% 20%); opacity: 0.4; }
+    60% { clip-path: inset(5% 5% 5% 5%); opacity: 0.8; }
+    100% { clip-path: inset(0% 0% 0% 0%); opacity: 1; }
+}
+
+@keyframes scan-line-sweep {
+    0% { top: -2px; }
+    100% { top: 100%; }
+}
+
+@keyframes energy-pulse {
+    0%, 100% { opacity: 0.6; box-shadow: 0 0 5px currentColor; }
+    50% { opacity: 1; box-shadow: 0 0 15px currentColor, 0 0 30px currentColor; }
+}
+
+@keyframes bolt-glow {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; filter: brightness(1.5); }
+}
+
+@keyframes jewel-sparkle {
+    0%, 100% { filter: drop-shadow(0 0 6px var(--jewel-glow)) brightness(1); }
+    50% { filter: drop-shadow(0 0 14px var(--jewel-glow)) drop-shadow(0 0 25px var(--jewel-glow)) brightness(1.3); }
 }
 
 .module-panel.active {
     animation: mecha-transform 0.65s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
-/* Theme 1: Gundam / Neon Overdrive Armor */
+/* ==================== THEME 1: NEON OVERDRIVE (GUNDAM MECHA) ==================== */
+
 .theme-gundam .glass-panel {
-    border: 2px solid var(--border-color) !important;
-    background: linear-gradient(135deg, rgba(13, 17, 23, 0.9) 0%, rgba(20, 24, 35, 0.85) 100%) !important;
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.25), inset 0 0 20px rgba(0, 242, 254, 0.15) !important;
+    border: 2px solid rgba(0, 242, 254, 0.6) !important;
+    background: linear-gradient(135deg, rgba(8, 12, 20, 0.94) 0%, rgba(15, 20, 32, 0.92) 50%, rgba(10, 15, 25, 0.94) 100%) !important;
+    box-shadow:
+        0 0 25px rgba(0, 242, 254, 0.2),
+        inset 0 0 25px rgba(0, 242, 254, 0.08),
+        inset 0 1px 0 rgba(0, 242, 254, 0.3) !important;
     position: relative;
-    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px)) !important;
+    overflow: hidden;
+    clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)) !important;
     border-radius: 0px !important;
 }
 
+/* Top energy bar */
 .theme-gundam .glass-panel::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #ff0055, #00f2fe, #fffb00) !important;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, #ff0055 15%, #00f2fe 50%, #fffb00 85%, transparent 100%);
     z-index: 5;
+    animation: energy-pulse 3s ease-in-out infinite;
 }
 
-/* Theme 2: Decepticon / Dark Obsidian Armor */
+/* Scan-line sweep effect */
+.theme-gundam .glass-panel::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.4), transparent);
+    z-index: 4;
+    animation: scan-line-sweep 4s linear infinite;
+    pointer-events: none;
+}
+
+/* Corner bolts for Gundam theme */
+.theme-gundam .glass-panel .jewel ~ .corner-bolt,
+.theme-gundam .glass-panel > .corner-bolt {
+    display: block;
+}
+
+/* Gundam sidebar */
+.theme-gundam .sidebar {
+    background: linear-gradient(180deg, rgba(8, 12, 20, 0.98) 0%, rgba(5, 8, 15, 0.99) 100%) !important;
+    border-right: 2px solid rgba(0, 242, 254, 0.4) !important;
+    box-shadow: 3px 0 20px rgba(0, 242, 254, 0.15) !important;
+}
+
+.theme-gundam .sidebar .nav-link:hover,
+.theme-gundam .sidebar .nav-link.active {
+    background: rgba(0, 242, 254, 0.12) !important;
+    border-left: 3px solid #00f2fe !important;
+}
+
+.theme-gundam .header-bar {
+    background: linear-gradient(90deg, rgba(8, 12, 20, 0.95) 0%, rgba(15, 20, 32, 0.92) 100%) !important;
+    border-bottom: 2px solid rgba(0, 242, 254, 0.3) !important;
+    box-shadow: 0 3px 15px rgba(0, 242, 254, 0.1) !important;
+}
+
+.theme-gundam .module-panel.active {
+    animation: armor-lock 0.5s ease-out both, mecha-transform 0.65s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ==================== THEME 2: OBSIDIAN ENGINE (DECEPTICON MECH) ==================== */
+
 .theme-decepticon .glass-panel {
-    border: 2px solid var(--border-color) !important;
-    background: linear-gradient(135deg, rgba(8, 6, 10, 0.95) 0%, rgba(18, 12, 24, 0.92) 100%) !important;
-    box-shadow: 0 0 25px rgba(176, 38, 255, 0.3), inset 0 0 30px rgba(176, 38, 255, 0.2) !important;
+    border: 2px solid rgba(176, 38, 255, 0.5) !important;
+    background: linear-gradient(145deg, rgba(6, 4, 10, 0.96) 0%, rgba(14, 8, 22, 0.94) 40%, rgba(8, 5, 14, 0.96) 100%) !important;
+    box-shadow:
+        0 0 30px rgba(176, 38, 255, 0.2),
+        inset 0 0 30px rgba(176, 38, 255, 0.08),
+        0 0 60px rgba(57, 255, 20, 0.05) !important;
     position: relative;
-    border-radius: 8px !important;
+    overflow: hidden;
+    border-radius: 4px !important;
 }
 
+/* Top circuit line - green neon */
 .theme-decepticon .glass-panel::before {
     content: '';
     position: absolute;
-    top: -2px;
-    left: 30px;
-    right: 30px;
-    height: 3px;
-    background: #39ff14;
-    box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    top: -1px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #39ff14 10%, #39ff14 30%, transparent 35%, transparent 65%, #39ff14 70%, #39ff14 90%, transparent 100%);
+    box-shadow: 0 0 8px #39ff14, 0 0 16px rgba(57, 255, 20, 0.4);
     z-index: 5;
+    animation: energy-pulse 2.5s ease-in-out infinite;
 }
 
+/* Bottom circuit line */
 .theme-decepticon .glass-panel::after {
     content: '';
     position: absolute;
-    bottom: -2px;
-    left: 30px;
-    right: 30px;
-    height: 3px;
-    background: #39ff14;
-    box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    bottom: -1px;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #b026ff 20%, transparent 40%, transparent 60%, #b026ff 80%, transparent 100%);
+    box-shadow: 0 0 8px #b026ff, 0 0 16px rgba(176, 38, 255, 0.4);
     z-index: 5;
+    animation: energy-pulse 3s ease-in-out infinite 0.5s;
 }
+
+/* Decepticon sidebar */
+.theme-decepticon .sidebar {
+    background: linear-gradient(180deg, rgba(6, 4, 10, 0.98) 0%, rgba(10, 6, 16, 0.99) 100%) !important;
+    border-right: 2px solid rgba(176, 38, 255, 0.4) !important;
+    box-shadow: 3px 0 25px rgba(176, 38, 255, 0.15) !important;
+}
+
+.theme-decepticon .sidebar .nav-link:hover,
+.theme-decepticon .sidebar .nav-link.active {
+    background: rgba(57, 255, 20, 0.08) !important;
+    border-left: 3px solid #39ff14 !important;
+}
+
+.theme-decepticon .header-bar {
+    background: linear-gradient(90deg, rgba(6, 4, 10, 0.96) 0%, rgba(14, 8, 22, 0.94) 100%) !important;
+    border-bottom: 2px solid rgba(57, 255, 20, 0.25) !important;
+    box-shadow: 0 3px 15px rgba(176, 38, 255, 0.1) !important;
+}
+
+.theme-decepticon .module-panel.active {
+    animation: armor-lock 0.6s ease-out both, mecha-transform 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ==================== CORNER BOLTS (Armor Rivets) ==================== */
+.armor-bolt {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    z-index: 10;
+    pointer-events: none;
+    animation: bolt-glow 3s ease-in-out infinite;
+}
+
+.theme-gundam .armor-bolt {
+    background: radial-gradient(circle, #00f2fe 30%, rgba(0, 242, 254, 0.3) 100%);
+    box-shadow: 0 0 6px #00f2fe, inset 0 0 2px rgba(255,255,255,0.6);
+}
+
+.theme-decepticon .armor-bolt {
+    background: radial-gradient(circle, #39ff14 30%, rgba(57, 255, 20, 0.3) 100%);
+    box-shadow: 0 0 6px #39ff14, inset 0 0 2px rgba(255,255,255,0.6);
+}
+
+.armor-bolt.top-left { top: 8px; left: 8px; }
+.armor-bolt.top-right { top: 8px; right: 8px; }
+.armor-bolt.bottom-left { bottom: 8px; left: 8px; }
+.armor-bolt.bottom-right { bottom: 8px; right: 8px; }
 
 /* ==================== REAL JEWELS FOR MODULE WINDOWS ==================== */
 .jewel {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 15px;
-    height: 15px;
+    top: 12px;
+    right: 12px;
+    width: 22px;
+    height: 22px;
     z-index: 99;
     cursor: pointer;
     clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-    transition: transform 0.3s ease, filter 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+    --jewel-glow: rgba(255, 255, 255, 0.6);
+    animation: jewel-sparkle 4s ease-in-out infinite;
+}
+
+.jewel::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 25%;
+    width: 30%;
+    height: 25%;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    filter: blur(1px);
+    pointer-events: none;
 }
 
 .jewel:hover {
-    transform: scale(1.4) rotate(15deg);
-    filter: brightness(1.3) contrast(1.1);
+    transform: scale(1.6) rotate(20deg);
+    filter: brightness(1.4) contrast(1.1);
 }
 
 /* Jewel 1: Diamond (Diamante) */
 .jewel.diamond {
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #d6f5ff 50%, #7ec8e3 100%);
-    filter: drop-shadow(0 0 8px #ffffff);
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e0f4ff 30%, #a8d8ea 60%, #7ec8e3 100%);
+    --jewel-glow: rgba(255, 255, 255, 0.8);
 }
 
 /* Jewel 2: Emerald (Esmeralda) */
 .jewel.emerald {
-    background: radial-gradient(circle at 35% 35%, #a3ffa3 0%, #2ecc71 50%, #196f3d 100%);
-    filter: drop-shadow(0 0 8px #2ecc71);
+    background: radial-gradient(circle at 30% 30%, #b3ffb3 0%, #2ecc71 40%, #1a9850 70%, #0d5e32 100%);
+    --jewel-glow: rgba(46, 204, 113, 0.8);
 }
 
 /* Jewel 3: Ruby (Rubi) */
 .jewel.ruby {
-    background: radial-gradient(circle at 35% 35%, #ff9999 0%, #e74c3c 50%, #7b241c 100%);
-    filter: drop-shadow(0 0 8px #e74c3c);
+    background: radial-gradient(circle at 30% 30%, #ffb3b3 0%, #e74c3c 40%, #c0392b 70%, #7b241c 100%);
+    --jewel-glow: rgba(231, 76, 60, 0.8);
 }
 
 /* Jewel 4: Sapphire (Safira) */
 .jewel.sapphire {
-    background: radial-gradient(circle at 35% 35%, #99ccff 0%, #3498db 50%, #1b4f72 100%);
-    filter: drop-shadow(0 0 8px #3498db);
+    background: radial-gradient(circle at 30% 30%, #b3d9ff 0%, #3498db 40%, #2471a3 70%, #1b4f72 100%);
+    --jewel-glow: rgba(52, 152, 219, 0.8);
 }
 
 /* Jewel 5: Amethyst (Ametista) */
 .jewel.amethyst {
-    background: radial-gradient(circle at 35% 35%, #e8daef 0%, #9b59b6 50%, #4a235a 100%);
-    filter: drop-shadow(0 0 8px #9b59b6);
+    background: radial-gradient(circle at 30% 30%, #e8d5f5 0%, #9b59b6 40%, #7d3c98 70%, #4a235a 100%);
+    --jewel-glow: rgba(155, 89, 182, 0.8);
 }
 
 /* Jewel 6: Topaz (Topázio) */
 .jewel.topaz {
-    background: radial-gradient(circle at 35% 35%, #fdebd0 0%, #f39c12 50%, #7e5109 100%);
-    filter: drop-shadow(0 0 8px #f39c12);
+    background: radial-gradient(circle at 30% 30%, #ffecc2 0%, #f39c12 40%, #d68910 70%, #7e5109 100%);
+    --jewel-glow: rgba(243, 156, 18, 0.8);
 }
 
 /* Jewel 7: Opal (Opala) */
 .jewel.opal {
-    background: linear-gradient(135deg, #fef5e7 0%, #ebf5fb 40%, #fadbd8 80%, #d6eaf8 100%);
-    filter: drop-shadow(0 0 8px #fadbd8);
+    background: linear-gradient(135deg, #fef5e7 0%, #d6eaf8 25%, #fadbd8 50%, #e8f8f5 75%, #fef9e7 100%);
+    --jewel-glow: rgba(250, 219, 216, 0.8);
 }
 
 /* Jewel 8: Turquoise (Turquesa) */
 .jewel.turquoise {
-    background: radial-gradient(circle at 35% 35%, #e0f7fa 0%, #17a589 50%, #0e6251 100%);
-    filter: drop-shadow(0 0 8px #17a589);
+    background: radial-gradient(circle at 30% 30%, #ccf2f0 0%, #17a589 40%, #128874 70%, #0e6251 100%);
+    --jewel-glow: rgba(23, 165, 137, 0.8);
 }
 
 /* Jewel 9: Jasper (Jaspe) */
 .jewel.jasper {
-    background: radial-gradient(circle at 35% 35%, #f5b041 0%, #ba4a00 50%, #6e2c00 100%);
-    filter: drop-shadow(0 0 8px #ba4a00);
+    background: radial-gradient(circle at 30% 30%, #f5c27a 0%, #ba4a00 40%, #943d00 70%, #6e2c00 100%);
+    --jewel-glow: rgba(186, 74, 0, 0.8);
 }
 
 /* Jewel 10: Jade (Jade) */
 .jewel.jade {
-    background: radial-gradient(circle at 35% 35%, #d5f5e3 0%, #27ae60 50%, #145a32 100%);
-    filter: drop-shadow(0 0 8px #27ae60);
+    background: radial-gradient(circle at 30% 30%, #c8f7d4 0%, #27ae60 40%, #1e8449 70%, #145a32 100%);
+    --jewel-glow: rgba(39, 174, 96, 0.8);
 }
 
 /* Jewel 11: Quartz (Quartzo Rosa) */
 .jewel.quartz {
-    background: radial-gradient(circle at 35% 35%, #fde2e4 0%, #ffb3c1 50%, #fb6f92 100%);
-    filter: drop-shadow(0 0 8px #ffb3c1);
+    background: radial-gradient(circle at 30% 30%, #fde2e4 0%, #ffb3c1 40%, #f48fb1 70%, #e91e8c 100%);
+    --jewel-glow: rgba(255, 179, 193, 0.8);
 }
 
 /* Jewel 12: Obsidian (Obsidiana) */
 .jewel.obsidian {
-    background: radial-gradient(circle at 35% 35%, #566573 0%, #2c3e50 50%, #1c2833 100%);
-    filter: drop-shadow(0 0 8px #2c3e50);
+    background: radial-gradient(circle at 30% 30%, #7f8c8d 0%, #34495e 40%, #2c3e50 70%, #1c2833 100%);
+    --jewel-glow: rgba(52, 73, 94, 0.8);
 }
 
 /* Jewel 13: Citrine (Citrino) */
 .jewel.citrine {
-    background: radial-gradient(circle at 35% 35%, #fef9e7 0%, #f4d03f 50%, #7d6608 100%);
-    filter: drop-shadow(0 0 8px #f4d03f);
+    background: radial-gradient(circle at 30% 30%, #fef9e7 0%, #f4d03f 40%, #d4ac0d 70%, #7d6608 100%);
+    --jewel-glow: rgba(244, 208, 63, 0.8);
 }
 
 /* Jewel 14: Aquamarine (Água-Marinha) */
 .jewel.aquamarine {
-    background: radial-gradient(circle at 35% 35%, #e8f8f5 0%, #76d7c4 50%, #117864 100%);
-    filter: drop-shadow(0 0 8px #76d7c4);
+    background: radial-gradient(circle at 30% 30%, #e8f8f5 0%, #76d7c4 40%, #48c9b0 70%, #117864 100%);
+    --jewel-glow: rgba(118, 215, 196, 0.8);
 }
 
 /* Jewel 15: Garnet (Granada) */
 .jewel.garnet {
-    background: radial-gradient(circle at 35% 35%, #f9ebd2 0%, #c0392b 50%, #641e16 100%);
-    filter: drop-shadow(0 0 8px #c0392b);
+    background: radial-gradient(circle at 30% 30%, #f2c8a0 0%, #c0392b 40%, #922b21 70%, #641e16 100%);
+    --jewel-glow: rgba(192, 57, 43, 0.8);
 }
+

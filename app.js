@@ -591,60 +591,75 @@ function renderModuleContent(moduleName) {
     // Inject the active page jewel dynamically
     const activePanel = document.getElementById("module-" + moduleName);
     if (activePanel) {
-        const glassPanel = activePanel.querySelector(".glass-panel") || activePanel;
-        if (glassPanel) {
-            // Remove existing jewel first
-            const oldJewel = glassPanel.querySelector(".jewel");
-            if (oldJewel) oldJewel.remove();
+        // Find all glass panels in the module (some modules have multiple)
+        const glassPanels = activePanel.querySelectorAll(".glass-panel");
+        const targetPanels = glassPanels.length > 0 ? glassPanels : [activePanel];
+        
+        targetPanels.forEach((glassPanel, idx) => {
+            // Remove existing jewel and bolts first
+            glassPanel.querySelectorAll(".jewel, .armor-bolt").forEach(el => el.remove());
             
-            const jewelMap = {
-                dashboard: 'diamond',
-                notes: 'emerald',
-                diary: 'ruby',
-                ideas: 'sapphire',
-                whiteboard: 'amethyst',
-                quests: 'topaz',
-                tasks: 'opal',
-                projects: 'turquoise',
-                goals: 'jasper',
-                calendar: 'jade',
-                habits: 'quartz',
-                library: 'obsidian',
-                finances: 'citrine',
-                appcenter: 'aquamarine',
-                notifications: 'garnet'
-            };
-            const jewelType = jewelMap[moduleName] || 'diamond';
-            const jewelNamesMap = {
-                diamond: 'Diamante Real',
-                emerald: 'Esmeralda Natural',
-                ruby: 'Rubi de Sangue',
-                sapphire: 'Safira Estrela',
-                amethyst: 'Ametista Imperial',
-                topaz: 'Topázio Imperial',
-                opal: 'Opala Nobre',
-                turquoise: 'Turquesa Persa',
-                jasper: 'Jaspe Sanguíneo',
-                jade: 'Jade Imperial',
-                quartz: 'Quartzo Rosa',
-                obsidian: 'Obsidiana Negra',
-                citrine: 'Citrino Dourado',
-                aquamarine: 'Água-Marinha Azul',
-                garnet: 'Granada Almandina'
-            };
-            const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
+            // Only add jewel to the first glass-panel
+            if (idx === 0) {
+                const jewelMap = {
+                    dashboard: 'diamond',
+                    notes: 'emerald',
+                    diary: 'ruby',
+                    ideas: 'sapphire',
+                    whiteboard: 'amethyst',
+                    quests: 'topaz',
+                    tasks: 'opal',
+                    projects: 'turquoise',
+                    goals: 'jasper',
+                    calendar: 'jade',
+                    habits: 'quartz',
+                    library: 'obsidian',
+                    finances: 'citrine',
+                    appcenter: 'aquamarine',
+                    notifications: 'garnet'
+                };
+                const jewelType = jewelMap[moduleName] || 'diamond';
+                const jewelNamesMap = {
+                    diamond: 'Diamante Real',
+                    emerald: 'Esmeralda Natural',
+                    ruby: 'Rubi de Sangue',
+                    sapphire: 'Safira Estrela',
+                    amethyst: 'Ametista Imperial',
+                    topaz: 'Topázio Imperial',
+                    opal: 'Opala Nobre',
+                    turquoise: 'Turquesa Persa',
+                    jasper: 'Jaspe Sanguíneo',
+                    jade: 'Jade Imperial',
+                    quartz: 'Quartzo Rosa',
+                    obsidian: 'Obsidiana Negra',
+                    citrine: 'Citrino Dourado',
+                    aquamarine: 'Água-Marinha Azul',
+                    garnet: 'Granada Almandina'
+                };
+                const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
 
-            const jewelEl = document.createElement("div");
-            jewelEl.className = `jewel ${jewelType}`;
-            jewelEl.title = `Gema Ativa: ${jewelName}`;
+                const jewelEl = document.createElement("div");
+                jewelEl.className = `jewel ${jewelType}`;
+                jewelEl.title = `Gema Ativa: ${jewelName}`;
+                glassPanel.appendChild(jewelEl);
+            }
             
-            // Ensure container has relative position to absolute position the jewel
+            // Ensure container has relative position
             if (getComputedStyle(glassPanel).position === 'static') {
                 glassPanel.style.position = 'relative';
             }
             
-            glassPanel.appendChild(jewelEl);
-        }
+            // Add armor bolts for robotic themes
+            const currentTheme = state.systemTheme || 'default';
+            if (currentTheme === 'gundam' || currentTheme === 'decepticon') {
+                const boltPositions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+                boltPositions.forEach(pos => {
+                    const bolt = document.createElement("div");
+                    bolt.className = `armor-bolt ${pos}`;
+                    glassPanel.appendChild(bolt);
+                });
+            }
+        });
     }
 
     // Re-trigger Lucide icons render
