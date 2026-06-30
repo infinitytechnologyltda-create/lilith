@@ -70,9 +70,6 @@
         </div>
         <nav class="sidebar-menu">
             <div class="sidebar-menu-left" style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1 1 0%;">
-                <a class="menu-item" data-module="notifications" id="nav-notifications">
-                    <i data-lucide="bell"></i><span class="tooltip-text">Notificações & Alarmes</span>
-                </a>
                 <a class="menu-item active" data-module="dashboard" id="nav-dashboard">
                     <i data-lucide="layout-dashboard"></i><span class="tooltip-text">Dashboard</span>
                 </a>
@@ -124,6 +121,11 @@
             </div>
         </nav>
         <div class="sidebar-footer" style="display: flex; align-items: center; gap: 12px; padding: 0 24px;">
+            <!-- Notificações e Alarmes -->
+            <button class="supabase-status-btn menu-item" data-module="notifications" id="nav-notifications" title="Notificações e Alarmes" style="margin-left: 0; width: 32px; height: 32px; padding: 6px; border-radius: var(--border-radius-sm); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+            </button>
+
             <!-- Force Sync -->
             <button class="supabase-status-btn" id="force-sync-btn" title="Atualizar Dados" style="margin-left: 0;">
                 <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
@@ -1463,6 +1465,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js?v=2.9"></script>
+    <script type="module" src="app.js?v=3.0"></script>
 </body>
 </html>

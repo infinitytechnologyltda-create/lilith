@@ -278,7 +278,8 @@ function initRouter() {
         habits: "Práticas e Disciplina",
         library: "Biblioteca & Arquivos",
         finances: "Finanças Pessoais",
-        appcenter: "Central de Aplicações"
+        appcenter: "Central de Aplicações",
+        notifications: "Notificações e Alarmes"
     };
 
     menuItems.forEach(item => {
@@ -414,7 +415,8 @@ function executeModuleSwitch(moduleName) {
         habits: "Práticas e Disciplina",
         library: "Biblioteca & Arquivos",
         finances: "Finanças Pessoais",
-        appcenter: "Central de Aplicações"
+        appcenter: "Central de Aplicações",
+        notifications: "Notificações e Alarmes"
     };
     document.getElementById("page-title").textContent = titles[moduleName] || "Lilith";
 
