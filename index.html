@@ -126,7 +126,7 @@
             </button>
 
             <!-- Opacity Settings Trigger -->
-            <button class="supabase-status-btn" id="opacity-modal-btn" onclick="openModal('modal-opacity-overlay')" title="Ajustar Opacidade" style="margin-left: 0;">
+            <button class="supabase-status-btn" id="opacity-modal-btn" title="Ajustar Opacidade" style="margin-left: 0;">
                 <i data-lucide="sliders" style="width: 18px; height: 18px;"></i>
             </button>
 
@@ -1324,7 +1324,7 @@
         <div class="modal-container" style="max-width: 400px; text-align: center;">
             <div class="modal-header">
                 <h3 class="modal-title" style="text-align: center; width: 100%;">Selecionar Tema Lilith OS</h3>
-                <button class="modal-close" onclick="closeModal('modal-themes-overlay')"><i data-lucide="x"></i></button>
+                <button class="modal-close" id="theme-modal-close-btn"><i data-lucide="x"></i></button>
             </div>
             <div style="display: flex; flex-direction: column; gap: 16px; padding: 15px 0;">
                 <button class="action-btn" id="theme-btn-default" style="justify-content: center; width: 100%;">

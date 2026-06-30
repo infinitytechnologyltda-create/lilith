@@ -417,7 +417,7 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 0;
     background-color: rgba(46, 42, 45, 0.85);
     backdrop-filter: blur(8px);
-    z-index: 1000;
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;

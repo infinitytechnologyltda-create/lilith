@@ -5197,3 +5197,9 @@ const themeBtnDecepticon = document.getElementById("theme-btn-decepticon");
 if (themeBtnDecepticon) {
     themeBtnDecepticon.onclick = () => selectSystemTheme("decepticon");
 }
+
+const themeModalCloseBtn = document.getElementById("theme-modal-close-btn");
+if (themeModalCloseBtn) {
+    themeModalCloseBtn.onclick = () => closeModal("modal-themes-overlay");
+}
+
