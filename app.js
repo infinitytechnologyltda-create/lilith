@@ -147,6 +147,28 @@ function loadState() {
     if (typeof applyGlobalBackground === "function") {
         applyGlobalBackground();
     }
+    checkDailyQuestsReset();
+}
+
+function checkDailyQuestsReset() {
+    const today = getTodayString();
+    if (!state.lastQuestResetDate) {
+        state.lastQuestResetDate = today;
+        saveState();
+        return;
+    }
+    if (state.lastQuestResetDate !== today) {
+        if (state.quests && state.quests.daily) {
+            state.quests.daily.forEach(q => {
+                q.completed = false;
+            });
+        }
+        state.lastQuestResetDate = today;
+        saveState();
+        if (typeof currentModule !== 'undefined' && currentModule === "quests") {
+            renderQuests();
+        }
+    }
 }
 
 // Save State to LocalStorage
@@ -447,19 +469,7 @@ function setupGlobalActionBtn(moduleName) {
             break;
         case "quests":
             label.textContent = "Nova Quest";
-            btn.onclick = () => {
-                const text = prompt("Digite a descrição da sua quest diária customizada:");
-                if(text) {
-                    state.quests.daily.push({
-                        id: "qd-" + Date.now(),
-                        text: text,
-                        xp: 20,
-                        completed: false
-                    });
-                    saveState();
-                    renderQuests();
-                }
-            };
+            btn.onclick = () => openModal("modal-quests-overlay");
             break;
         case "projects":
             label.textContent = "Novo Projeto";
@@ -2970,6 +2980,12 @@ window.onload = () => {
     initRouter();
     bindTourEvents();
     initFloatingStreamControls();
+    
+    // Check reset daily quests and set periodic check
+    if (typeof checkDailyQuestsReset === "function") {
+        checkDailyQuestsReset();
+        setInterval(checkDailyQuestsReset, 60000);
+    }
     
     // Track mouse for CSS glow effect
     window.addEventListener("mousemove", (e) => {
