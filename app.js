@@ -144,8 +144,25 @@ function loadState() {
 
         saveState();
     }
+    // Initialize alarms and notifications arrays if not present
+    if (!state.alarms) state.alarms = [];
+    if (!state.notifications) state.notifications = [];
+    if (state.calendarEvents) {
+        state.calendarEvents.forEach(ev => {
+            if (ev.notifiedOneDayBefore === undefined) {
+                ev.notifiedOneDayBefore = false;
+            }
+        });
+    }
+
     if (typeof applyGlobalBackground === "function") {
         applyGlobalBackground();
+    }
+    if (typeof applyBgOpacity === "function") {
+        applyBgOpacity();
+    }
+    if (typeof applyMenuOpacity === "function") {
+        applyMenuOpacity();
     }
     checkDailyQuestsReset();
 }
@@ -562,6 +579,9 @@ function renderModuleContent(moduleName) {
             break;
         case "appcenter":
             renderAppCenter();
+            break;
+        case "notifications":
+            renderAlarmsAndNotifications();
             break;
     }
     // Re-trigger Lucide icons render
@@ -1743,17 +1763,7 @@ document.getElementById("tasks-filter-priority").addEventListener("change", rend
 document.getElementById("tasks-history-search").addEventListener("input", renderTasks);
 document.getElementById("tasks-history-filter-priority").addEventListener("change", renderTasks);
 
-const clearHistoryBtn = document.getElementById("tasks-clear-history-btn");
-if(clearHistoryBtn) {
-    clearHistoryBtn.addEventListener("click", () => {
-        if(confirm("Tem certeza que deseja apagar permanentemente todas as tarefas concluídas do histórico?")) {
-            state.tasks = state.tasks.filter(t => !t.completed);
-            saveState();
-            renderTasks();
-            updateUIElements();
-        }
-    });
-}
+
 
 document.getElementById("task-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -2272,7 +2282,19 @@ function renderCalendar() {
         // Find calendar manual events on this day
         const dayEvents = state.calendarEvents.filter(e => e.date === dateStr);
         dayEvents.forEach(ev => {
-            eventsHTML += `<span class="event-dot event" title="${ev.title}">${ev.title}</span>`;
+            let importanceLabel = "";
+            let colorStyle = "";
+            if (ev.importance === "3") {
+                importanceLabel = " [A]"; // Alta
+                colorStyle = "background-color: rgba(239, 68, 68, 0.25); border-left: 2px solid #ef4444; color: #ff9999;";
+            } else if (ev.importance === "2") {
+                importanceLabel = " [M]"; // Média
+                colorStyle = "background-color: rgba(245, 158, 11, 0.25); border-left: 2px solid #f59e0b; color: #ffdb99;";
+            } else {
+                importanceLabel = " [B]"; // Baixa
+                colorStyle = "background-color: rgba(59, 130, 246, 0.25); border-left: 2px solid #3b82f6; color: #99ccff;";
+            }
+            eventsHTML += `<span class="event-dot event" style="${colorStyle}" title="${ev.title}">${ev.title}${importanceLabel}</span>`;
         });
 
         cell.innerHTML = `
@@ -2297,20 +2319,25 @@ document.getElementById("calendar-next-month").onclick = () => {
 function addCalendarEventPrompt(dateStr) {
     document.getElementById("calendar-event-date-input").value = dateStr;
     document.getElementById("calendar-event-title-input").value = "";
+    document.getElementById("calendar-event-importance-input").value = "2";
     document.getElementById("calendar-event-label").textContent = `Adicionar evento para o dia (${formatDateString(dateStr)}):`;
     openModal("modal-calendar-overlay");
 }
+window.addCalendarEventPrompt = addCalendarEventPrompt;
 
 document.getElementById("calendar-event-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const dateStr = document.getElementById("calendar-event-date-input").value;
     const title = document.getElementById("calendar-event-title-input").value;
+    const importance = document.getElementById("calendar-event-importance-input").value;
 
     if(title && title.trim()) {
         state.calendarEvents.push({
             id: "ev-" + Date.now(),
             title: title.trim(),
             date: dateStr,
+            importance: importance,
+            notifiedOneDayBefore: false,
             type: "event"
         });
         addXP(5);
@@ -2985,6 +3012,12 @@ window.onload = () => {
     if (typeof checkDailyQuestsReset === "function") {
         checkDailyQuestsReset();
         setInterval(checkDailyQuestsReset, 60000);
+    }
+
+    // Check notifications and alarms, and set periodic check
+    if (typeof checkNotificationsAndAlarms === "function") {
+        checkNotificationsAndAlarms();
+        setInterval(checkNotificationsAndAlarms, 60000);
     }
     
     // Track mouse for CSS glow effect
@@ -3770,6 +3803,12 @@ async function loadStateFromSupabase(showAlert = true) {
             }
             if (typeof applyGlobalBackground === "function") {
                 applyGlobalBackground();
+            }
+            if (typeof applyBgOpacity === "function") {
+                applyBgOpacity();
+            }
+            if (typeof applyMenuOpacity === "function") {
+                applyMenuOpacity();
             }
             
             // Re-render dashboard/active module
@@ -4665,6 +4704,7 @@ window.changeGlobalBackground = changeGlobalBackground;
 
 function applyGlobalBackground() {
     const bgVideo = document.getElementById("bg-video");
+    const bgOverlay = document.getElementById("global-bg-overlay");
     if(state.globalBg) {
         const bg = state.globalBg;
         if(bg.type === 'video') {
@@ -4674,17 +4714,284 @@ function applyGlobalBackground() {
                 bgVideo.load();
                 bgVideo.play().catch(e => console.log("Video auto play prevented", e));
             }
-            document.body.style.backgroundImage = "none";
+            if(bgOverlay) bgOverlay.style.backgroundImage = "none";
         } else {
             if(bgVideo) {
                 bgVideo.style.display = "none";
                 bgVideo.src = "";
             }
-            document.body.style.backgroundImage = `url(${bg.src})`;
-            document.body.style.backgroundSize = "cover";
-            document.body.style.backgroundPosition = "center";
-            document.body.style.backgroundAttachment = "fixed";
+            if(bgOverlay) {
+                bgOverlay.style.backgroundImage = `url(${bg.src})`;
+            }
         }
     }
 }
 window.applyGlobalBackground = applyGlobalBackground;
+
+// ==================== OPACITY REGULATORS ====================
+function changeBgOpacity(val) {
+    state.bgOpacity = Number(val);
+    saveState();
+    applyBgOpacity();
+}
+window.changeBgOpacity = changeBgOpacity;
+
+function applyBgOpacity() {
+    const val = state.bgOpacity !== undefined ? state.bgOpacity : 100;
+    const bgVideo = document.getElementById("bg-video");
+    const bgOverlay = document.getElementById("global-bg-overlay");
+    const opacity = val / 100;
+    
+    // Video maximum opacity was 0.35, let's scale it
+    if (bgVideo) bgVideo.style.opacity = opacity * 0.35;
+    if (bgOverlay) bgOverlay.style.opacity = opacity;
+    
+    const slider = document.getElementById("opacity-bg-range");
+    const valueSpan = document.getElementById("opacity-bg-value");
+    if (slider) slider.value = val;
+    if (valueSpan) valueSpan.textContent = val + "%";
+}
+window.applyBgOpacity = applyBgOpacity;
+
+function changeMenuOpacity(val) {
+    state.menuOpacity = Number(val);
+    saveState();
+    applyMenuOpacity();
+}
+window.changeMenuOpacity = changeMenuOpacity;
+
+function applyMenuOpacity() {
+    const val = state.menuOpacity !== undefined ? state.menuOpacity : 100;
+    const sidebar = document.getElementById("sidebar");
+    const opacity = val / 100;
+    
+    if (sidebar) sidebar.style.opacity = opacity;
+    
+    const slider = document.getElementById("opacity-menu-range");
+    const valueSpan = document.getElementById("opacity-menu-value");
+    if (slider) slider.value = val;
+    if (valueSpan) valueSpan.textContent = val + "%";
+}
+window.applyMenuOpacity = applyMenuOpacity;
+
+// ==================== CYBERPUNK SOUND & VISUAL EFFECTS ====================
+function playNotificationSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Cyberpunk synthetic double-beep
+        const playBeep = (time, freq, duration) => {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.frequency.value = freq;
+            osc.type = 'sawtooth';
+            
+            gainNode.gain.setValueAtTime(0, time);
+            gainNode.gain.linearRampToValueAtTime(0.2, time + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+            
+            osc.start(time);
+            osc.stop(time + duration);
+        };
+        
+        const now = audioCtx.currentTime;
+        playBeep(now, 880, 0.12);
+        playBeep(now + 0.15, 1320, 0.2);
+    } catch(e) {
+        console.error("Audio Context failed", e);
+    }
+}
+window.playNotificationSound = playNotificationSound;
+
+function triggerCyberpunkBlink() {
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.backgroundColor = "rgba(0, 242, 254, 0.15)";
+    overlay.style.zIndex = "99999";
+    overlay.style.pointerEvents = "none";
+    document.body.appendChild(overlay);
+    
+    let visible = true;
+    let blinks = 0;
+    const interval = setInterval(() => {
+        visible = !visible;
+        overlay.style.display = visible ? "block" : "none";
+        blinks++;
+        if (blinks > 6) {
+            clearInterval(interval);
+            document.body.removeChild(overlay);
+        }
+    }, 70);
+}
+window.triggerCyberpunkBlink = triggerCyberpunkBlink;
+
+// ==================== ALARMS & NOTIFICATIONS ====================
+function triggerNotification(text) {
+    if (!state.notifications) state.notifications = [];
+    
+    const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = `${formatDateString(getTodayString())} às ${timeStr}`;
+    
+    state.notifications.unshift({
+        id: "notif-" + Date.now(),
+        text: text,
+        timestamp: timestamp
+    });
+    
+    if (state.notifications.length > 50) {
+        state.notifications.pop();
+    }
+    
+    saveState();
+    playNotificationSound();
+    triggerCyberpunkBlink();
+    
+    showMagicAlert("Notificação 🛡️", text);
+    
+    if (typeof currentModule !== 'undefined' && currentModule === "notifications") {
+        renderAlarmsAndNotifications();
+    }
+}
+window.triggerNotification = triggerNotification;
+
+function checkNotificationsAndAlarms() {
+    const now = new Date();
+    const currentHourMin = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    
+    // 1. Check Alarms
+    if (state.alarms) {
+        let alarmTriggered = false;
+        state.alarms.forEach(alarm => {
+            if (alarm.time === currentHourMin && !alarm.triggeredToday) {
+                triggerNotification(`⏰ ALARME: ${alarm.label || 'Sem nome'}`);
+                alarm.triggeredToday = true;
+                alarmTriggered = true;
+            }
+        });
+        if (alarmTriggered) {
+            saveState();
+            if (typeof currentModule !== 'undefined' && currentModule === "notifications") {
+                renderAlarmsAndNotifications();
+            }
+        }
+    }
+    
+    // Reset alarm triggers at midnight
+    if (currentHourMin === "00:00") {
+        if (state.alarms) {
+            state.alarms.forEach(alarm => {
+                alarm.triggeredToday = false;
+            });
+            saveState();
+        }
+    }
+    
+    // 2. Check Calendar Events 1 day before
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+    
+    if (state.calendarEvents) {
+        let eventTriggered = false;
+        state.calendarEvents.forEach(ev => {
+            if (ev.date === tomorrowStr && (ev.importance === "2" || ev.importance === "3") && !ev.notifiedOneDayBefore) {
+                triggerNotification(`🔔 AMANHÃ: Evento Importante: "${ev.title}"`);
+                ev.notifiedOneDayBefore = true;
+                eventTriggered = true;
+            }
+        });
+        if (eventTriggered) {
+            saveState();
+        }
+    }
+}
+window.checkNotificationsAndAlarms = checkNotificationsAndAlarms;
+
+function addManualAlarm(time, label) {
+    if (!state.alarms) state.alarms = [];
+    state.alarms.push({
+        id: "al-" + Date.now(),
+        time: time,
+        label: label.trim() || "Sem nome",
+        triggeredToday: false
+    });
+    saveState();
+    triggerNotification(`🔔 Alarme criado para as ${time}: "${label || 'Sem nome'}"`);
+    renderAlarmsAndNotifications();
+}
+window.addManualAlarm = addManualAlarm;
+
+function deleteAlarm(id) {
+    if (state.alarms) {
+        state.alarms = state.alarms.filter(a => a.id !== id);
+        saveState();
+        renderAlarmsAndNotifications();
+    }
+}
+window.deleteAlarm = deleteAlarm;
+
+function renderAlarmsAndNotifications() {
+    // Render Alarms
+    const alarmsList = document.getElementById("active-alarms-list");
+    if (alarmsList) {
+        alarmsList.innerHTML = "";
+        const alarms = state.alarms || [];
+        if (alarms.length === 0) {
+            alarmsList.innerHTML = `<div style="text-align:center; padding: 20px 0; color: var(--text-muted);">Nenhum alarme configurado.</div>`;
+        } else {
+            alarms.forEach(alarm => {
+                const item = document.createElement("div");
+                item.style = "display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px;";
+                item.innerHTML = `
+                    <div>
+                        <span style="font-size:18px; font-weight:700; color:var(--secondary); font-family: 'Orbitron';">${alarm.time}</span>
+                        <span style="margin-left: 10px; font-size:13px; color:var(--text-main);">${alarm.label}</span>
+                    </div>
+                    <button class="action-btn-secondary" onclick="deleteAlarm('${alarm.id}')" style="border-color: var(--danger); color: var(--danger); padding:4px 8px; font-size:11px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="trash-2" style="width:12px; height:12px;"></i>
+                    </button>
+                `;
+                alarmsList.appendChild(item);
+            });
+            if(window.lucide) window.lucide.createIcons();
+        }
+    }
+    
+    // Render Notifications History
+    const notificationsList = document.getElementById("notifications-history-list");
+    if (notificationsList) {
+        notificationsList.innerHTML = "";
+        const notifs = state.notifications || [];
+        if (notifs.length === 0) {
+            notificationsList.innerHTML = `<div style="text-align:center; padding: 20px 0; color: var(--text-muted);">Nenhuma notificação recebida ainda.</div>`;
+        } else {
+            notifs.forEach(notif => {
+                const item = document.createElement("div");
+                item.style = "background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; display:flex; flex-direction:column; gap:4px;";
+                item.innerHTML = `
+                    <span style="font-size:13px; color:var(--text-main); font-weight: 500;">${notif.text}</span>
+                    <span style="font-size:11px; color:var(--text-muted); align-self: flex-end;">${notif.timestamp}</span>
+                `;
+                notificationsList.appendChild(item);
+            });
+        }
+    }
+}
+window.renderAlarmsAndNotifications = renderAlarmsAndNotifications;
+
+// Initialize Alarm Form Submission Listener
+document.getElementById("alarm-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const time = document.getElementById("alarm-time-input").value;
+    const label = document.getElementById("alarm-label-input").value;
+    
+    if (time) {
+        addManualAlarm(time, label);
+        document.getElementById("alarm-form").reset();
+        closeModal("modal-alarms-overlay");
+    }
+});

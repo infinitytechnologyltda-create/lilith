@@ -1553,7 +1553,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .calendar-day {
     aspect-ratio: 1.8;
-    background: var(--bg-dark);
+    background: rgba(220, 224, 230, 0.18);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     padding: 3px 4px;
@@ -1572,7 +1572,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .calendar-day:hover:not(.inactive) {
     border-color: var(--border-hover);
-    background: var(--bg-card-hover);
+    background: rgba(220, 224, 230, 0.3);
     cursor: pointer;
 }
 
@@ -1582,8 +1582,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .day-number {
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     line-height: 1;
 }
 

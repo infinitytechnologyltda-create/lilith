@@ -12,6 +12,7 @@
     <video id="bg-video" autoplay loop muted playsinline>
         <source src="fundodashboard.mp4" type="video/mp4">
     </video>
+    <div id="global-bg-overlay" style="position: fixed; inset: 0; z-index: -2; pointer-events: none; background-size: cover; background-position: center; background-attachment: fixed; opacity: 1;"></div>
 
     <!-- Page Transition Overlay -->
     <div id="page-transition-overlay">
@@ -89,6 +90,9 @@
             <a class="menu-item" data-module="tasks" id="nav-tasks">
                 <i data-lucide="check-square"></i><span class="tooltip-text">Tarefas</span>
             </a>
+            <a class="menu-item" data-module="notifications" id="nav-notifications">
+                <i data-lucide="bell"></i><span class="tooltip-text">Notificações & Alarmes</span>
+            </a>
 
             <!-- Visor Tecnológico Cyberpunk -->
             <div class="menu-visor" id="menu-visor">PAINEL GERAL</div>
@@ -119,6 +123,11 @@
             <!-- Force Sync -->
             <button class="supabase-status-btn" id="force-sync-btn" title="Atualizar Dados" style="margin-left: 0;">
                 <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+            </button>
+
+            <!-- Opacity Settings Trigger -->
+            <button class="supabase-status-btn" id="opacity-modal-btn" onclick="openModal('modal-opacity-overlay')" title="Ajustar Opacidade" style="margin-left: 0;">
+                <i data-lucide="sliders" style="width: 18px; height: 18px;"></i>
             </button>
 
             <!-- Global Background Selector -->
@@ -519,9 +528,6 @@
             <div class="glass-panel" style="margin-top: 24px;">
                 <div class="section-header">
                     <h2 class="section-title">Histórico de Tarefas Concluídas</h2>
-                    <button class="action-btn-secondary" id="tasks-clear-history-btn" style="border-color: var(--danger); color: var(--danger); font-size:13px; padding: 6px 12px;">
-                        <i data-lucide="trash-2" style="width:14px; height:14px;"></i> Limpar Histórico
-                    </button>
                 </div>
                 <div class="search-bar-container">
                     <input type="text" class="search-input" id="tasks-history-search" placeholder="Pesquisar tarefas concluídas...">
@@ -735,6 +741,38 @@
                             <button id="app-visualizer-stop-stream" class="action-btn" style="background: #ef4444; color: white; border: none; font-size: 11px; padding: 4px 10px; border-radius: 4px; box-shadow: none; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                 <i data-lucide="video-off" style="width: 12px; height: 12px;"></i> Desconectar Transmissão
                             </button>
+                        </div>
+                    </div>
+                </div>
+        <!-- 15. NOTIFICAÇÕES E ALARMES -->
+        <section class="module-panel" id="module-notifications">
+            <div class="glass-panel">
+                <div class="section-header" style="justify-content: space-between; display: flex; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title">Central de Notificações & Alarmes</h2>
+                    <button class="action-btn" onclick="openModal('modal-alarms-overlay')">
+                        <i data-lucide="alarm-clock" style="margin-right: 6px;"></i> Criar Alarme Manual
+                    </button>
+                </div>
+                
+                <!-- Alarms and Notifications Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <!-- Active Alarms -->
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                        <h3 class="section-title" style="font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="clock" style="color:var(--secondary);"></i> Alarmes Ativos
+                        </h3>
+                        <div id="active-alarms-list" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Dynamic alarms -->
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications History -->
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                        <h3 class="section-title" style="font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="bell" style="color:var(--primary);"></i> Notificações Recebidas
+                        </h3>
+                        <div id="notifications-history-list" style="display:flex; flex-direction:column; gap:10px; max-height: 400px; overflow-y: auto;">
+                            <!-- Dynamic notifications -->
                         </div>
                     </div>
                 </div>
@@ -1028,8 +1066,16 @@
             <form id="calendar-event-form">
                 <input type="hidden" id="calendar-event-date-input">
                 <div class="form-group">
-                    <label class="form-label" id="calendar-event-label" for="calendar-event-title-input">Adicionar evento para o dia:</label>
-                    <input type="text" class="form-input" id="calendar-event-title-input" required placeholder="Título do evento ou compromisso">
+                    <label class="form-label" id="calendar-event-label" for="calendar-event-title-input" style="text-align: center; display: block;">Adicionar evento para o dia:</label>
+                    <input type="text" class="form-input" id="calendar-event-title-input" required placeholder="Título do evento ou compromisso" style="text-align: center;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="calendar-event-importance-input" style="text-align: center; display: block;">Nível de Importância</label>
+                    <select class="form-select" id="calendar-event-importance-input" style="text-align: center; text-align-last: center;">
+                        <option value="1">Baixa (Nível 1)</option>
+                        <option value="2" selected>Média (Nível 2)</option>
+                        <option value="3">Alta (Nível 3)</option>
+                    </select>
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Salvar Evento</button>
             </form>
@@ -1203,6 +1249,49 @@
                     </select>
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Criar Quest</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Opacity Modal -->
+    <div class="modal-overlay" id="modal-opacity-overlay">
+        <div class="modal-container" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="text-align: center; width: 100%;">Ajuste de Opacidade</h3>
+                <button class="modal-close" onclick="closeModal('modal-opacity-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px; padding: 10px 0;">
+                <div class="form-group">
+                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 8px;">Opacidade do Fundo da Página</label>
+                    <input type="range" id="opacity-bg-range" min="0" max="100" value="100" style="width: 100%;" oninput="changeBgOpacity(this.value)">
+                    <span id="opacity-bg-value" style="font-weight: 700; text-align: center; display: block; margin-top: 4px;">100%</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 8px;">Opacidade do Menu Superior (Sidebar)</label>
+                    <input type="range" id="opacity-menu-range" min="0" max="100" value="100" style="width: 100%;" oninput="changeMenuOpacity(this.value)">
+                    <span id="opacity-menu-value" style="font-weight: 700; text-align: center; display: block; margin-top: 4px;">100%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Modal -->
+    <div class="modal-overlay" id="modal-alarms-overlay">
+        <div class="modal-container" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="text-align: center; width: 100%;">Criar Alarme Manual</h3>
+                <button class="modal-close" onclick="closeModal('modal-alarms-overlay')"><i data-lucide="x"></i></button>
+            </div>
+            <form id="alarm-form">
+                <div class="form-group">
+                    <label class="form-label" for="alarm-time-input" style="text-align: center; display: block;">Horário do Alarme</label>
+                    <input type="time" class="form-input" id="alarm-time-input" required style="text-align: center;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="alarm-label-input" style="text-align: center; display: block;">Etiqueta / Nome</label>
+                    <input type="text" class="form-input" id="alarm-label-input" placeholder="Ex: Tomar remédio, Reunião" style="text-align: center;">
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Definir Alarme</button>
             </form>
         </div>
     </div>
