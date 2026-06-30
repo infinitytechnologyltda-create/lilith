@@ -144,6 +144,9 @@ function loadState() {
 
         saveState();
     }
+    if (typeof applyGlobalBackground === "function") {
+        applyGlobalBackground();
+    }
 }
 
 // Save State to LocalStorage
@@ -615,6 +618,9 @@ function updateUIElements() {
 // 1. DASHBOARD
 function renderDashboard() {
     updateUIElements();
+    if (typeof applyDashboardBackground === "function") {
+        applyDashboardBackground();
+    }
     
     // Top 3 next tasks
     const tbody = document.getElementById("dash-tasks-list");
@@ -1044,13 +1050,12 @@ function loadDiaryForDate(dateStr) {
 }
 
 document.getElementById("diary-save-btn").onclick = () => {
+    if (!state.diary) {
+        state.diary = {};
+    }
     const dateStr = document.getElementById("diary-date-input").value;
     const text = document.getElementById("diary-content-input").value;
     
-    if(selectedMoods.length === 0) {
-        showMagicAlert("Aviso!", "Por favor, selecione pelo menos um humor para este registro.");
-        return;
-    }
     if(!text.trim()) {
         showMagicAlert("Aviso!", "Escreva uma reflexão antes de salvar.");
         return;
@@ -1070,10 +1075,12 @@ document.getElementById("diary-save-btn").onclick = () => {
         updatedAt = nowTimestamp;
     }
 
+    const moods = (selectedMoods && selectedMoods.length > 0) ? [...selectedMoods] : ["neutral"];
+
     state.diary[dateStr] = { 
         text, 
-        moods: [...selectedMoods],
-        mood: selectedMoods[0], // Keep for dashboard / compatibility
+        moods: moods,
+        mood: moods[0], // Keep for dashboard / compatibility
         createdAt: createdAt,
         updatedAt: updatedAt
     };
@@ -1593,6 +1600,44 @@ function toggleQuestStatus(categoryElementId, questId) {
         renderQuests();
     }
 }
+window.toggleQuestStatus = toggleQuestStatus;
+
+// Quest Form Submission
+document.getElementById("quest-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = document.getElementById("quest-desc-input").value;
+    const type = document.getElementById("quest-type-input").value; // 'daily', 'weekly', 'monthly'
+
+    if (!text.trim()) {
+        showMagicAlert("Aviso!", "Por favor, digite a descrição da quest.");
+        return;
+    }
+
+    if (!state.quests) {
+        state.quests = { daily: [], weekly: [], monthly: [] };
+    }
+    if (!state.quests[type]) {
+        state.quests[type] = [];
+    }
+
+    // Set XP reward based on type
+    let xp = 20;
+    if (type === 'weekly') xp = 50;
+    else if (type === 'monthly') xp = 100;
+
+    state.quests[type].push({
+        id: "quest-" + type.substring(0, 1) + "-" + Date.now(),
+        text: text,
+        xp: xp,
+        completed: false
+    });
+
+    saveState();
+    closeModal("modal-quests-overlay");
+    document.getElementById("quest-form").reset();
+    renderQuests();
+    showMagicAlert("Quest Criada!", "Sua quest foi adicionada com sucesso.");
+});
 
 // 7. TAREFAS
 function renderTasks() {
@@ -1646,7 +1691,6 @@ function renderTasks() {
                 <td style="text-align:right;">
                     <div class="note-actions" style="justify-content: flex-end;">
                         <button class="note-action" onclick="editTask('${task.id}')" title="Editar"><i data-lucide="edit"></i></button>
-                        <button class="note-action delete" onclick="deleteTask('${task.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
                     </div>
                 </td>
             `;
@@ -1674,7 +1718,6 @@ function renderTasks() {
                 <td style="text-align:right;">
                     <div class="note-actions" style="justify-content: flex-end;">
                         <button class="note-action" onclick="editTask('${task.id}')" title="Editar"><i data-lucide="edit"></i></button>
-                        <button class="note-action delete" onclick="deleteTask('${task.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
                     </div>
                 </td>
             `;
@@ -1682,6 +1725,8 @@ function renderTasks() {
         });
     }
 }
+window.toggleTaskStatus = toggleTaskStatus;
+window.editTask = editTask;
 
 document.getElementById("tasks-search").addEventListener("input", renderTasks);
 document.getElementById("tasks-filter-priority").addEventListener("change", renderTasks);
@@ -1791,6 +1836,13 @@ function renderProjects() {
 
         const card = document.createElement("div");
         card.className = "project-card";
+        card.style.position = "relative";
+        
+        if (project.bgImage) {
+            card.style.backgroundImage = `linear-gradient(180deg, rgba(13,10,11,0.7) 0%, rgba(13,10,11,0.9) 100%), url(${project.bgImage})`;
+            card.style.backgroundSize = "cover";
+            card.style.backgroundPosition = "center";
+        }
         
         let stepsHTML = "";
         project.steps.forEach((step, index) => {
@@ -1802,9 +1854,31 @@ function renderProjects() {
             `;
         });
 
+        // Generate storage thumbnails
+        let storageHTML = "";
+        if (project.storage && project.storage.length > 0) {
+            storageHTML = `
+                <div class="project-gallery" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; max-height: 85px; overflow-y: auto; padding: 4px;">
+                    ${project.storage.map((img, imgIdx) => `
+                        <div style="position: relative; width: 100%; aspect-ratio: 1; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                            <img src="${img}" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="event.stopPropagation(); window.open('${img}')">
+                            <button onclick="event.stopPropagation(); deleteProjectImage('${project.id}', ${imgIdx})" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); border: none; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: #ff4d4d; cursor: pointer; font-size: 10px; line-height: 1;">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
         card.innerHTML = `
             <div class="project-meta">
-                <span class="project-tag">${project.category}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <!-- Background profile image icon button -->
+                    <button class="note-action" onclick="event.stopPropagation(); document.getElementById('project-bg-input-${project.id}').click();" title="Alterar Fundo do Projeto" style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0;">
+                        <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+                    </button>
+                    <input type="file" id="project-bg-input-${project.id}" accept="image/*" style="display:none;" onchange="changeProjectBackground(this, '${project.id}')">
+                    <span class="project-tag">${project.category}</span>
+                </div>
                 <div class="note-actions">
                     <button class="note-action" onclick="editProject('${project.id}')" title="Editar"><i data-lucide="edit" style="width:16px; height:16px;"></i></button>
                     <button class="note-action delete" onclick="deleteProject('${project.id}')" title="Excluir"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
@@ -1819,8 +1893,23 @@ function renderProjects() {
             <div class="project-progress-bar">
                 <div class="project-progress-fill" style="width: ${percent}%;"></div>
             </div>
-            <div class="project-subtasks">
+            <div class="project-subtasks" style="margin-bottom: 12px;">
                 ${stepsHTML}
+            </div>
+
+            <!-- Pasta de Armazenamento -->
+            <div class="project-storage-section" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                <div class="project-folder" 
+                     style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--border-radius-md); background: rgba(255,255,255,0.02); cursor: pointer;"
+                     onclick="event.stopPropagation(); document.getElementById('project-files-input-${project.id}').click();"
+                     ondragover="event.preventDefault(); event.stopPropagation(); this.style.borderColor = 'var(--secondary)';"
+                     ondragleave="event.preventDefault(); event.stopPropagation(); this.style.borderColor = 'rgba(255,255,255,0.15)';"
+                     ondrop="handleProjectDrop(event, '${project.id}')">
+                    <i data-lucide="folder-open" style="width: 18px; height: 18px; color: var(--secondary);"></i>
+                    <span style="font-size: 11px; color: var(--text-muted);">Armazenamento (Arraste ou clique)</span>
+                </div>
+                <input type="file" id="project-files-input-${project.id}" multiple accept="image/*" style="display:none;" onchange="handleProjectFilesSelect(this, '${project.id}')">
+                ${storageHTML}
             </div>
         `;
         container.appendChild(card);
@@ -1912,43 +2001,136 @@ function editProject(id) {
     }
 }
 
+function changeProjectBackground(input, projectId) {
+    if(input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const project = state.projects.find(p => p.id === projectId);
+            if(project) {
+                project.bgImage = e.target.result;
+                saveState();
+                renderProjects();
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function handleProjectFilesSelect(input, projectId) {
+    if(input.files && input.files.length > 0) {
+        addProjectFiles(input.files, projectId);
+    }
+}
+
+function handleProjectDrop(e, projectId) {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = e.dataTransfer.files;
+    if(files && files.length > 0) {
+        addProjectFiles(files, projectId);
+    }
+}
+
+function addProjectFiles(files, projectId) {
+    const project = state.projects.find(p => p.id === projectId);
+    if(!project) return;
+    if(!project.storage) project.storage = [];
+
+    let loadedCount = 0;
+    const totalFiles = Array.from(files).filter(f => f.type.startsWith('image/')).length;
+    if(totalFiles === 0) return;
+
+    Array.from(files).forEach(file => {
+        if(!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            project.storage.push(e.target.result);
+            loadedCount++;
+            if(loadedCount === totalFiles) {
+                saveState();
+                renderProjects();
+                showMagicAlert("Imagens adicionadas!", `${totalFiles} imagens salvas no projeto.`);
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function deleteProjectImage(projectId, imgIdx) {
+    const project = state.projects.find(p => p.id === projectId);
+    if(project && project.storage) {
+        project.storage.splice(imgIdx, 1);
+        saveState();
+        renderProjects();
+    }
+}
+
+window.toggleProjectStep = toggleProjectStep;
+window.deleteProject = deleteProject;
+window.editProject = editProject;
+window.changeProjectBackground = changeProjectBackground;
+window.handleProjectFilesSelect = handleProjectFilesSelect;
+window.handleProjectDrop = handleProjectDrop;
+window.deleteProjectImage = deleteProjectImage;
+
 // 9. GOALS (METAS)
+function createGoalCard(goal) {
+    const card = document.createElement("div");
+    card.className = "goal-card";
+    card.innerHTML = `
+        ${goal.image ? `
+        <div class="goal-image-container" style="width: 100%; height: 140px; overflow: hidden; border-radius: var(--border-radius-md); margin-bottom: 8px; border: 1px solid var(--border-color);">
+            <img src="${goal.image}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        ` : ''}
+        <div class="goal-header">
+            <span class="goal-type">${goal.type}</span>
+            <span style="font-size:12px; color: var(--text-muted);">Alvo: ${formatDateString(goal.date)}</span>
+        </div>
+        <h3 class="section-title" style="margin-bottom:0px; display:flex; justify-content:space-between; align-items:center;">
+            ${goal.title}
+            <button class="note-action delete" onclick="deleteGoal('${goal.id}')" title="Excluir"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
+        </h3>
+        ${goal.desc ? `<p style="font-size: 13px; color: var(--text-muted); margin-top: 6px; margin-bottom: 6px; text-align: center;">${goal.desc}</p>` : ''}
+        ${goal.price ? `<p style="font-size: 12px; font-weight: bold; color: var(--secondary); margin-bottom: 8px; text-align: center;">Custo/Preço: ${goal.price}</p>` : ''}
+        <div class="goal-slider-container" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+            <input type="range" class="goal-slider" min="0" max="100" value="${goal.progress}" onchange="updateGoalProgress('${goal.id}', this.value)">
+            <span style="font-weight:700; width:45px; text-align:right;">${goal.progress}%</span>
+            <button class="action-btn" style="padding: 4px 8px; font-size:11px; margin-left: 8px;" onclick="promptChangeGoalProgress('${goal.id}')">Definir %</button>
+        </div>
+    `;
+    return card;
+}
+
 function renderGoals() {
     const container = document.getElementById("goals-list-container");
+    const completedContainer = document.getElementById("goals-completed-list-container");
+    if (!container || !completedContainer) return;
+    
     container.innerHTML = "";
+    completedContainer.innerHTML = "";
 
     const filterVal = document.getElementById("goals-filter-type").value;
     const filtered = state.goals.filter(goal => filterVal === "" || goal.type === filterVal);
 
-    if(filtered.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color: var(--text-dim); padding: 40px;">Nenhuma meta cadastrada para este período.</div>`;
-        return;
+    const activeGoals = filtered.filter(g => g.progress < 100);
+    const completedGoals = filtered.filter(g => g.progress === 100);
+
+    if(activeGoals.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color: var(--text-dim); padding: 40px;">Nenhuma meta ativa cadastrada para este período.</div>`;
+    } else {
+        activeGoals.forEach(goal => {
+            container.appendChild(createGoalCard(goal));
+        });
     }
 
-    filtered.forEach(goal => {
-        const card = document.createElement("div");
-        card.className = "goal-card";
-        card.innerHTML = `
-            ${goal.image ? `
-            <div class="goal-image-container" style="width: 100%; height: 140px; overflow: hidden; border-radius: var(--border-radius-md); margin-bottom: 8px; border: 1px solid var(--border-color);">
-                <img src="${goal.image}" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            ` : ''}
-            <div class="goal-header">
-                <span class="goal-type">${goal.type}</span>
-                <span style="font-size:12px; color: var(--text-muted);">Alvo: ${formatDateString(goal.date)}</span>
-            </div>
-            <h3 class="section-title" style="margin-bottom:0px; display:flex; justify-content:space-between; align-items:center;">
-                ${goal.title}
-                <button class="note-action delete" onclick="deleteGoal('${goal.id}')" title="Excluir"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
-            </h3>
-            <div class="goal-slider-container">
-                <input type="range" class="goal-slider" min="0" max="100" value="${goal.progress}" onchange="updateGoalProgress('${goal.id}', this.value)">
-                <span style="font-weight:700; width:45px; text-align:right;">${goal.progress}%</span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
+    if(completedGoals.length === 0) {
+        completedContainer.innerHTML = `<div style="text-align:center; color: var(--text-dim); padding: 40px;">Nenhuma meta concluída no histórico.</div>`;
+    } else {
+        completedGoals.forEach(goal => {
+            completedContainer.appendChild(createGoalCard(goal));
+        });
+    }
 }
 
 document.getElementById("goals-filter-type").addEventListener("change", renderGoals);
@@ -1956,6 +2138,8 @@ document.getElementById("goals-filter-type").addEventListener("change", renderGo
 document.getElementById("goal-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const title = document.getElementById("goal-title-input").value;
+    const desc = document.getElementById("goal-desc-input").value;
+    const price = document.getElementById("goal-price-input").value;
     const type = document.getElementById("goal-type-input").value;
     const date = document.getElementById("goal-date-input").value;
     const fileInput = document.getElementById("goal-image-input");
@@ -1964,6 +2148,8 @@ document.getElementById("goal-form").addEventListener("submit", (e) => {
         state.goals.push({
             id: "goal-" + Date.now(),
             title,
+            desc,
+            price,
             type,
             date,
             progress: 0,
@@ -2011,6 +2197,20 @@ function deleteGoal(id) {
         renderGoals();
     }
 }
+
+function promptChangeGoalProgress(id) {
+    const goal = state.goals.find(g => g.id === id);
+    if(goal) {
+        const val = prompt("Digite o novo progresso (0-100):", goal.progress);
+        if(val !== null && !isNaN(val)) {
+            updateGoalProgress(id, val);
+        }
+    }
+}
+
+window.updateGoalProgress = updateGoalProgress;
+window.deleteGoal = deleteGoal;
+window.promptChangeGoalProgress = promptChangeGoalProgress;
 
 // 10. CALENDÁRIO COMPLETO
 let currentCalendarDate = new Date();
@@ -3552,6 +3752,9 @@ async function loadStateFromSupabase(showAlert = true) {
             if (state.themeColor) {
                 setThemeColor(state.themeColor);
             }
+            if (typeof applyGlobalBackground === "function") {
+                applyGlobalBackground();
+            }
             
             // Re-render dashboard/active module
             updateUIElements();
@@ -4388,3 +4591,84 @@ function hslToRgb(h, s, l) {
     }
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
+
+// ==================== BACKGROUND MANAGEMENT ====================
+function changeDashboardBackground(input) {
+    if(input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const result = e.target.result;
+            state.dashboardBg = {
+                type: file.type.startsWith('video') ? 'video' : 'image',
+                src: result
+            };
+            saveState();
+            applyDashboardBackground();
+        };
+        reader.readAsDataURL(file);
+    }
+}
+window.changeDashboardBackground = changeDashboardBackground;
+
+function applyDashboardBackground() {
+    const container = document.getElementById("dash-bg-overlay");
+    if(!container) return;
+    container.innerHTML = "";
+    if(state.dashboardBg) {
+        const bg = state.dashboardBg;
+        if(bg.type === 'video') {
+            container.style.backgroundImage = "none";
+            container.innerHTML = `<video src="${bg.src}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;"></video>`;
+        } else {
+            container.style.backgroundImage = `url(${bg.src})`;
+            container.style.backgroundSize = "cover";
+            container.style.backgroundPosition = "center";
+        }
+    }
+}
+window.applyDashboardBackground = applyDashboardBackground;
+
+function changeGlobalBackground(input) {
+    if(input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const result = e.target.result;
+            state.globalBg = {
+                type: file.type.startsWith('video') ? 'video' : 'image',
+                src: result
+            };
+            saveState();
+            applyGlobalBackground();
+        };
+        reader.readAsDataURL(file);
+    }
+}
+window.changeGlobalBackground = changeGlobalBackground;
+
+function applyGlobalBackground() {
+    const bgVideo = document.getElementById("bg-video");
+    if(state.globalBg) {
+        const bg = state.globalBg;
+        if(bg.type === 'video') {
+            if(bgVideo) {
+                bgVideo.style.display = "block";
+                bgVideo.src = bg.src;
+                bgVideo.load();
+                bgVideo.play().catch(e => console.log("Video auto play prevented", e));
+            }
+            document.body.style.backgroundImage = "none";
+        } else {
+            if(bgVideo) {
+                bgVideo.style.display = "none";
+                bgVideo.src = "";
+            }
+            document.body.style.backgroundImage = `url(${bg.src})`;
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundPosition = "center";
+            document.body.style.backgroundAttachment = "fixed";
+        }
+    }
+}
+window.applyGlobalBackground = applyGlobalBackground;
