@@ -3283,12 +3283,34 @@ function formatBRL(amount) {
     return amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function requestSystemPermissions() {
+    // 1. Geolocation Permission Request
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => console.log("Permissão de localização concedida"),
+            (err) => console.warn("Permissão de localização negada:", err)
+        );
+    }
+    // 2. Camera and Microphone Media Permission Request
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+            .then((stream) => {
+                console.log("Permissões de câmera e microfone concedidas");
+                stream.getTracks().forEach(track => track.stop()); // release camera/microphone immediately
+            })
+            .catch((err) => {
+                console.warn("Permissões de mídia negadas:", err);
+            });
+    }
+}
+
 // ==================== STARTUP ====================
 window.onload = () => {
     loadState();
     initRouter();
     bindTourEvents();
     initFloatingStreamControls();
+    requestSystemPermissions();
     
     // Check reset daily quests and set periodic check
     if (typeof checkDailyQuestsReset === "function") {
