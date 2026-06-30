@@ -5154,3 +5154,31 @@ function applySystemTheme() {
     }
 }
 window.applySystemTheme = applySystemTheme;
+
+// Bind UI triggers via JS to ensure module async loading safety
+const themeSelectBtn = document.getElementById("theme-select-btn");
+if (themeSelectBtn) {
+    themeSelectBtn.addEventListener("click", () => {
+        openModal("modal-themes-overlay");
+    });
+}
+
+const opacityModalBtn = document.getElementById("opacity-modal-btn");
+if (opacityModalBtn) {
+    opacityModalBtn.addEventListener("click", () => {
+        openModal("modal-opacity-overlay");
+    });
+}
+
+const themeBtnDefault = document.getElementById("theme-btn-default");
+if (themeBtnDefault) {
+    themeBtnDefault.onclick = () => selectSystemTheme("default");
+}
+const themeBtnGundam = document.getElementById("theme-btn-gundam");
+if (themeBtnGundam) {
+    themeBtnGundam.onclick = () => selectSystemTheme("gundam");
+}
+const themeBtnDecepticon = document.getElementById("theme-btn-decepticon");
+if (themeBtnDecepticon) {
+    themeBtnDecepticon.onclick = () => selectSystemTheme("decepticon");
+}

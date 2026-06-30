@@ -131,7 +131,7 @@
             </button>
 
             <!-- Theme Settings Trigger -->
-            <button class="supabase-status-btn" id="theme-select-btn" onclick="openModal('modal-themes-overlay')" title="Selecionar Tema" style="margin-left: 0;">
+            <button class="supabase-status-btn" id="theme-select-btn" title="Selecionar Tema" style="margin-left: 0;">
                 <i data-lucide="palette" style="width: 18px; height: 18px;"></i>
             </button>
 
@@ -1327,13 +1327,13 @@
                 <button class="modal-close" onclick="closeModal('modal-themes-overlay')"><i data-lucide="x"></i></button>
             </div>
             <div style="display: flex; flex-direction: column; gap: 16px; padding: 15px 0;">
-                <button class="action-btn" onclick="selectSystemTheme('default')" style="justify-content: center; width: 100%;">
+                <button class="action-btn" id="theme-btn-default" style="justify-content: center; width: 100%;">
                     🔮 Lilith Cyberpunk (Customizado)
                 </button>
-                <button class="action-btn" onclick="selectSystemTheme('gundam')" style="justify-content: center; width: 100%; background: linear-gradient(to right, #ff0055, #00f2fe);">
+                <button class="action-btn" id="theme-btn-gundam" style="justify-content: center; width: 100%; background: linear-gradient(to right, #ff0055, #00f2fe);">
                     🤖 Neon Overdrive (Mecha Gundam)
                 </button>
-                <button class="action-btn" onclick="selectSystemTheme('decepticon')" style="justify-content: center; width: 100%; background: linear-gradient(to right, #b026ff, #39ff14);">
+                <button class="action-btn" id="theme-btn-decepticon" style="justify-content: center; width: 100%; background: linear-gradient(to right, #b026ff, #39ff14);">
                     👾 Obsidian Engine (Decepticon Mech)
                 </button>
             </div>
