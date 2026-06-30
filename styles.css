@@ -1497,6 +1497,7 @@ h1, h2, h3, h4, h5, h6 {
 .app-whatsapp { background: rgba(37, 211, 102, 0.15); color: #25D366; }
 .app-supabase { background: rgba(63, 207, 142, 0.15); color: #3fcf8e; }
 .app-vercel { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+.app-instagram { background: rgba(225, 48, 108, 0.15); color: #e1306c; }
 
 .app-status {
     font-size: 11px;

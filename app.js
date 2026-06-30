@@ -144,6 +144,17 @@ function loadState() {
         addAppIfMissing("Vercel Hospedagens", "https://vercel.com/infinitytechnologyltda-creates-projects", "Vercel Hospedagens", "vercel", "vercel.png");
         addAppIfMissing("Instagram", "https://www.instagram.com", "Acessar o Instagram", "instagram", "instagram.png");
 
+        // Deduplicate apps by name to prevent multiple Instagrams
+        const seenNames = new Set();
+        state.apps = state.apps.filter(app => {
+            const nameLower = app.name.toLowerCase().trim();
+            if (seenNames.has(nameLower)) {
+                return false;
+            }
+            seenNames.add(nameLower);
+            return true;
+        });
+
         // Reorder apps for existing users: Espaço Terapêutico first, Instagram, Spotify & GitHub last
         const espacoApp = state.apps.find(a => a.name.toLowerCase().includes("terapêutico") || a.type === "espaco");
         const instagramApp = state.apps.find(a => a.type === "instagram" || a.name.toLowerCase().includes("instagram"));
