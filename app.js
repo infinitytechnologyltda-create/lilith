@@ -3035,14 +3035,13 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
     }
 
     const isSpecialApp = (
-        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" || app.type === "facebook" || app.type === "versatil" || app.type === "zerosignal" || app.type === "phantom" ||
+        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" || app.type === "versatil" || app.type === "zerosignal" || app.type === "phantom" ||
         app.name.toLowerCase().includes("spotify") ||
         app.name.toLowerCase().includes("github") ||
         app.name.toLowerCase().includes("supabase") ||
         app.name.toLowerCase().includes("vercel") ||
         app.name.toLowerCase().includes("whatsapp") ||
         app.name.toLowerCase().includes("instagram") ||
-        app.name.toLowerCase().includes("facebook") ||
         app.name.toLowerCase().includes("versatil") ||
         app.name.toLowerCase().includes("zero") ||
         app.name.toLowerCase().includes("phantom")
@@ -3060,7 +3059,6 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
             else if (nameLower.includes("vercel")) matchedType = "vercel";
             else if (nameLower.includes("whatsapp")) matchedType = "whatsapp";
             else if (nameLower.includes("instagram")) matchedType = "instagram";
-            else if (nameLower.includes("facebook")) matchedType = "facebook";
             else if (nameLower.includes("versatil")) matchedType = "versatil";
             else if (nameLower.includes("zero") || nameLower.includes("signal")) matchedType = "zerosignal";
             else if (nameLower.includes("phantom")) matchedType = "phantom";
