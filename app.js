@@ -580,6 +580,39 @@ function closeModal(id) {
 window.openModal = openModal;
 window.closeModal = closeModal;
 
+function showCustomConfirm(title, message, onConfirm) {
+    const titleEl = document.getElementById("confirm-modal-title");
+    const msgEl = document.getElementById("confirm-modal-message");
+    const overlay = document.getElementById("modal-confirm-overlay");
+    
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (overlay) overlay.classList.add("active");
+    
+    const cancelBtn = document.getElementById("confirm-modal-cancel-btn");
+    const okBtn = document.getElementById("confirm-modal-ok-btn");
+    
+    const close = () => {
+        if (overlay) overlay.classList.remove("active");
+    };
+    
+    if (cancelBtn) {
+        cancelBtn.onclick = () => {
+            close();
+        };
+    }
+    
+    if (okBtn) {
+        okBtn.onclick = () => {
+            close();
+            if (typeof onConfirm === "function") {
+                onConfirm();
+            }
+        };
+    }
+}
+window.showCustomConfirm = showCustomConfirm;
+
 // Global hook for modal closing click on outer overlay
 window.addEventListener("click", (e) => {
     if(e.target.classList.contains("modal-overlay")) {
@@ -1028,11 +1061,11 @@ function toggleNoteFavorite(id) {
 window.toggleNoteFavorite = toggleNoteFavorite;
 
 function deleteNote(id) {
-    if(confirm("Deseja realmente excluir esta anotação?")) {
+    showCustomConfirm("Excluir Anotação", "Deseja realmente excluir esta anotação?", () => {
         state.notes = state.notes.filter(n => n.id !== id);
         saveState();
         renderNotes();
-    }
+    });
 }
 window.deleteNote = deleteNote;
 
@@ -1366,11 +1399,11 @@ document.getElementById("idea-form").addEventListener("submit", (e) => {
 });
 
 function deleteIdea(id) {
-    if(confirm("Excluir esta ideia?")) {
+    showCustomConfirm("Excluir Ideia", "Excluir esta ideia?", () => {
         state.ideas = state.ideas.filter(i => i.id !== id);
         saveState();
         renderIdeas();
-    }
+    });
 }
 
 function convertIdeaToTask(id) {
@@ -1532,11 +1565,11 @@ function initWhiteboard() {
 
     // Clean canvas
     document.getElementById("whiteboard-clear-btn").onclick = () => {
-        if(confirm("Deseja realmente limpar toda a lousa?")) {
+        showCustomConfirm("Limpar Lousa", "Deseja realmente limpar toda a lousa?", () => {
             ctx.fillStyle = "#2E2A2D";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             wbSaveState();
-        }
+        });
     };
 
     // Undo / Redo buttons
@@ -1974,11 +2007,11 @@ function toggleTaskStatus(id) {
 }
 
 function deleteTask(id) {
-    if(confirm("Excluir esta tarefa?")) {
+    showCustomConfirm("Excluir Tarefa", "Excluir esta tarefa?", () => {
         state.tasks = state.tasks.filter(t => t.id !== id);
         saveState();
         renderTasks();
-    }
+    });
 }
 
 function editTask(id) {
@@ -2153,11 +2186,11 @@ function toggleProjectStep(projectId, stepIndex) {
 }
 
 function deleteProject(id) {
-    if(confirm("Tem certeza que deseja deletar este projeto?")) {
+    showCustomConfirm("Excluir Projeto", "Tem certeza que deseja deletar este projeto?", () => {
         state.projects = state.projects.filter(p => p.id !== id);
         saveState();
         renderProjects();
-    }
+    });
 }
 
 function editProject(id) {
@@ -2368,11 +2401,11 @@ function updateGoalProgress(id, val) {
 }
 
 function deleteGoal(id) {
-    if(confirm("Excluir esta meta?")) {
+    showCustomConfirm("Excluir Meta", "Excluir esta meta?", () => {
         state.goals = state.goals.filter(g => g.id !== id);
         saveState();
         renderGoals();
-    }
+    });
 }
 
 function promptChangeGoalProgress(id) {
@@ -2720,13 +2753,14 @@ if (disciplineForm) {
 function deleteHabit(id) {
     const item = state.habits.find(h => h.id === id);
     const isPractice = item && item.type === "practice";
-    if (confirm(`Excluir esta ${isPractice ? 'prática' : 'regra de disciplina'}?`)) {
+    const label = isPractice ? 'prática' : 'regra de disciplina';
+    showCustomConfirm("Excluir Item", `Excluir esta ${label}?`, () => {
         state.habits = state.habits.filter(h => h.id !== id);
         saveState();
         addSystemLog(`🗑️ ${isPractice ? 'Prática' : 'Regra de disciplina'} excluída`);
         renderHabits();
         checkDailyHabitsQuest();
-    }
+    });
 }
 window.deleteHabit = deleteHabit;
 
@@ -2865,11 +2899,11 @@ document.getElementById("library-form").addEventListener("submit", (e) => {
 });
 
 function deleteLibraryItem(id) {
-    if(confirm("Excluir item da biblioteca?")) {
+    showCustomConfirm("Excluir Recurso", "Excluir item da biblioteca?", () => {
         state.libraryItems = state.libraryItems.filter(item => item.id !== id);
         saveState();
         renderLibrary();
-    }
+    });
 }
 
 // 13. FINANÇAS
@@ -2954,12 +2988,12 @@ document.getElementById("finance-form").addEventListener("submit", (e) => {
 });
 
 function deleteTransaction(id) {
-    if(confirm("Excluir esta transação financeira?")) {
+    showCustomConfirm("Excluir Transação", "Excluir esta transação financeira?", () => {
         state.finances = state.finances.filter(f => f.id !== id);
         saveState();
         checkDailyHabitsQuest();
         renderFinances();
-    }
+    });
 }
 
 // 14. CENTRAL DE APLICATIVOS

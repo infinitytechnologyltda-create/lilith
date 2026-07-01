@@ -1607,14 +1607,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .event-dot {
-    font-size: 8px;
-    padding: 1px 3px;
-    border-radius: 2px;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--bg-dark);
-    line-height: 1.2;
+    line-height: 1.3;
+    font-weight: 600;
 }
 
 .event-dot.task { background: var(--secondary); }

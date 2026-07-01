@@ -1377,7 +1377,7 @@
             </div>
             <form id="quest-form">
                 <div class="form-group">
-                    <label class="form-label" for="quest-desc-input" style="text-align: center; display: block;">Digite a descrição da sua quest diária customizada:</label>
+                    <label class="form-label" for="quest-desc-input" style="text-align: center; display: block;">Digite a descrição da sua quest customizada:</label>
                     <input type="text" class="form-input" id="quest-desc-input" required placeholder="Digite a descrição da sua quest..." style="text-align: center;">
                 </div>
                 <div class="form-group">
@@ -1390,6 +1390,22 @@
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Criar Quest</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Reusable Confirmation Modal -->
+    <div class="modal-overlay" id="modal-confirm-overlay" style="z-index: 9999;">
+        <div class="modal-container" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 class="modal-title" id="confirm-modal-title" style="text-align: center; width: 100%;">Confirmar Ação</h3>
+            </div>
+            <div style="padding: 20px 0;">
+                <p id="confirm-modal-message" style="font-size: 15px; color: var(--text-main); margin-bottom: 24px; text-align: center; line-height: 1.5;"></p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="action-btn" id="confirm-modal-cancel-btn" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-main); width: 100%; justify-content: center;">Cancelar</button>
+                    <button class="action-btn" id="confirm-modal-ok-btn" style="background: var(--danger); border-color: var(--danger); color: white; width: 100%; justify-content: center; box-shadow: 0 0 10px var(--danger-glow);">Confirmar</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1472,6 +1488,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js?v=3.7"></script>
+    <script type="module" src="app.js?v=3.8"></script>
 </body>
 </html>
