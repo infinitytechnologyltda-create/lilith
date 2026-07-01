@@ -78,6 +78,100 @@ const SEED_DATA = {
     ]
 };
 
+// ==================== MEDIA STORE (INDEXEDDB) ====================
+const mediaStore = {
+    dbName: "lilith_media_db",
+    storeName: "media",
+    
+    getDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, 1);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(this.storeName)) {
+                    db.createObjectStore(this.storeName);
+                }
+            };
+            request.onsuccess = (e) => resolve(e.target.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
+    },
+    
+    async set(key, value) {
+        try {
+            const db = await this.getDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(this.storeName, "readwrite");
+                const store = tx.objectStore(this.storeName);
+                const request = store.put(value, key);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        } catch (e) {
+            console.error("IndexedDB set error:", e);
+        }
+    },
+    
+    async get(key) {
+        try {
+            const db = await this.getDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(this.storeName, "readonly");
+                const store = tx.objectStore(this.storeName);
+                const request = store.get(key);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (e) {
+            console.error("IndexedDB get error:", e);
+            return null;
+        }
+    },
+    
+    async delete(key) {
+        try {
+            const db = await this.getDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(this.storeName, "readwrite");
+                const store = tx.objectStore(this.storeName);
+                const request = store.delete(key);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        } catch (e) {
+            console.error("IndexedDB delete error:", e);
+        }
+    }
+};
+window.mediaStore = mediaStore;
+
+function saveStateToLocalStorage(stateObj) {
+    if (!stateObj) return;
+
+    // Salvar mídias no IndexedDB se forem dataURLs
+    if (stateObj.dashboardBg && stateObj.dashboardBg.src && stateObj.dashboardBg.src.startsWith('data:')) {
+        mediaStore.set('dashboardBg', stateObj.dashboardBg.src);
+    }
+    if (stateObj.globalBg && stateObj.globalBg.src && stateObj.globalBg.src.startsWith('data:')) {
+        mediaStore.set('globalBg', stateObj.globalBg.src);
+    }
+
+    // Criar uma cópia limpa para salvar no LocalStorage
+    const cleanState = JSON.parse(JSON.stringify(stateObj));
+    if (cleanState.dashboardBg && cleanState.dashboardBg.src && cleanState.dashboardBg.src.startsWith('data:')) {
+        cleanState.dashboardBg.src = "db_ref";
+    }
+    if (cleanState.globalBg && cleanState.globalBg.src && cleanState.globalBg.src.startsWith('data:')) {
+        cleanState.globalBg.src = "db_ref";
+    }
+
+    try {
+        localStorage.setItem(currentLocalStorageKey, JSON.stringify(cleanState));
+    } catch (e) {
+        console.error("Failed to save state to localStorage:", e);
+    }
+}
+
 // Load State from LocalStorage
 function loadState() {
     const rawState = localStorage.getItem(currentLocalStorageKey);
@@ -237,9 +331,57 @@ function loadState() {
         });
     }
 
-    if (typeof applyGlobalBackground === "function") {
-        applyGlobalBackground();
+    // Restore large media from IndexedDB if placeholder is found
+    let needsBackupToIndexedDB = false;
+    
+    if (state.dashboardBg) {
+        if (state.dashboardBg.src === "db_ref") {
+            mediaStore.get('dashboardBg').then(src => {
+                if (src && state.dashboardBg) {
+                    state.dashboardBg.src = src;
+                    if (typeof applyDashboardBackground === "function") {
+                        applyDashboardBackground();
+                    }
+                }
+            }).catch(err => console.error("Error loading dashboardBg from IndexedDB:", err));
+        } else {
+            if (state.dashboardBg.src && state.dashboardBg.src.startsWith('data:')) {
+                needsBackupToIndexedDB = true;
+            }
+            if (typeof applyDashboardBackground === "function") {
+                applyDashboardBackground();
+            }
+        }
     }
+    
+    if (state.globalBg) {
+        if (state.globalBg.src === "db_ref") {
+            mediaStore.get('globalBg').then(src => {
+                if (src && state.globalBg) {
+                    state.globalBg.src = src;
+                    if (typeof applyGlobalBackground === "function") {
+                        applyGlobalBackground();
+                    }
+                }
+            }).catch(err => console.error("Error loading globalBg from IndexedDB:", err));
+        } else {
+            if (state.globalBg.src && state.globalBg.src.startsWith('data:')) {
+                needsBackupToIndexedDB = true;
+            }
+            if (typeof applyGlobalBackground === "function") {
+                applyGlobalBackground();
+            }
+        }
+    } else {
+        if (typeof applyGlobalBackground === "function") {
+            applyGlobalBackground();
+        }
+    }
+    
+    if (needsBackupToIndexedDB) {
+        saveStateToLocalStorage(state);
+    }
+
     if (typeof applyBgOpacity === "function") {
         applyBgOpacity();
     }
@@ -275,7 +417,7 @@ function checkDailyQuestsReset() {
 
 // Save State to LocalStorage
 function saveState() {
-    localStorage.setItem(currentLocalStorageKey, JSON.stringify(state));
+    saveStateToLocalStorage(state);
     writeToLocalDirectory();
     const storageMode = localStorage.getItem("lilith_storage_mode") || "cloud";
     if (storageMode === "cloud" && supabaseClient && supabaseUser) {
@@ -4325,7 +4467,7 @@ async function loadStateFromSupabase(showAlert = true) {
         if (data && data.state) {
             // Overwrite state and save local
             state = data.state;
-            localStorage.setItem(currentLocalStorageKey, JSON.stringify(state));
+            saveStateToLocalStorage(state);
             if (state.themeColor) {
                 setThemeColor(state.themeColor);
             }
@@ -5183,8 +5325,9 @@ function changeDashboardBackground(input) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const result = e.target.result;
+            const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|ogg|mov|avi)$/i.test(file.name);
             state.dashboardBg = {
-                type: file.type.startsWith('video') ? 'video' : 'image',
+                type: isVideo ? 'video' : 'image',
                 src: result
             };
             saveState();
@@ -5199,19 +5342,48 @@ function applyDashboardBackground() {
     const container = document.getElementById("dash-bg-overlay");
     if(!container) return;
     container.innerHTML = "";
+    
+    const removeBtn = document.getElementById("dash-bg-remove-btn");
+    
     if(state.dashboardBg) {
         const bg = state.dashboardBg;
+        if (removeBtn) removeBtn.style.display = "flex";
+        
         if(bg.type === 'video') {
             container.style.backgroundImage = "none";
-            container.innerHTML = `<video src="${bg.src}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;"></video>`;
+            const video = document.createElement("video");
+            video.src = bg.src;
+            video.autoplay = true;
+            video.loop = true;
+            video.muted = true;
+            video.playsInline = true;
+            video.style.width = "100%";
+            video.style.height = "100%";
+            video.style.objectFit = "cover";
+            container.appendChild(video);
+            video.load();
+            video.play().catch(e => console.log("Dashboard video playback failed:", e));
         } else {
             container.style.backgroundImage = `url(${bg.src})`;
             container.style.backgroundSize = "cover";
             container.style.backgroundPosition = "center";
         }
+    } else {
+        if (removeBtn) removeBtn.style.display = "none";
+        container.style.backgroundImage = "none";
     }
 }
 window.applyDashboardBackground = applyDashboardBackground;
+
+function removeDashboardBackground() {
+    state.dashboardBg = null;
+    mediaStore.delete('dashboardBg').catch(err => console.error("Error deleting dashboardBg from IndexedDB:", err));
+    saveState();
+    applyDashboardBackground();
+    const input = document.getElementById('dash-bg-input');
+    if (input) input.value = '';
+}
+window.removeDashboardBackground = removeDashboardBackground;
 
 function changeGlobalBackground(input) {
     if(input.files && input.files[0]) {

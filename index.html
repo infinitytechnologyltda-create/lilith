@@ -187,7 +187,10 @@
         <!-- 1. DASHBOARD INICIAL -->
         <section class="module-panel active" id="module-dashboard" style="position: relative;">
             <div id="dash-bg-overlay" style="position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; border-radius: var(--border-radius-lg); opacity: 0.35;"></div>
-            <div style="position: absolute; top: 12px; right: 12px; z-index: 10;">
+            <div style="position: absolute; top: 12px; right: 12px; z-index: 10; display: flex; gap: 8px;">
+                <button id="dash-bg-remove-btn" class="supabase-status-btn" onclick="removeDashboardBackground()" title="Remover Fundo do Dashboard" style="padding: 6px; display: none; align-items: center; justify-content: center; margin: 0; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);">
+                    <i data-lucide="trash-2" style="width: 16px; height: 16px; color: #ef4444;"></i>
+                </button>
                 <button class="supabase-status-btn" onclick="document.getElementById('dash-bg-input').click()" title="Alterar Fundo do Dashboard" style="padding: 6px; display: flex; align-items: center; justify-content: center; margin: 0;">
                     <i data-lucide="image" style="width: 16px; height: 16px;"></i>
                 </button>
