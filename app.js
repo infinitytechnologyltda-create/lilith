@@ -80,6 +80,28 @@ function loadState() {
             if (state.themeColor) {
                 localStorage.setItem("lilith_theme_color", state.themeColor);
             }
+            // Guarantee quests initialization
+            if (!state.quests) {
+                state.quests = JSON.parse(JSON.stringify(SEED_DATA.quests));
+            }
+            if (!state.quests.daily) state.quests.daily = [];
+            if (!state.quests.weekly) state.quests.weekly = [];
+            if (!state.quests.monthly) state.quests.monthly = [];
+            
+            // Guarantee other array/object initialization
+            if (!state.user) state.user = { level: 1, xp: 0 };
+            if (state.user.level === undefined) state.user.level = 1;
+            if (state.user.xp === undefined) state.user.xp = 0;
+            if (!state.notes) state.notes = [];
+            if (!state.diary) state.diary = {};
+            if (!state.ideas) state.ideas = [];
+            if (!state.tasks) state.tasks = [];
+            if (!state.projects) state.projects = [];
+            if (!state.goals) state.goals = [];
+            if (!state.calendarEvents) state.calendarEvents = [];
+            if (!state.habits) state.habits = [];
+            if (!state.finances) state.finances = [];
+            if (!state.apps) state.apps = [];
         } catch (e) {
             console.error("Erro ao parsear dados do localStorage. Usando padrões.", e);
             state = { ...SEED_DATA };
@@ -532,8 +554,7 @@ function setupGlobalActionBtn(moduleName) {
             btn.onclick = () => openModal("modal-ideas-overlay");
             break;
         case "quests":
-            label.textContent = "Nova Quest";
-            btn.onclick = () => openModal("modal-quests-overlay");
+            container.style.display = "none";
             break;
         case "projects":
             label.textContent = "Novo Projeto";
@@ -1813,6 +1834,7 @@ function toggleQuestStatus(categoryElementId, questId) {
     }
 }
 window.toggleQuestStatus = toggleQuestStatus;
+
 
 // Quest Form Submission
 document.getElementById("quest-form").addEventListener("submit", (e) => {
@@ -3405,6 +3427,12 @@ window.onload = () => {
     bindTourEvents();
     initFloatingStreamControls();
     requestSystemPermissions();
+    
+    // Quest local button click handler
+    const localNewQuestBtn = document.getElementById("local-new-quest-btn");
+    if (localNewQuestBtn) {
+        localNewQuestBtn.addEventListener("click", () => openModal("modal-quests-overlay"));
+    }
     
     // Check reset daily quests and set periodic check
     if (typeof checkDailyQuestsReset === "function") {

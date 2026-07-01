@@ -480,7 +480,7 @@
             <div class="glass-panel">
                 <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 class="section-title" style="margin: 0;">Quests & Missões</h2>
-                    <button class="action-btn" onclick="openModal('modal-quests-overlay')">
+                    <button class="action-btn" id="local-new-quest-btn">
                         <i data-lucide="plus-circle" style="margin-right: 6px;"></i> Nova Quest
                     </button>
                 </div>
@@ -1351,6 +1351,7 @@
                 <button class="action-btn" id="magic-tour-next" style="padding: 4px 12px; font-size: 11px; box-shadow: none;">Próximo</button>
             </div>
         </div>
+    </div>
     <!-- FLOATING STREAM PANEL -->
     <div id="app-floating-stream-container" style="position: fixed; bottom: 24px; right: 24px; width: 340px; height: 210px; z-index: 9999; display: none; background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; backdrop-filter: blur(12px); display: flex; flex-direction: column;">
         <div class="floating-header" style="height: 36px; background: rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; padding: 0 12px; cursor: move; border-bottom: 1px solid rgba(255,255,255,0.08); user-select: none;">
