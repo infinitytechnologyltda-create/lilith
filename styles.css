@@ -2401,14 +2401,40 @@ h1, h2, h3, h4, h5, h6 {
     50% { opacity: 1; filter: brightness(1.5); }
 }
 
+@keyframes jewel-appear {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.2) rotate(-45deg);
+        filter: drop-shadow(0 0 0 transparent) brightness(0.2) contrast(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 5px var(--jewel-glow)) brightness(1.0) contrast(1);
+    }
+}
+
+@keyframes jewel-lights-appear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+        filter: blur(8px) brightness(0.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0) brightness(1.0);
+    }
+}
+
 @keyframes jewel-sparkle {
     0%, 100% {
         transform: translate(0, 0) scale(1) rotate(0deg);
         filter: drop-shadow(0 0 5px var(--jewel-glow)) brightness(1.0) contrast(1);
     }
     50% {
-        transform: translate(-1px, -2px) scale(1.08) rotate(4deg);
-        filter: drop-shadow(0 0 15px var(--jewel-glow)) drop-shadow(0 0 28px var(--jewel-glow)) brightness(1.4) contrast(1.2);
+        transform: translate(-0.5px, -1px) scale(1.05) rotate(3deg);
+        filter: drop-shadow(0 0 15px var(--jewel-glow)) drop-shadow(0 0 25px var(--jewel-glow)) brightness(1.3) contrast(1.15);
     }
 }
 
@@ -2672,7 +2698,9 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 99;
     cursor: pointer;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
-    animation: jewel-sparkle 3s ease-in-out infinite;
+    animation: 
+        jewel-appear 1.6s cubic-bezier(0.25, 0.8, 0.25, 1) both,
+        jewel-sparkle 5s ease-in-out infinite 1.6s;
     transform-style: preserve-3d;
     box-shadow: 
         inset 1px 1px 2px rgba(255, 255, 255, 0.7), 
@@ -2735,8 +2763,10 @@ h1, h2, h3, h4, h5, h6 {
     height: 48px;
     pointer-events: none;
     z-index: 97;
-    /* Rotation animation for the entire container to get the orbit effect */
-    animation: jewel-lights-orbit 12s linear infinite;
+    /* Rotation animation for the entire container to get the orbit effect, plus appear fade-in */
+    animation: 
+        jewel-lights-appear 1.8s cubic-bezier(0.25, 0.8, 0.25, 1) both,
+        jewel-lights-orbit 15s linear infinite;
 }
 
 /* Ambient glow halo behind the gem */
@@ -2752,7 +2782,7 @@ h1, h2, h3, h4, h5, h6 {
     filter: blur(14px);
     opacity: 0.75;
     z-index: -1;
-    animation: jewel-glow-pulse 3s ease-in-out infinite;
+    animation: jewel-glow-pulse 4.5s ease-in-out infinite; /* Slower breathing pulse */
     pointer-events: none;
 }
 
@@ -2788,10 +2818,10 @@ h1, h2, h3, h4, h5, h6 {
     /* --index is 0 to 11. Radius of orbit is 22px */
     transform: translate(-50%, -50%) rotate(calc(var(--index) * 30deg)) translateY(-22px);
     
-    /* Animation for pulsing size, opacity, and rotation */
-    animation: jewel-particle-pulse 2.2s ease-in-out infinite;
-    /* Offset the animation start time based on index for a wave effect */
-    animation-delay: calc(var(--index) * -0.18s);
+    /* Animation for pulsing size, opacity, and rotation (slowed down to 3s) */
+    animation: jewel-particle-pulse 3s ease-in-out infinite;
+    /* Offset the animation start time based on index for a slower wave effect */
+    animation-delay: calc(var(--index) * -0.25s);
 }
 
 @keyframes jewel-lights-orbit {
