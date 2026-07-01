@@ -1782,10 +1782,10 @@ function renderQuests() {
                     <span class="quest-label">${quest.text}</span>
                     <div class="quest-meta">
                         <span>Recompensa: <span class="quest-reward">+${quest.xp} XP</span></span>
-                        ${quest.time ? `<span style="display: flex; align-items: center; gap: 4px; color: var(--accent);"><i data-lucide="clock" style="width: 12px; height: 12px;"></i>${quest.time}</span>` : ''}
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
+                    ${quest.time ? `<span class="quest-time-badge" style="display: flex; align-items: center; gap: 4px; color: var(--accent); font-size: 13px; font-weight: 600; margin-right: 4px;"><i data-lucide="clock" style="width: 13px; height: 13px;"></i>${quest.time}</span>` : ''}
                     <button class="habit-checkbox ${quest.completed ? 'checked' : ''}" onclick="toggleQuestStatus('${elementId}', '${quest.id}')">
                         ${quest.completed ? '<i data-lucide="check" style="width:12px; height:12px;"></i>' : ''}
                     </button>
