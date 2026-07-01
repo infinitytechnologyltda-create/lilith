@@ -1377,6 +1377,8 @@
                 <button class="modal-close" onclick="closeModal('modal-quests-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="quest-form">
+                <input type="hidden" id="quest-id-input">
+                <input type="hidden" id="quest-original-type-input">
                 <div class="form-group">
                     <label class="form-label" for="quest-desc-input" style="text-align: center; display: block;">Digite a descrição da sua quest customizada:</label>
                     <input type="text" class="form-input" id="quest-desc-input" required placeholder="Digite a descrição da sua quest..." style="text-align: center;">
@@ -1388,6 +1390,10 @@
                         <option value="weekly">Semanal</option>
                         <option value="monthly">Mensal</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="quest-time-input" style="text-align: center; display: block;">Horário (Opcional)</label>
+                    <input type="time" class="form-input" id="quest-time-input" style="text-align: center;">
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; justify-content: center;">Criar Quest</button>
             </form>

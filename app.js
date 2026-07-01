@@ -33,9 +33,9 @@ const SEED_DATA = {
     ideas: [],
     quests: {
         daily: [
-            { id: "qd-1", text: "Fazer análise diária geral", xp: 30, completed: false },
-            { id: "qd-2", text: "Registrar humor no diário", xp: 15, completed: false },
-            { id: "qd-3", text: "Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina", xp: 20, completed: false }
+            { id: "qd-1", text: "Fazer análise diária geral", xp: 30, completed: false, time: "08:00" },
+            { id: "qd-2", text: "Registrar humor no diário", xp: 15, completed: false, time: "22:00" },
+            { id: "qd-3", text: "Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina", xp: 20, completed: false, time: "09:00" }
         ],
         weekly: [
             { id: "qw-1", text: "Cumprir todas as metas de hábitos", xp: 80, completed: false },
@@ -1764,7 +1764,17 @@ function renderQuests() {
             return;
         }
 
-        list.forEach(quest => {
+        // Sort list by time: chronologically first (e.g. "08:00"), then quests without time
+        const sortedList = [...list].sort((a, b) => {
+            if (a.time && b.time) {
+                return a.time.localeCompare(b.time);
+            }
+            if (a.time) return -1;
+            if (b.time) return 1;
+            return 0;
+        });
+
+        sortedList.forEach(quest => {
             const item = document.createElement("div");
             item.className = `quest-item ${quest.completed ? 'completed' : ''}`;
             item.innerHTML = `
@@ -1772,11 +1782,15 @@ function renderQuests() {
                     <span class="quest-label">${quest.text}</span>
                     <div class="quest-meta">
                         <span>Recompensa: <span class="quest-reward">+${quest.xp} XP</span></span>
+                        ${quest.time ? `<span style="display: flex; align-items: center; gap: 4px; color: var(--accent);"><i data-lucide="clock" style="width: 12px; height: 12px;"></i>${quest.time}</span>` : ''}
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <button class="habit-checkbox ${quest.completed ? 'checked' : ''}" onclick="toggleQuestStatus('${elementId}', '${quest.id}')">
                         ${quest.completed ? '<i data-lucide="check" style="width:12px; height:12px;"></i>' : ''}
+                    </button>
+                    <button class="quest-edit-btn" onclick="editQuest('${elementId}', '${quest.id}')" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: background 0.2s;" title="Editar Quest">
+                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                     </button>
                     <button class="quest-delete-btn" onclick="deleteQuest('${elementId}', '${quest.id}')" style="background: transparent; border: none; color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: background 0.2s;">
                         <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
@@ -1786,7 +1800,9 @@ function renderQuests() {
             div.appendChild(item);
         });
         
-        lucide.createIcons({ attrs: { class: 'lucide' }, container: div });
+        if (window.lucide) {
+            lucide.createIcons({ attrs: { class: 'lucide' }, container: div });
+        }
     };
 
     renderList("quests-daily-list", state.quests.daily);
@@ -1812,6 +1828,33 @@ function deleteQuest(categoryElementId, questId) {
     }
 }
 window.deleteQuest = deleteQuest;
+
+function editQuest(categoryElementId, questId) {
+    let listName = "";
+    if(categoryElementId.includes("daily")) listName = "daily";
+    else if(categoryElementId.includes("weekly")) listName = "weekly";
+    else listName = "monthly";
+
+    if(state.quests && state.quests[listName]) {
+        const quest = state.quests[listName].find(q => q.id === questId);
+        if (quest) {
+            document.getElementById("quest-id-input").value = quest.id;
+            document.getElementById("quest-original-type-input").value = listName;
+            document.getElementById("quest-desc-input").value = quest.text;
+            document.getElementById("quest-type-input").value = listName;
+            document.getElementById("quest-time-input").value = quest.time || "";
+
+            const modalTitleEl = document.querySelector("#modal-quests-overlay .modal-title");
+            if (modalTitleEl) modalTitleEl.textContent = "Editar Quest";
+
+            const submitBtnEl = document.querySelector("#quest-form button[type='submit']");
+            if (submitBtnEl) submitBtnEl.textContent = "Salvar Alterações";
+
+            openModal("modal-quests-overlay");
+        }
+    }
+}
+window.editQuest = editQuest;
 
 function toggleQuestStatus(categoryElementId, questId) {
     let listName = "";
@@ -1839,8 +1882,11 @@ window.toggleQuestStatus = toggleQuestStatus;
 // Quest Form Submission
 document.getElementById("quest-form").addEventListener("submit", (e) => {
     e.preventDefault();
+    const id = document.getElementById("quest-id-input").value;
+    const originalType = document.getElementById("quest-original-type-input").value;
     const text = document.getElementById("quest-desc-input").value;
     const type = document.getElementById("quest-type-input").value; // 'daily', 'weekly', 'monthly'
+    const time = document.getElementById("quest-time-input").value || "";
 
     if (!text.trim()) {
         showMagicAlert("Aviso!", "Por favor, digite a descrição da quest.");
@@ -1859,19 +1905,45 @@ document.getElementById("quest-form").addEventListener("submit", (e) => {
     if (type === 'weekly') xp = 50;
     else if (type === 'monthly') xp = 100;
 
-    state.quests[type].push({
-        id: "quest-" + type.substring(0, 1) + "-" + Date.now(),
-        text: text,
-        xp: xp,
-        completed: false
-    });
+    if (id) {
+        // Edit mode
+        const quest = state.quests[originalType]?.find(q => q.id === id);
+        if (quest) {
+            if (quest.completed) {
+                addXP(-quest.xp);
+                addXP(xp);
+            }
+            quest.text = text;
+            quest.xp = xp;
+            quest.time = time;
 
-    saveState();
-    addSystemLog(`⚔️ Nova quest criada: "${text}"`);
+            if (originalType !== type) {
+                state.quests[originalType] = state.quests[originalType].filter(q => q.id !== id);
+                state.quests[type].push(quest);
+            }
+            saveState();
+            addSystemLog(`⚔️ Quest atualizada: "${text}"`);
+            showMagicAlert("Quest Atualizada!", "Sua quest foi atualizada com sucesso.");
+        }
+    } else {
+        // Create mode
+        state.quests[type].push({
+            id: "quest-" + type.substring(0, 1) + "-" + Date.now(),
+            text: text,
+            xp: xp,
+            completed: false,
+            time: time
+        });
+        saveState();
+        addSystemLog(`⚔️ Nova quest criada: "${text}"`);
+        showMagicAlert("Quest Criada!", "Sua quest foi adicionada com sucesso.");
+    }
+
     closeModal("modal-quests-overlay");
     document.getElementById("quest-form").reset();
+    document.getElementById("quest-id-input").value = "";
+    document.getElementById("quest-original-type-input").value = "";
     renderQuests();
-    showMagicAlert("Quest Criada!", "Sua quest foi adicionada com sucesso.");
 });
 
 // 7. TAREFAS
@@ -3431,7 +3503,19 @@ window.onload = () => {
     // Quest local button click handler
     const localNewQuestBtn = document.getElementById("local-new-quest-btn");
     if (localNewQuestBtn) {
-        localNewQuestBtn.addEventListener("click", () => openModal("modal-quests-overlay"));
+        localNewQuestBtn.addEventListener("click", () => {
+            document.getElementById("quest-id-input").value = "";
+            document.getElementById("quest-original-type-input").value = "";
+            document.getElementById("quest-form").reset();
+
+            const modalTitleEl = document.querySelector("#modal-quests-overlay .modal-title");
+            if (modalTitleEl) modalTitleEl.textContent = "Nova Quest";
+
+            const submitBtnEl = document.querySelector("#quest-form button[type='submit']");
+            if (submitBtnEl) submitBtnEl.textContent = "Criar Quest";
+
+            openModal("modal-quests-overlay");
+        });
     }
     
     // Check reset daily quests and set periodic check
