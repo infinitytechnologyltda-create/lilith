@@ -453,15 +453,57 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-container {
-    background: var(--bg-sidebar);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(8, 12, 20, 0.94) 0%, rgba(16, 22, 34, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.22);
     border-radius: var(--border-radius-lg);
     width: 100%;
     max-width: 500px;
     padding: 32px;
-    box-shadow: var(--shadow-neon);
+    box-shadow: 
+        0 24px 48px rgba(0, 0, 0, 0.7),
+        inset 0 0 30px rgba(0, 242, 254, 0.06),
+        0 0 20px rgba(0, 242, 254, 0.06);
     transform: translateY(20px);
     transition: transform var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Sci-fi corner brackets and grid for modal container */
+.modal-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(rgba(0, 242, 254, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 254, 0.015) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.modal-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid var(--secondary);
+    clip-path: polygon(
+        0 0, 16px 0, 16px 2px, 2px 2px, 2px 16px, 0 16px,
+        0 100%, 0 calc(100% - 16px), 2px calc(100% - 16px), 2px calc(100% - 2px), 16px calc(100% - 2px), 16px 100%,
+        100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) calc(100% - 16px), 100% calc(100% - 16px),
+        100% 0, 100% 16px, calc(100% - 2px) 16px, calc(100% - 2px) 2px, calc(100% - 16px) 2px, calc(100% - 16px) 0
+    );
+    pointer-events: none;
+    box-shadow: 0 0 10px var(--secondary-glow);
+    z-index: 2;
+    opacity: 0.8;
 }
 
 .modal-overlay.active .modal-container {
@@ -531,14 +573,57 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Glass Panels (Containers for Modules) */
 .glass-panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(8, 12, 20, 0.88) 0%, rgba(16, 22, 34, 0.82) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.18);
     border-radius: var(--border-radius-lg);
     backdrop-filter: blur(12px);
     padding: 30px;
-    box-shadow: var(--shadow-glass);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.55),
+        inset 0 0 25px rgba(0, 242, 254, 0.04),
+        0 0 15px rgba(0, 242, 254, 0.04);
     margin-bottom: 24px;
     animation: fadeIn 0.4s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle digital grid inside default glass panels */
+.glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(rgba(0, 242, 254, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 254, 0.015) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 1;
+}
+
+/* Sci-fi corner brackets on default glass panels */
+.glass-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid var(--secondary);
+    clip-path: polygon(
+        0 0, 16px 0, 16px 2px, 2px 2px, 2px 16px, 0 16px,
+        0 100%, 0 calc(100% - 16px), 2px calc(100% - 16px), 2px calc(100% - 2px), 16px calc(100% - 2px), 16px 100%,
+        100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) calc(100% - 16px), 100% calc(100% - 16px),
+        100% 0, 100% 16px, calc(100% - 2px) 16px, calc(100% - 2px) 2px, calc(100% - 16px) 2px, calc(100% - 16px) 0
+    );
+    pointer-events: none;
+    box-shadow: 0 0 10px var(--secondary-glow);
+    z-index: 2;
+    opacity: 0.8;
 }
 
 /* Layout Grids */

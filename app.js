@@ -68,6 +68,13 @@ const SEED_DATA = {
         { id: "app-2", name: "GitHub", url: "https://github.com/", desc: "Repositórios e códigos", type: "github", active: true, logo: "github.png" },
         { id: "app-13", name: "Vercel Hospedagens", url: "https://vercel.com/infinitytechnologyltda-creates-projects", desc: "Vercel Hospedagens", type: "vercel", active: true, logo: "vercel.png" },
         { id: "app-12", name: "SupaBase", url: "https://supabase.com/dashboard/org/losdimttlnvpikajsbqm", desc: "Banco de dados SupaBase", type: "supabase", active: true, logo: "supabase.png" }
+    ],
+    alarms: [
+        { id: "al-1", time: "08:00", label: "Despertar & Foco", days: ["Seg", "Ter", "Qua", "Qui", "Sex"], triggeredToday: false },
+        { id: "al-2", time: "22:00", label: "Análise Diária Lilith OS", days: [], date: "", triggeredToday: false }
+    ],
+    alarmHistory: [
+        { id: "alh-seed-1", label: "Despertar & Foco", time: "08:00", date: "2026-07-01", triggeredAt: "08:00", status: "Silenciado às 08:03", alarmId: "al-1" }
     ]
 };
 
@@ -102,8 +109,17 @@ function loadState() {
             if (!state.habits) state.habits = [];
             if (!state.finances) state.finances = [];
             if (!state.apps) state.apps = [];
-            if (!state.alarms) state.alarms = [];
-            if (!state.alarmHistory) state.alarmHistory = [];
+            if (!state.alarms || state.alarms.length === 0) {
+                state.alarms = [
+                    { id: "al-1", time: "08:00", label: "Despertar & Foco", days: ["Seg", "Ter", "Qua", "Qui", "Sex"], triggeredToday: false },
+                    { id: "al-2", time: "22:00", label: "Análise Diária Lilith OS", days: [], date: "", triggeredToday: false }
+                ];
+            }
+            if (!state.alarmHistory || state.alarmHistory.length === 0) {
+                state.alarmHistory = [
+                    { id: "alh-seed-1", label: "Despertar & Foco", time: "08:00", date: "2026-07-01", triggeredAt: "08:00", status: "Silenciado às 08:03", alarmId: "al-1" }
+                ];
+            }
         } catch (e) {
             console.error("Erro ao parsear dados do localStorage. Usando padrões.", e);
             state = { ...SEED_DATA };
