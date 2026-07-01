@@ -2943,12 +2943,23 @@ function renderHabits() {
             const sanitizedNote = (item.note || "").trim().replace(/"/g, '&quot;').replace(/'/g, "\\'");
             
             if (sanitizedNote) {
-                nameHTML = `
-                    <span class="premium-tooltip-trigger" data-tooltip="${sanitizedNote}" onclick="showMagicAlert('${isPractice ? 'Prática' : 'Regra de Disciplina'}', '${sanitizedNote}')" style="cursor: pointer; font-weight: 600;">
-                        ${item.name}
-                        <i data-lucide="help-circle" style="width: 13px; height: 13px; opacity: 0.6; display: inline-block; vertical-align: middle; margin-left: 4px;"></i>
-                    </span>
-                `;
+                if (isPractice) {
+                    nameHTML = `
+                        <span class="premium-tooltip-trigger" data-tooltip="${sanitizedNote}" onclick="showMagicAlert('Prática', '${sanitizedNote}')" style="cursor: pointer; font-weight: 600;">
+                            ${item.name}
+                            <i data-lucide="help-circle" style="width: 13px; height: 13px; opacity: 0.6; display: inline-block; vertical-align: middle; margin-left: 4px;"></i>
+                        </span>
+                    `;
+                } else {
+                    nameHTML = `
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="font-weight: 600; color: var(--text-main);">${item.name}</span>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 400; line-height: 1.4; white-space: pre-wrap; display: block; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 4px; margin-top: 2px;">
+                                ${item.note}
+                            </span>
+                        </div>
+                    `;
+                }
             } else {
                 nameHTML = `<span style="font-weight: 600;">${item.name}</span>`;
             }
