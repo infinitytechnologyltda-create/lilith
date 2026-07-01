@@ -879,9 +879,9 @@ function renderModuleContent(moduleName) {
                 wrapper = glassPanel;
             }
 
-            // Remove existing jewel, cracks and bolts first (both from wrapper and glassPanel)
-            wrapper.querySelectorAll(".jewel, .jewel-cracks, .armor-bolt").forEach(el => el.remove());
-            glassPanel.querySelectorAll(".jewel, .jewel-cracks, .armor-bolt").forEach(el => el.remove());
+            // Remove existing jewel, cracks, lights and bolts first (both from wrapper and glassPanel)
+            wrapper.querySelectorAll(".jewel, .jewel-cracks, .jewel-lights-container, .armor-bolt").forEach(el => el.remove());
+            glassPanel.querySelectorAll(".jewel, .jewel-cracks, .jewel-lights-container, .armor-bolt").forEach(el => el.remove());
             
             const jewelMap = {
                 dashboard: 'diamond',
@@ -920,10 +920,18 @@ function renderModuleContent(moduleName) {
             };
             const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
 
-            // Add the cracks effect underneath the jewel
-            const cracksEl = document.createElement("div");
-            cracksEl.className = "jewel-cracks";
-            wrapper.appendChild(cracksEl);
+            // Add the light particles container
+            const lightsContainer = document.createElement("div");
+            lightsContainer.className = "jewel-lights-container";
+            
+            // Append 12 light particles distributed in a circle
+            for (let i = 0; i < 12; i++) {
+                const lightParticle = document.createElement("div");
+                lightParticle.className = "jewel-light-particle";
+                lightParticle.style.setProperty("--index", i);
+                lightsContainer.appendChild(lightParticle);
+            }
+            wrapper.appendChild(lightsContainer);
 
             // Add the jewel itself
             const jewelEl = document.createElement("div");

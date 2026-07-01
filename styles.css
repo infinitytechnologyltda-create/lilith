@@ -2662,35 +2662,25 @@ h1, h2, h3, h4, h5, h6 {
     animation-play-state: paused;
 }
 
-/* Broken glass crack lines radiating from the jewel */
-.jewel-cracks {
+/* Orbiting light particles around the jewel */
+.jewel-lights-container {
     position: absolute;
-    top: -35px;
-    right: -35px;
-    width: 70px;
-    height: 70px;
+    top: -24px; /* Centered around 28px gem (gem is at top: -14px, right: -14px, center is 0,0. Container size is 48x48, top: -24px, right: -24px places center at 0,0) */
+    right: -24px;
+    width: 48px;
+    height: 48px;
     pointer-events: none;
-    z-index: 98;
-    background: 
-        /* Radiating sharp fracture lines */
-        linear-gradient(28deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-        linear-gradient(118deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-        linear-gradient(208deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-        linear-gradient(298deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-        /* Shattered glass concentric shockwaves */
-        radial-gradient(circle at center, transparent 15%, rgba(255, 255, 255, 0.2) 16%, transparent 22%, rgba(255, 255, 255, 0.15) 23%, transparent 40%),
-        /* Depth shadow crater behind cracks */
-        radial-gradient(circle at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 50%, transparent 75%);
-    opacity: 0.85;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    z-index: 97;
+    /* Rotation animation for the entire container to get the orbit effect */
+    animation: jewel-lights-orbit 12s linear infinite;
 }
 
 /* Ambient glow halo behind the gem */
-.jewel-cracks::before {
+.jewel-lights-container::before {
     content: '';
     position: absolute;
-    top: 21px; /* Center-aligned with 28px gem (cracks is 70x70, center is 35, gem half is 14. 35 - 14 = 21) */
-    left: 21px;
+    top: 10px; /* Center-aligned with 28px gem (container is 48x48, center is 24, gem half is 14. 24 - 14 = 10) */
+    left: 10px;
     width: 28px;
     height: 28px;
     background: var(--jewel-glow);
@@ -2702,25 +2692,62 @@ h1, h2, h3, h4, h5, h6 {
     pointer-events: none;
 }
 
-/* Rotating technological radar lock-on ring */
-.jewel-cracks::after {
+/* Depth shadow crater behind the gem */
+.jewel-lights-container::after {
     content: '';
     position: absolute;
-    top: 11px; /* Center-aligned (cracks 70x70, center is 35, radar half is 24. 35 - 24 = 11) */
-    left: 11px;
-    width: 48px;
-    height: 48px;
-    border: 1px dashed var(--jewel-glow, rgba(255,255,255,0.6));
+    top: 6px; /* Center shadow (container is 48x48, center is 24, shadow half is 18. 24 - 18 = 6) */
+    left: 6px;
+    width: 36px;
+    height: 36px;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 50%, transparent 75%);
     border-radius: 50%;
-    opacity: 0.45;
-    animation: radar-rotate 10s linear infinite;
-    z-index: 1;
+    z-index: -2;
     pointer-events: none;
 }
 
-@keyframes radar-rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Individual light particle orbiting the gem */
+.jewel-light-particle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background-color: var(--jewel-glow, #fff);
+    border-radius: 50%;
+    box-shadow: 
+        0 0 4px var(--jewel-glow, #fff),
+        0 0 8px var(--jewel-glow, #fff);
+    pointer-events: none;
+    
+    /* Position each particle at a specific angle and radius */
+    /* --index is 0 to 11. Radius of orbit is 22px */
+    transform: translate(-50%, -50%) rotate(calc(var(--index) * 30deg)) translateY(-22px);
+    
+    /* Animation for pulsing size, opacity, and rotation */
+    animation: jewel-particle-pulse 2.2s ease-in-out infinite;
+    /* Offset the animation start time based on index for a wave effect */
+    animation-delay: calc(var(--index) * -0.18s);
+}
+
+@keyframes jewel-lights-orbit {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes jewel-particle-pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) rotate(calc(var(--index) * 30deg)) translateY(-22px) scale(0.4);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translate(-50%, -50%) rotate(calc(var(--index) * 30deg)) translateY(-26px) scale(1.4);
+        opacity: 1.0;
+    }
 }
 
 @keyframes jewel-glow-pulse {
@@ -2739,9 +2766,9 @@ h1, h2, h3, h4, h5, h6 {
     top: -3px;
     right: -3px;
 }
-.theme-gundam .jewel-cracks {
-    top: -24px;
-    right: -24px;
+.theme-gundam .jewel-lights-container {
+    top: -13px; /* Gem is at top: -3px, right: -3px. Center of gem is 11, 11. Center of container is 11, 11 if top/right: -13px (size 48x48, center offset 24. 11 - 24 = -13px) */
+    right: -13px;
 }
 
 /* Jewel 1: Diamond (Diamante) - Diamond Rhombus */
