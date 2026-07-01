@@ -2599,6 +2599,70 @@ h1, h2, h3, h4, h5, h6 {
     /* margin-bottom is handled dynamically by app.js when wrapping */
 }
 
+/* Masking effect to fade out the top-right corner under the jewel */
+.glass-panel-wrapper > .glass-panel {
+    -webkit-mask-image: radial-gradient(circle at top right, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 55px);
+    mask-image: radial-gradient(circle at top right, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 55px);
+    animation: panel-mask-glitch 6s infinite ease-in-out;
+}
+
+/* Gundam theme mask coordinate adjustment (centered on the diagonal cut) */
+.theme-gundam .glass-panel-wrapper > .glass-panel {
+    -webkit-mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.3) 30px, black 50px);
+    mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.3) 30px, black 50px);
+    animation: panel-mask-glitch-gundam 6s infinite ease-in-out !important;
+}
+
+@keyframes panel-mask-glitch {
+    0%, 100% {
+        -webkit-mask-image: radial-gradient(circle at top right, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 55px);
+        mask-image: radial-gradient(circle at top right, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 55px);
+    }
+    48% {
+        -webkit-mask-image: radial-gradient(circle at top right, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 55px);
+        mask-image: radial-gradient(circle at top right, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 55px);
+    }
+    50% {
+        /* Sudden flicker/glitch */
+        -webkit-mask-image: radial-gradient(circle at top right, transparent 0px, transparent 32px, rgba(0, 0, 0, 0.1) 40px, black 65px);
+        mask-image: radial-gradient(circle at top right, transparent 0px, transparent 32px, rgba(0, 0, 0, 0.1) 40px, black 65px);
+        filter: brightness(1.2);
+    }
+    52% {
+        -webkit-mask-image: radial-gradient(circle at top right, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.4) 30px, black 50px);
+        mask-image: radial-gradient(circle at top right, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.4) 30px, black 50px);
+    }
+    54% {
+        -webkit-mask-image: radial-gradient(circle at top right, transparent 0px, transparent 24px, rgba(0, 0, 0, 0.3) 34px, black 58px);
+        mask-image: radial-gradient(circle at top right, transparent 0px, transparent 24px, rgba(0, 0, 0, 0.3) 34px, black 58px);
+    }
+}
+
+@keyframes panel-mask-glitch-gundam {
+    0%, 100% {
+        -webkit-mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.3) 30px, black 50px);
+        mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.3) 30px, black 50px);
+    }
+    48% {
+        -webkit-mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.3) 30px, black 50px);
+        mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 20px, rgba(0, 0, 0, 0.3) 30px, black 50px);
+    }
+    50% {
+        /* Sudden flicker/glitch */
+        -webkit-mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 30px, rgba(0, 0, 0, 0.1) 38px, black 60px);
+        mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 30px, rgba(0, 0, 0, 0.1) 38px, black 60px);
+        filter: brightness(1.25);
+    }
+    52% {
+        -webkit-mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 18px, rgba(0, 0, 0, 0.4) 28px, black 46px);
+        mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 18px, rgba(0, 0, 0, 0.4) 28px, black 46px);
+    }
+    54% {
+        -webkit-mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 53px);
+        mask-image: radial-gradient(circle at calc(100% - 11px) 11px, transparent 0px, transparent 22px, rgba(0, 0, 0, 0.3) 32px, black 53px);
+    }
+}
+
 .jewel {
     position: absolute;
     top: -14px;
