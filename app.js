@@ -3297,10 +3297,8 @@ function renderAppCenter() {
         tile.setAttribute("data-app-id", app.id);
         tile.style.cursor = "pointer";
         
-        tile.onclick = (e) => {
-            if (e.target.tagName.toLowerCase() !== 'button' && e.target.tagName.toLowerCase() !== 'a' && !e.target.closest('button') && !e.target.closest('a')) {
-                selectAppForVisualizer(app.id, false);
-            }
+        tile.onclick = () => {
+            selectAppForVisualizer(app.id, false);
         };
         
         const wasAccessedToday = app.lastAccessedDate === todayStr;
@@ -3316,14 +3314,6 @@ function renderAppCenter() {
             <h3 class="section-title" style="margin-bottom:0; font-size:16px;">${app.name}</h3>
             <p style="font-size:12px; color: var(--text-muted); flex:1;">${app.desc}</p>
             <span class="app-status ${app.active ? 'connected' : 'disconnected'}">${app.active ? 'Ativo' : 'Inativo'}</span>
-            <div style="display:flex; gap:10px; width:100%; margin-top:8px;">
-                <button class="action-btn-secondary" style="flex:1; padding:6px 0; font-size:12px; justify-content:center;" onclick="toggleAppStatus('${app.id}')">
-                    ${app.active ? 'Desativar' : 'Ativar'}
-                </button>
-                <button class="action-btn" style="flex:1; padding:6px 0; font-size:12px; justify-content:center; box-shadow:none;" onclick="selectAppForVisualizer('${app.id}', true)">
-                    Visualizar
-                </button>
-            </div>
         `;
         container.appendChild(tile);
     });
