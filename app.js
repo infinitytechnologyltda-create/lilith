@@ -611,43 +611,7 @@ function setupGlobalActionBtn(moduleName) {
 
 // ==================== MODALS COMMON ====================
 function openModal(id) {
-    const modalEl = document.getElementById(id);
-    modalEl.classList.add("active");
-    
-    // Inject jewel and cracks to this modal's container
-    const container = modalEl.querySelector(".modal-container");
-    if (container) {
-        container.querySelectorAll(".jewel, .jewel-cracks").forEach(el => el.remove());
-        
-        const jewelMap = {
-            dashboard: 'diamond',
-            notes: 'emerald',
-            diary: 'ruby',
-            ideas: 'sapphire',
-            whiteboard: 'amethyst',
-            quests: 'topaz',
-            tasks: 'opal',
-            projects: 'turquoise',
-            goals: 'jasper',
-            calendar: 'jade',
-            habits: 'quartz',
-            library: 'obsidian',
-            finances: 'citrine',
-            appcenter: 'aquamarine',
-            notifications: 'garnet'
-        };
-        const jewelType = jewelMap[currentModule] || 'diamond';
-        
-        // 1. Cracks
-        const cracksEl = document.createElement("div");
-        cracksEl.className = "jewel-cracks";
-        container.appendChild(cracksEl);
-        
-        // 2. Jewel
-        const jewelEl = document.createElement("div");
-        jewelEl.className = `jewel ${jewelType}`;
-        container.appendChild(jewelEl);
-    }
+    document.getElementById(id).classList.add("active");
 }
 function closeModal(id) {
     document.getElementById(id).classList.remove("active");
@@ -788,12 +752,12 @@ function renderModuleContent(moduleName) {
             };
             const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
 
-            // 1. Create and append cracks
+            // Add the cracks effect underneath the jewel
             const cracksEl = document.createElement("div");
             cracksEl.className = "jewel-cracks";
             glassPanel.appendChild(cracksEl);
 
-            // 2. Create and append jewel
+            // Add the jewel itself
             const jewelEl = document.createElement("div");
             jewelEl.className = `jewel ${jewelType}`;
             jewelEl.title = `Gema Ativa: ${jewelName}`;
@@ -804,16 +768,13 @@ function renderModuleContent(moduleName) {
                 glassPanel.style.position = 'relative';
             }
             
-            // Add armor bolts for robotic themes
-            const currentTheme = state.systemTheme || 'default';
-            if (currentTheme === 'gundam' || currentTheme === 'decepticon') {
-                const boltPositions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-                boltPositions.forEach(pos => {
-                    const bolt = document.createElement("div");
-                    bolt.className = `armor-bolt ${pos}`;
-                    glassPanel.appendChild(bolt);
-                });
-            }
+            // Add armor bolts for robotic/technological windows
+            const boltPositions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            boltPositions.forEach(pos => {
+                const bolt = document.createElement("div");
+                bolt.className = `armor-bolt ${pos}`;
+                glassPanel.appendChild(bolt);
+            });
         });
     }
 
