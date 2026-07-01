@@ -1089,10 +1089,11 @@
     <div class="modal-overlay" id="modal-library-overlay">
         <div class="modal-container">
             <div class="modal-header">
-                <h3 class="modal-title" style="text-align: center; width: 100%;">Adicionar Item à Biblioteca</h3>
+                <h3 class="modal-title" id="library-modal-title" style="text-align: center; width: 100%;">Adicionar Item à Biblioteca</h3>
                 <button class="modal-close" onclick="closeModal('modal-library-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="library-form">
+                <input type="hidden" id="library-id-input" value="">
                 <div class="form-group">
                     <label class="form-label" for="library-title-input" style="text-align: center; display: block;">Título / Nome</label>
                     <input type="text" class="form-input" id="library-title-input" required placeholder="Ex: Planilha de Finanças 2026, Livro Sapiens" style="text-align: center;">
@@ -1138,10 +1139,11 @@
     <div class="modal-overlay" id="modal-finances-overlay">
         <div class="modal-container">
             <div class="modal-header">
-                <h3 class="modal-title">Nova Transação</h3>
+                <h3 class="modal-title" id="finance-modal-title">Nova Transação</h3>
                 <button class="modal-close" onclick="closeModal('modal-finances-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="finance-form">
+                <input type="hidden" id="finance-id-input" value="">
                 <div class="form-group">
                     <label class="form-label" for="finance-desc-input">Descrição</label>
                     <input type="text" class="form-input" id="finance-desc-input" required placeholder="Ex: Compra de supermercado, Salário CLT">
