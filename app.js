@@ -1577,7 +1577,7 @@ function renderIdeas() {
         card.className = "note-card";
         card.innerHTML = `
             <div class="note-header">
-                <span class="note-category" style="background: rgba(6, 182, 212, 0.15); color: var(--accent); border-color: rgba(6, 182, 212, 0.3);">${idea.theme}</span>
+                <span class="note-category" style="background: rgba(255, 255, 255, 0.05); color: var(--accent); border: 1px solid var(--border-color);">${idea.theme}</span>
             </div>
             <h3 class="note-title">${idea.title}</h3>
             <p class="note-desc">${idea.content}</p>
@@ -2762,16 +2762,16 @@ function renderCalendar() {
         dayEvents.forEach(ev => {
             let importanceLabel = "";
             let colorStyle = "";
-            const evColor = ev.color || "#ff007f";
+            const evColor = ev.color || "var(--primary)";
             if (ev.importance === "3") {
                 importanceLabel = " [A]";
-                colorStyle = `background-color: ${evColor}25; border-left: 2px solid ${evColor}; color: ${evColor}; font-weight: 700; text-shadow: 0 0 4px ${evColor}40;`;
+                colorStyle = `background-color: color-mix(in srgb, ${evColor} 15%, transparent); border-left: 2px solid ${evColor}; color: ${evColor}; font-weight: 700; text-shadow: 0 0 4px color-mix(in srgb, ${evColor} 25%, transparent);`;
             } else if (ev.importance === "2") {
                 importanceLabel = " [M]";
-                colorStyle = `background-color: ${evColor}18; border-left: 2px solid ${evColor}; color: ${evColor};`;
+                colorStyle = `background-color: color-mix(in srgb, ${evColor} 9%, transparent); border-left: 2px solid ${evColor}; color: ${evColor};`;
             } else {
                 importanceLabel = " [B]";
-                colorStyle = `background-color: ${evColor}10; border-left: 2px solid ${evColor}80; color: ${evColor}bb;`;
+                colorStyle = `background-color: color-mix(in srgb, ${evColor} 6%, transparent); border-left: 2px solid color-mix(in srgb, ${evColor} 50%, transparent); color: color-mix(in srgb, ${evColor} 75%, transparent);`;
             }
             eventsHTML += `<span class="event-dot event" style="${colorStyle}" title="${ev.title}">${ev.title}${importanceLabel}</span>`;
         });
@@ -2808,14 +2808,15 @@ function addCalendarEventPrompt(dateStr) {
     document.getElementById("calendar-event-title-input").value = "";
     document.getElementById("calendar-event-importance-input").value = "2";
     
-    // Reset color selector to default (#ff007f)
-    document.getElementById("calendar-event-color-input").value = "#ff007f";
+    // Reset color selector to default (var(--primary))
+    document.getElementById("calendar-event-color-input").value = "var(--primary)";
     const dots = document.querySelectorAll("#event-color-selector .color-dot");
     dots.forEach(dot => {
-        if(dot.getAttribute("data-color") === "#ff007f") {
+        const color = dot.getAttribute("data-color");
+        if(color === "var(--primary)") {
             dot.classList.add("active-color");
             dot.style.border = "2px solid #fff";
-            dot.style.boxShadow = "0 0 8px #ff007f";
+            dot.style.boxShadow = "0 0 8px var(--primary-glow)";
         } else {
             dot.classList.remove("active-color");
             dot.style.border = "2px solid transparent";
@@ -2841,7 +2842,11 @@ document.querySelectorAll("#event-color-selector .color-dot").forEach(dot => {
         dot.classList.add("active-color");
         const color = dot.getAttribute("data-color");
         dot.style.border = "2px solid #fff";
-        dot.style.boxShadow = `0 0 8px ${color}`;
+        let glowColor = color;
+        if(color.startsWith("var(")) {
+            glowColor = color.replace(")", "-glow)");
+        }
+        dot.style.boxShadow = `0 0 8px ${glowColor}`;
         document.getElementById("calendar-event-color-input").value = color;
     };
 });
@@ -3502,7 +3507,7 @@ function renderAssistedScreen(type, container, app) {
 
     container.innerHTML = `
         <div class="assisted-layout" style="padding: 48px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 24px; background: #07090b; min-height: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
-            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: 8px;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: 8px;">
                 <i data-lucide="monitor-play" style="width: 32px; height: 32px;"></i>
             </div>
             
@@ -4414,8 +4419,8 @@ function saveToSupabaseDebounced() {
     const syncStatusEl = document.getElementById("supabase-sync-status");
     if (syncStatusEl) {
         syncStatusEl.textContent = "Salvando...";
-        syncStatusEl.style.background = "rgba(234, 179, 8, 0.1)";
-        syncStatusEl.style.color = "#eab308";
+        syncStatusEl.style.background = "rgba(255, 255, 255, 0.05)";
+        syncStatusEl.style.color = "var(--accent)";
     }
 
     supabaseSaveTimeout = setTimeout(() => {
@@ -4446,8 +4451,8 @@ async function uploadStateToSupabase(showAlert = false) {
         const timeStr = new Date().toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         if (syncStatusEl) {
             syncStatusEl.textContent = "Sincronizado";
-            syncStatusEl.style.background = "rgba(34, 197, 94, 0.1)";
-            syncStatusEl.style.color = "#22c55e";
+            syncStatusEl.style.background = "rgba(255, 255, 255, 0.05)";
+            syncStatusEl.style.color = "var(--primary)";
         }
         if (lastSyncTimeEl) {
             lastSyncTimeEl.textContent = `${timeStr} (Enviado)`;
@@ -4514,8 +4519,8 @@ async function loadStateFromSupabase(showAlert = true) {
             
             if (syncStatusEl) {
                 syncStatusEl.textContent = "Sincronizado";
-                syncStatusEl.style.background = "rgba(34, 197, 94, 0.1)";
-                syncStatusEl.style.color = "#22c55e";
+                syncStatusEl.style.background = "rgba(255, 255, 255, 0.05)";
+                syncStatusEl.style.color = "var(--primary)";
             }
             if (lastSyncTimeEl) {
                 lastSyncTimeEl.textContent = `${timeStr} (Baixado)`;
@@ -4528,8 +4533,8 @@ async function loadStateFromSupabase(showAlert = true) {
             await uploadStateToSupabase(false);
             if (syncStatusEl) {
                 syncStatusEl.textContent = "Sincronizado";
-                syncStatusEl.style.background = "rgba(34, 197, 94, 0.1)";
-                syncStatusEl.style.color = "#22c55e";
+                syncStatusEl.style.background = "rgba(255, 255, 255, 0.05)";
+                syncStatusEl.style.color = "var(--primary)";
             }
             if (lastSyncTimeEl) {
                 lastSyncTimeEl.textContent = `${timeStr} (Nuvem Inicializada)`;
@@ -4888,7 +4893,7 @@ function initSupabaseEventListeners() {
                 if (localFolderStatus) {
                     localFolderStatus.style.display = "block";
                     localFolderStatus.textContent = `Pasta selecionada: ${localDirectoryHandle.name}`;
-                    localFolderStatus.style.color = "#22c55e"; // green
+                    localFolderStatus.style.color = "var(--primary)";
                 }
                 
                 // Immediately backup current state to this folder

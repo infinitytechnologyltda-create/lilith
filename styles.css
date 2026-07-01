@@ -1193,15 +1193,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .priority-badge.medium {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid var(--border-color);
 }
 
 .priority-badge.low {
-    background: rgba(6, 182, 212, 0.15);
+    background: rgba(255, 255, 255, 0.02);
     color: var(--accent);
-    border: 1px solid rgba(6, 182, 212, 0.3);
+    border: 1px solid var(--border-color);
 }
 
 /* Projects grid */
@@ -2284,31 +2284,31 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Status colors and glowing effects */
 .supabase-status-btn.connected {
-    color: #22c55e;
-    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.5));
-    animation: sbPulseGreen 2s infinite ease-in-out;
+    color: var(--primary);
+    filter: drop-shadow(0 0 4px var(--primary-glow));
+    animation: sbPulseConnected 2s infinite ease-in-out;
 }
 
 .supabase-status-btn.pending {
-    color: #eab308;
-    filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.5));
-    animation: sbPulseYellow 2s infinite ease-in-out;
+    color: var(--accent);
+    filter: drop-shadow(0 0 4px var(--accent-glow));
+    animation: sbPulsePending 2s infinite ease-in-out;
 }
 
 .supabase-status-btn.disconnected {
     color: var(--text-dim);
 }
 
-@keyframes sbPulseGreen {
-    0% { filter: drop-shadow(0 0 2px rgba(34, 197, 94, 0.3)); }
-    50% { filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.7)); }
-    100% { filter: drop-shadow(0 0 2px rgba(34, 197, 94, 0.3)); }
+@keyframes sbPulseConnected {
+    0% { filter: drop-shadow(0 0 2px var(--primary-glow)); }
+    50% { filter: drop-shadow(0 0 8px var(--primary-glow)); }
+    100% { filter: drop-shadow(0 0 2px var(--primary-glow)); }
 }
 
-@keyframes sbPulseYellow {
-    0% { filter: drop-shadow(0 0 2px rgba(234, 179, 8, 0.3)); }
-    50% { filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.7)); }
-    100% { filter: drop-shadow(0 0 2px rgba(234, 179, 8, 0.3)); }
+@keyframes sbPulsePending {
+    0% { filter: drop-shadow(0 0 2px var(--accent-glow)); }
+    50% { filter: drop-shadow(0 0 8px var(--accent-glow)); }
+    100% { filter: drop-shadow(0 0 2px var(--accent-glow)); }
 }
 
 .supabase-panel {
@@ -2597,21 +2597,32 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 50%;
     z-index: 10;
     pointer-events: none;
-    background: radial-gradient(circle at 30% 30%, #e2e8f0 0%, #94a3b8 50%, #475569 85%, #1e293b 100%);
+    background: radial-gradient(circle at 35% 35%, #2a2a2a 0%, #121212 55%, #000000 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 
-        0 1px 2px rgba(0,0,0,0.5), 
-        inset 0 1px 1px rgba(255,255,255,0.8),
-        0 0 4px rgba(148, 163, 184, 0.3);
+        0 1.5px 3px rgba(0,0,0,0.8), 
+        inset 0 1px 1px rgba(255,255,255,0.45),
+        inset 0 -1px 2px rgba(0,0,0,0.9);
 }
 
 .theme-gundam .armor-bolt {
-    background: radial-gradient(circle, #00f2fe 30%, rgba(0, 242, 254, 0.3) 100%);
-    box-shadow: 0 0 6px #00f2fe, inset 0 0 2px rgba(255,255,255,0.6);
+    background: radial-gradient(circle at 35% 35%, #2a2a2a 0%, #121212 55%, #000000 100%) !important;
+    border-color: rgba(0, 242, 254, 0.5) !important;
+    box-shadow: 
+        0 1.5px 3px rgba(0,0,0,0.8),
+        0 0 5px rgba(0, 242, 254, 0.4),
+        inset 0 1px 1px rgba(255,255,255,0.45),
+        inset 0 -1px 2px rgba(0,0,0,0.9) !important;
 }
 
 .theme-decepticon .armor-bolt {
-    background: radial-gradient(circle, #39ff14 30%, rgba(57, 255, 20, 0.3) 100%);
-    box-shadow: 0 0 6px #39ff14, inset 0 0 2px rgba(255,255,255,0.6);
+    background: radial-gradient(circle at 35% 35%, #2a2a2a 0%, #121212 55%, #000000 100%) !important;
+    border-color: rgba(57, 255, 20, 0.5) !important;
+    box-shadow: 
+        0 1.5px 3px rgba(0,0,0,0.8),
+        0 0 5px rgba(57, 255, 20, 0.4),
+        inset 0 1px 1px rgba(255,255,255,0.45),
+        inset 0 -1px 2px rgba(0,0,0,0.9) !important;
 }
 
 .armor-bolt.top-left { top: 10px; left: 10px; }
