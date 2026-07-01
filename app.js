@@ -611,7 +611,43 @@ function setupGlobalActionBtn(moduleName) {
 
 // ==================== MODALS COMMON ====================
 function openModal(id) {
-    document.getElementById(id).classList.add("active");
+    const modalEl = document.getElementById(id);
+    modalEl.classList.add("active");
+    
+    // Inject jewel and cracks to this modal's container
+    const container = modalEl.querySelector(".modal-container");
+    if (container) {
+        container.querySelectorAll(".jewel, .jewel-cracks").forEach(el => el.remove());
+        
+        const jewelMap = {
+            dashboard: 'diamond',
+            notes: 'emerald',
+            diary: 'ruby',
+            ideas: 'sapphire',
+            whiteboard: 'amethyst',
+            quests: 'topaz',
+            tasks: 'opal',
+            projects: 'turquoise',
+            goals: 'jasper',
+            calendar: 'jade',
+            habits: 'quartz',
+            library: 'obsidian',
+            finances: 'citrine',
+            appcenter: 'aquamarine',
+            notifications: 'garnet'
+        };
+        const jewelType = jewelMap[currentModule] || 'diamond';
+        
+        // 1. Cracks
+        const cracksEl = document.createElement("div");
+        cracksEl.className = "jewel-cracks";
+        container.appendChild(cracksEl);
+        
+        // 2. Jewel
+        const jewelEl = document.createElement("div");
+        jewelEl.className = `jewel ${jewelType}`;
+        container.appendChild(jewelEl);
+    }
 }
 function closeModal(id) {
     document.getElementById(id).classList.remove("active");
@@ -711,54 +747,57 @@ function renderModuleContent(moduleName) {
         const glassPanels = activePanel.querySelectorAll(".glass-panel");
         const targetPanels = glassPanels.length > 0 ? glassPanels : [activePanel];
         
-        targetPanels.forEach((glassPanel, idx) => {
-            // Remove existing jewel and bolts first
-            glassPanel.querySelectorAll(".jewel, .armor-bolt").forEach(el => el.remove());
+        targetPanels.forEach((glassPanel) => {
+            // Remove existing jewel, cracks and bolts first
+            glassPanel.querySelectorAll(".jewel, .jewel-cracks, .armor-bolt").forEach(el => el.remove());
             
-            // Only add jewel to the first glass-panel
-            if (idx === 0) {
-                const jewelMap = {
-                    dashboard: 'diamond',
-                    notes: 'emerald',
-                    diary: 'ruby',
-                    ideas: 'sapphire',
-                    whiteboard: 'amethyst',
-                    quests: 'topaz',
-                    tasks: 'opal',
-                    projects: 'turquoise',
-                    goals: 'jasper',
-                    calendar: 'jade',
-                    habits: 'quartz',
-                    library: 'obsidian',
-                    finances: 'citrine',
-                    appcenter: 'aquamarine',
-                    notifications: 'garnet'
-                };
-                const jewelType = jewelMap[moduleName] || 'diamond';
-                const jewelNamesMap = {
-                    diamond: 'Diamante Real',
-                    emerald: 'Esmeralda Natural',
-                    ruby: 'Rubi de Sangue',
-                    sapphire: 'Safira Estrela',
-                    amethyst: 'Ametista Imperial',
-                    topaz: 'Topázio Imperial',
-                    opal: 'Opala Nobre',
-                    turquoise: 'Turquesa Persa',
-                    jasper: 'Jaspe Sanguíneo',
-                    jade: 'Jade Imperial',
-                    quartz: 'Quartzo Rosa',
-                    obsidian: 'Obsidiana Negra',
-                    citrine: 'Citrino Dourado',
-                    aquamarine: 'Água-Marinha Azul',
-                    garnet: 'Granada Almandina'
-                };
-                const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
+            const jewelMap = {
+                dashboard: 'diamond',
+                notes: 'emerald',
+                diary: 'ruby',
+                ideas: 'sapphire',
+                whiteboard: 'amethyst',
+                quests: 'topaz',
+                tasks: 'opal',
+                projects: 'turquoise',
+                goals: 'jasper',
+                calendar: 'jade',
+                habits: 'quartz',
+                library: 'obsidian',
+                finances: 'citrine',
+                appcenter: 'aquamarine',
+                notifications: 'garnet'
+            };
+            const jewelType = jewelMap[moduleName] || 'diamond';
+            const jewelNamesMap = {
+                diamond: 'Diamante Real',
+                emerald: 'Esmeralda Natural',
+                ruby: 'Rubi de Sangue',
+                sapphire: 'Safira Estrela',
+                amethyst: 'Ametista Imperial',
+                topaz: 'Topázio Imperial',
+                opal: 'Opala Nobre',
+                turquoise: 'Turquesa Persa',
+                jasper: 'Jaspe Sanguíneo',
+                jade: 'Jade Imperial',
+                quartz: 'Quartzo Rosa',
+                obsidian: 'Obsidiana Negra',
+                citrine: 'Citrino Dourado',
+                aquamarine: 'Água-Marinha Azul',
+                garnet: 'Granada Almandina'
+            };
+            const jewelName = jewelNamesMap[jewelType] || 'Jóia Real';
 
-                const jewelEl = document.createElement("div");
-                jewelEl.className = `jewel ${jewelType}`;
-                jewelEl.title = `Gema Ativa: ${jewelName}`;
-                glassPanel.appendChild(jewelEl);
-            }
+            // 1. Create and append cracks
+            const cracksEl = document.createElement("div");
+            cracksEl.className = "jewel-cracks";
+            glassPanel.appendChild(cracksEl);
+
+            // 2. Create and append jewel
+            const jewelEl = document.createElement("div");
+            jewelEl.className = `jewel ${jewelType}`;
+            jewelEl.title = `Gema Ativa: ${jewelName}`;
+            glassPanel.appendChild(jewelEl);
             
             // Ensure container has relative position
             if (getComputedStyle(glassPanel).position === 'static') {
