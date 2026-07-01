@@ -2594,93 +2594,127 @@ h1, h2, h3, h4, h5, h6 {
 .armor-bolt.bottom-right { bottom: 10px; right: 10px; }
 
 /* ==================== REAL JEWELS FOR MODULE WINDOWS ==================== */
+.glass-panel-wrapper {
+    position: relative;
+    /* margin-bottom is handled dynamically by app.js when wrapping */
+}
+
 .jewel {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 24px;
-    height: 24px;
+    top: -14px;
+    right: -14px;
+    width: 28px;
+    height: 28px;
     z-index: 99;
     cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
     animation: jewel-sparkle 3s ease-in-out infinite;
+    transform-style: preserve-3d;
+    box-shadow: 
+        inset 1px 1px 2px rgba(255, 255, 255, 0.7), 
+        inset -1px -1px 2px rgba(0, 0, 0, 0.6), 
+        0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Secondary fixed specular glint for 3D realism */
 .jewel::before {
     content: '';
     position: absolute;
-    top: 10%;
-    left: 15%;
-    width: 30%;
-    height: 30%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, transparent 70%);
-    border-radius: 50%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.2) 20%, transparent 60%);
     pointer-events: none;
     z-index: 3;
-    opacity: 0.85;
+    mix-blend-mode: overlay;
 }
 
+/* Sweeping crystalline reflection flare */
 .jewel::after {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
     background: linear-gradient(
         45deg,
-        transparent 45%,
-        rgba(255, 255, 255, 0.15) 48%,
-        rgba(255, 255, 255, 0.8) 50%,
-        rgba(255, 255, 255, 0.15) 52%,
-        transparent 55%
+        transparent 42%,
+        rgba(255, 255, 255, 0.1) 45%,
+        rgba(255, 255, 255, 0.85) 50%,
+        rgba(255, 255, 255, 0.1) 55%,
+        transparent 58%
     );
     pointer-events: none;
     transform: rotate(-45deg);
     animation: jewel-sheen 3.5s infinite ease-in-out;
+    z-index: 2;
 }
 
 .jewel:hover {
-    transform: scale(1.6) rotate(15deg) !important;
-    filter: brightness(1.5) contrast(1.2) drop-shadow(0 0 20px var(--jewel-glow)) !important;
+    transform: scale(1.4) rotate(15deg) !important;
+    filter: 
+        brightness(1.5) 
+        contrast(1.3) 
+        drop-shadow(0 0 15px var(--jewel-glow)) 
+        drop-shadow(0 0 30px var(--jewel-glow)) !important;
     animation-play-state: paused;
 }
 
 /* Broken glass crack lines radiating from the jewel */
 .jewel-cracks {
     position: absolute;
-    top: -12px;
-    right: -12px;
-    width: 60px;
-    height: 60px;
+    top: -35px;
+    right: -35px;
+    width: 70px;
+    height: 70px;
     pointer-events: none;
     z-index: 98;
     background: 
         /* Radiating sharp fracture lines */
-        linear-gradient(28deg, transparent 48%, rgba(255, 255, 255, 0.4) 49%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
-        linear-gradient(118deg, transparent 48%, rgba(255, 255, 255, 0.4) 49%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
-        linear-gradient(208deg, transparent 48%, rgba(255, 255, 255, 0.4) 49%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
-        linear-gradient(298deg, transparent 48%, rgba(255, 255, 255, 0.4) 49%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
+        linear-gradient(28deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+        linear-gradient(118deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+        linear-gradient(208deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+        linear-gradient(298deg, transparent 48%, rgba(255, 255, 255, 0.3) 49%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
         /* Shattered glass concentric shockwaves */
-        radial-gradient(circle at center, transparent 15%, rgba(255, 255, 255, 0.25) 16%, transparent 22%, rgba(255, 255, 255, 0.2) 23%, transparent 40%);
+        radial-gradient(circle at center, transparent 15%, rgba(255, 255, 255, 0.2) 16%, transparent 22%, rgba(255, 255, 255, 0.15) 23%, transparent 40%),
+        /* Depth shadow crater behind cracks */
+        radial-gradient(circle at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 50%, transparent 75%);
     opacity: 0.85;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.4));
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+}
+
+/* Ambient glow halo behind the gem */
+.jewel-cracks::before {
+    content: '';
+    position: absolute;
+    top: 21px; /* Center-aligned with 28px gem (cracks is 70x70, center is 35, gem half is 14. 35 - 14 = 21) */
+    left: 21px;
+    width: 28px;
+    height: 28px;
+    background: var(--jewel-glow);
+    border-radius: 50%;
+    filter: blur(14px);
+    opacity: 0.75;
+    z-index: -1;
+    animation: jewel-glow-pulse 3s ease-in-out infinite;
+    pointer-events: none;
 }
 
 /* Rotating technological radar lock-on ring */
 .jewel-cracks::after {
     content: '';
     position: absolute;
-    top: 6px;
-    left: 6px;
+    top: 11px; /* Center-aligned (cracks 70x70, center is 35, radar half is 24. 35 - 24 = 11) */
+    left: 11px;
     width: 48px;
     height: 48px;
     border: 1px dashed var(--jewel-glow, rgba(255,255,255,0.6));
     border-radius: 50%;
-    opacity: 0.55;
-    animation: radar-rotate 8s linear infinite;
-    z-index: 0;
+    opacity: 0.45;
+    animation: radar-rotate 10s linear infinite;
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -2689,17 +2723,25 @@ h1, h2, h3, h4, h5, h6 {
     100% { transform: rotate(360deg); }
 }
 
-/* Depth shadow crater behind the jewel cracks */
-.jewel-cracks::before {
-    content: '';
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 36px;
-    height: 36px;
-    background: radial-gradient(circle, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, transparent 75%);
-    border-radius: 50%;
-    z-index: -1;
+@keyframes jewel-glow-pulse {
+    0%, 100% {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.25);
+        opacity: 0.85;
+    }
+}
+
+/* Gundam theme overrides: positioning on the diagonal cut */
+.theme-gundam .jewel {
+    top: -3px;
+    right: -3px;
+}
+.theme-gundam .jewel-cracks {
+    top: -24px;
+    right: -24px;
 }
 
 /* Jewel 1: Diamond (Diamante) - Diamond Rhombus */

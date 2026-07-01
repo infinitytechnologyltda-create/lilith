@@ -854,7 +854,33 @@ function renderModuleContent(moduleName) {
         const targetPanels = glassPanels.length > 0 ? glassPanels : [activePanel];
         
         targetPanels.forEach((glassPanel) => {
-            // Remove existing jewel, cracks and bolts first
+            // Determine if the panel is already wrapped. If not, wrap it.
+            let wrapper = glassPanel.parentElement;
+            if (glassPanel.classList.contains("glass-panel") && (!wrapper || !wrapper.classList.contains("glass-panel-wrapper"))) {
+                wrapper = document.createElement("div");
+                wrapper.className = "glass-panel-wrapper";
+                wrapper.style.position = "relative";
+                
+                // Copy the margin bottom so spacing is preserved
+                const origMargin = getComputedStyle(glassPanel).marginBottom;
+                wrapper.style.marginBottom = origMargin;
+                glassPanel.style.marginBottom = "0px";
+                
+                // Keep same display properties if needed
+                const origDisplay = getComputedStyle(glassPanel).display;
+                if (origDisplay === 'inline-block' || origDisplay === 'inline-flex') {
+                    wrapper.style.display = origDisplay;
+                }
+                
+                glassPanel.parentNode.insertBefore(wrapper, glassPanel);
+                wrapper.appendChild(glassPanel);
+            } else if (!glassPanel.classList.contains("glass-panel")) {
+                // If it is activePanel directly (not a glass panel), the wrapper is just activePanel
+                wrapper = glassPanel;
+            }
+
+            // Remove existing jewel, cracks and bolts first (both from wrapper and glassPanel)
+            wrapper.querySelectorAll(".jewel, .jewel-cracks, .armor-bolt").forEach(el => el.remove());
             glassPanel.querySelectorAll(".jewel, .jewel-cracks, .armor-bolt").forEach(el => el.remove());
             
             const jewelMap = {
@@ -897,20 +923,20 @@ function renderModuleContent(moduleName) {
             // Add the cracks effect underneath the jewel
             const cracksEl = document.createElement("div");
             cracksEl.className = "jewel-cracks";
-            glassPanel.appendChild(cracksEl);
+            wrapper.appendChild(cracksEl);
 
             // Add the jewel itself
             const jewelEl = document.createElement("div");
             jewelEl.className = `jewel ${jewelType}`;
             jewelEl.title = `Gema Ativa: ${jewelName}`;
-            glassPanel.appendChild(jewelEl);
+            wrapper.appendChild(jewelEl);
             
             // Ensure container has relative position
             if (getComputedStyle(glassPanel).position === 'static') {
                 glassPanel.style.position = 'relative';
             }
             
-            // Add armor bolts for robotic/technological windows
+            // Add armor bolts for robotic/technological windows inside the glassPanel
             const boltPositions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
             boltPositions.forEach(pos => {
                 const bolt = document.createElement("div");
