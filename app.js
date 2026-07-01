@@ -102,6 +102,8 @@ function loadState() {
             if (!state.habits) state.habits = [];
             if (!state.finances) state.finances = [];
             if (!state.apps) state.apps = [];
+            if (!state.alarms) state.alarms = [];
+            if (!state.alarmHistory) state.alarmHistory = [];
         } catch (e) {
             console.error("Erro ao parsear dados do localStorage. Usando padrões.", e);
             state = { ...SEED_DATA };
@@ -5456,19 +5458,47 @@ window.triggerNotification = triggerNotification;
 function checkNotificationsAndAlarms() {
     const now = new Date();
     const currentHourMin = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const weekdaysMap = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const currentDayOfWeek = weekdaysMap[now.getDay()];
+    const todayStr = getTodayString ? getTodayString() : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
     // 1. Check Alarms
     if (state.alarms) {
         let alarmTriggered = false;
         state.alarms.forEach(alarm => {
             if (alarm.time === currentHourMin && !alarm.triggeredToday) {
-                triggerNotification(`⏰ ALARME: ${alarm.label || 'Sem nome'}`);
-                alarm.triggeredToday = true;
-                alarmTriggered = true;
+                // If a specific date is set, it must match today's date
+                const dateMatches = alarm.date ? (alarm.date === todayStr) : true;
                 
-                // Ring despertador!
-                if (window.triggerAlarmRinging) {
-                    window.triggerAlarmRinging(alarm.label || 'Sem nome');
+                // If days of repetition are set, today's weekday must match
+                const daysMatch = (alarm.days && alarm.days.length > 0) ? alarm.days.includes(currentDayOfWeek) : true;
+                
+                // If it has neither date nor days, it's a daily alarm (rings every day)
+                const isDaily = !alarm.date && (!alarm.days || alarm.days.length === 0);
+                
+                if ((dateMatches && daysMatch) || isDaily) {
+                    triggerNotification(`⏰ ALARME: ${alarm.label || 'Sem nome'}`);
+                    
+                    // Add to alarm history
+                    if (!state.alarmHistory) state.alarmHistory = [];
+                    state.alarmHistory.unshift({
+                        id: "alh-" + Date.now(),
+                        label: alarm.label || 'Sem nome',
+                        time: alarm.time,
+                        date: todayStr,
+                        triggeredAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                        status: "Disparado",
+                        alarmId: alarm.id
+                    });
+                    if (state.alarmHistory.length > 50) state.alarmHistory.pop();
+                    
+                    alarm.triggeredToday = true;
+                    alarmTriggered = true;
+                    
+                    // Ring despertador!
+                    if (window.triggerAlarmRinging) {
+                        window.triggerAlarmRinging(alarm.label || 'Sem nome', alarm.id);
+                    }
                 }
             }
         });
@@ -5511,16 +5541,23 @@ function checkNotificationsAndAlarms() {
 }
 window.checkNotificationsAndAlarms = checkNotificationsAndAlarms;
 
-function addManualAlarm(time, label) {
+function addManualAlarm(time, label, days = [], date = "") {
     if (!state.alarms) state.alarms = [];
     state.alarms.push({
         id: "al-" + Date.now(),
         time: time,
         label: label.trim() || "Sem nome",
+        days: days,
+        date: date,
         triggeredToday: false
     });
     saveState();
-    triggerNotification(`🔔 Alarme criado para as ${time}: "${label || 'Sem nome'}"`);
+    
+    let suffix = "";
+    if (date) suffix += ` em ${formatDateString(date)}`;
+    if (days && days.length > 0) suffix += ` (Repete: ${days.join(", ")})`;
+    
+    triggerNotification(`🔔 Alarme criado para as ${time}${suffix}: "${label || 'Sem nome'}"`);
     renderAlarmsAndNotifications();
 }
 window.addManualAlarm = addManualAlarm;
@@ -5576,12 +5613,26 @@ function stopAlarmSound() {
     }
 }
 
-function triggerAlarmRinging(label) {
+let activeRingingAlarmId = null;
+let activeRingingHistoryId = null;
+
+function triggerAlarmRinging(label, alarmId) {
     const labelEl = document.getElementById("ringing-alarm-label");
     if (labelEl) labelEl.textContent = label;
     
     const ringOverlay = document.getElementById("modal-alarm-ringing-overlay");
     if (ringOverlay) ringOverlay.style.display = "flex";
+    
+    activeRingingAlarmId = alarmId;
+    activeRingingHistoryId = null;
+    
+    // Find the most recent history entry for this alarm to silence it
+    if (state.alarmHistory && state.alarmHistory.length > 0) {
+        const hist = state.alarmHistory[0]; // the one we just unshifted
+        if (hist && hist.alarmId === alarmId) {
+            activeRingingHistoryId = hist.id;
+        }
+    }
     
     startAlarmSound();
     
@@ -5594,6 +5645,18 @@ function silenceAlarm() {
     stopAlarmSound();
     const ringOverlay = document.getElementById("modal-alarm-ringing-overlay");
     if (ringOverlay) ringOverlay.style.display = "none";
+    
+    if (activeRingingHistoryId && state.alarmHistory) {
+        const hist = state.alarmHistory.find(h => h.id === activeRingingHistoryId);
+        if (hist) {
+            const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            hist.status = `Silenciado às ${timeStr}`;
+            saveState();
+            renderAlarmsAndNotifications();
+        }
+    }
+    activeRingingAlarmId = null;
+    activeRingingHistoryId = null;
 }
 window.silenceAlarm = silenceAlarm;
 
@@ -5609,10 +5672,19 @@ function renderAlarmsAndNotifications() {
             alarms.forEach(alarm => {
                 const item = document.createElement("div");
                 item.style = "display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px;";
+                
+                let details = "";
+                if (alarm.date) details = `<span style="font-size:11px; color:var(--text-muted); margin-left:8px;">📅 ${formatDateString(alarm.date)}</span>`;
+                else if (alarm.days && alarm.days.length > 0) details = `<span style="font-size:11px; color:var(--accent); margin-left:8px;">🔁 ${alarm.days.join(", ")}</span>`;
+                else details = `<span style="font-size:11px; color:var(--text-dim); margin-left:8px;">🔁 Diário</span>`;
+
                 item.innerHTML = `
-                    <div>
-                        <span style="font-size:18px; font-weight:700; color:var(--secondary); font-family: 'Orbitron';">${alarm.time}</span>
-                        <span style="margin-left: 10px; font-size:13px; color:var(--text-main);">${alarm.label}</span>
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <div style="display:flex; align-items:center;">
+                            <span style="font-size:18px; font-weight:700; color:var(--secondary); font-family: 'Orbitron';">${alarm.time}</span>
+                            <span style="margin-left: 10px; font-size:13px; color:var(--text-main); font-weight:600;">${alarm.label}</span>
+                        </div>
+                        ${details}
                     </div>
                     <button class="action-btn-secondary" onclick="deleteAlarm('${alarm.id}')" style="border-color: var(--danger); color: var(--danger); padding:4px 8px; font-size:11px; display:flex; align-items:center; justify-content:center;">
                         <i data-lucide="trash-2" style="width:12px; height:12px;"></i>
@@ -5620,7 +5692,42 @@ function renderAlarmsAndNotifications() {
                 `;
                 alarmsList.appendChild(item);
             });
-            if(window.lucide) window.lucide.createIcons();
+            if(window.lucide) window.lucide.createIcons({ attrs: { class: 'lucide' }, container: alarmsList });
+        }
+    }
+    
+    // Render Alarm History
+    const alarmsHistoryList = document.getElementById("alarms-history-list");
+    if (alarmsHistoryList) {
+        alarmsHistoryList.innerHTML = "";
+        const history = state.alarmHistory || [];
+        if (history.length === 0) {
+            alarmsHistoryList.innerHTML = `<div style="text-align:center; padding: 20px 0; color: var(--text-muted);">Nenhum alarme disparado no histórico.</div>`;
+        } else {
+            history.forEach(item => {
+                const div = document.createElement("div");
+                div.style = "display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:8px 12px;";
+                
+                const isSilenced = item.status.includes("Silenciado");
+                const statusColor = isSilenced ? "var(--text-muted)" : "var(--danger)";
+                const statusIcon = isSilenced ? "bell-off" : "bell-ring";
+
+                div.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-weight:700; color:var(--secondary); font-family: 'Orbitron'; font-size:13px;">${item.time}</span>
+                            <span style="font-size:12px; color:var(--text-main);">${item.label}</span>
+                        </div>
+                        <span style="font-size:10px; color:var(--text-dim);">📅 ${formatDateString(item.date)}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:${statusColor}; font-weight:600;">
+                        <i data-lucide="${statusIcon}" style="width:11px; height:11px;"></i>
+                        <span>${item.status}</span>
+                    </div>
+                `;
+                alarmsHistoryList.appendChild(div);
+            });
+            if(window.lucide) window.lucide.createIcons({ attrs: { class: 'lucide' }, container: alarmsHistoryList });
         }
     }
     
@@ -5651,9 +5758,13 @@ document.getElementById("alarm-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const time = document.getElementById("alarm-time-input").value;
     const label = document.getElementById("alarm-label-input").value;
+    const date = document.getElementById("alarm-date-input").value || "";
+    
+    // Get checked days of the week
+    const daysChecked = Array.from(document.querySelectorAll("input[name='alarm-days']:checked")).map(el => el.value);
     
     if (time) {
-        addManualAlarm(time, label);
+        addManualAlarm(time, label, daysChecked, date);
         document.getElementById("alarm-form").reset();
         closeModal("modal-alarms-overlay");
     }

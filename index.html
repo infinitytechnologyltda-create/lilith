@@ -818,13 +818,26 @@
                 
                 <!-- Alarms and Notifications Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                    <!-- Active Alarms -->
-                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
-                        <h3 class="section-title" style="font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-                            <i data-lucide="clock" style="color:var(--secondary);"></i> Alarmes Ativos
-                        </h3>
-                        <div id="active-alarms-list" style="display:flex; flex-direction:column; gap:10px;">
-                            <!-- Dynamic alarms -->
+                    <!-- Left Column: Alarms & Alarm History -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <!-- Active Alarms -->
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                            <h3 class="section-title" style="font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                                <i data-lucide="clock" style="color:var(--secondary);"></i> Alarmes Ativos
+                            </h3>
+                            <div id="active-alarms-list" style="display:flex; flex-direction:column; gap:10px;">
+                                <!-- Dynamic alarms -->
+                            </div>
+                        </div>
+
+                        <!-- Alarm History -->
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                            <h3 class="section-title" style="font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                                <i data-lucide="history" style="color:var(--accent);"></i> Histórico de Alarmes
+                            </h3>
+                            <div id="alarms-history-list" style="display:flex; flex-direction:column; gap:10px; max-height: 250px; overflow-y: auto;">
+                                <!-- Dynamic alarm history -->
+                            </div>
                         </div>
                     </div>
                     
@@ -833,7 +846,7 @@
                         <h3 class="section-title" style="font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
                             <i data-lucide="bell" style="color:var(--primary);"></i> Notificações Recebidas
                         </h3>
-                        <div id="notifications-history-list" style="display:flex; flex-direction:column; gap:10px; max-height: 400px; overflow-y: auto;">
+                        <div id="notifications-history-list" style="display:flex; flex-direction:column; gap:10px; max-height: 520px; overflow-y: auto;">
                             <!-- Dynamic notifications -->
                         </div>
                     </div>
@@ -1451,6 +1464,36 @@
                     <input type="time" class="form-input" id="alarm-time-input" required style="text-align: center;">
                 </div>
                 <div class="form-group">
+                    <label class="form-label" style="text-align: center; display: block;">Repetir nos Dias</label>
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px;">
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Seg"> Seg
+                        </label>
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Ter"> Ter
+                        </label>
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Qua"> Qua
+                        </label>
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Qui"> Qui
+                        </label>
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Sex"> Sex
+                        </label>
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Sáb"> Sáb
+                        </label>
+                        <label style="display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; gap: 4px;">
+                            <input type="checkbox" name="alarm-days" value="Dom"> Dom
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="alarm-date-input" style="text-align: center; display: block;">Data Específica (Opcional)</label>
+                    <input type="date" class="form-input" id="alarm-date-input" style="text-align: center;">
+                </div>
+                <div class="form-group">
                     <label class="form-label" for="alarm-label-input" style="text-align: center; display: block;">Etiqueta / Nome</label>
                     <input type="text" class="form-input" id="alarm-label-input" placeholder="Ex: Tomar remédio, Reunião" style="text-align: center;">
                 </div>
@@ -1466,7 +1509,7 @@
             <h2 style="font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 800; color: var(--danger); text-shadow: 0 0 10px var(--danger-glow); margin-bottom: 10px;">ALARME DISPARADO!</h2>
             <div id="ringing-alarm-label" style="font-size: 18px; font-weight: 600; color: var(--text-main); margin-bottom: 25px;">Nome do Alarme</div>
             <button class="action-btn" onclick="silenceAlarm()" style="width: 100%; justify-content: center; background: var(--danger); border-color: var(--danger); font-size: 18px; padding: 12px; font-weight: bold; box-shadow: 0 0 15px var(--danger-glow);">
-                Parar
+                Parar Alarme
             </button>
         </div>
     </div>
