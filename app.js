@@ -1720,18 +1720,44 @@ function renderQuests() {
                         <span>Recompensa: <span class="quest-reward">+${quest.xp} XP</span></span>
                     </div>
                 </div>
-                <button class="habit-checkbox ${quest.completed ? 'checked' : ''}" onclick="toggleQuestStatus('${elementId}', '${quest.id}')">
-                    ${quest.completed ? '<i data-lucide="check" style="width:12px; height:12px;"></i>' : ''}
-                </button>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button class="habit-checkbox ${quest.completed ? 'checked' : ''}" onclick="toggleQuestStatus('${elementId}', '${quest.id}')">
+                        ${quest.completed ? '<i data-lucide="check" style="width:12px; height:12px;"></i>' : ''}
+                    </button>
+                    <button class="quest-delete-btn" onclick="deleteQuest('${elementId}', '${quest.id}')" style="background: transparent; border: none; color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: background 0.2s;">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
             `;
             div.appendChild(item);
         });
+        
+        lucide.createIcons({ attrs: { class: 'lucide' }, container: div });
     };
 
     renderList("quests-daily-list", state.quests.daily);
     renderList("quests-weekly-list", state.quests.weekly);
     renderList("quests-monthly-list", state.quests.monthly);
 }
+
+function deleteQuest(categoryElementId, questId) {
+    let listName = "";
+    if(categoryElementId.includes("daily")) listName = "daily";
+    else if(categoryElementId.includes("weekly")) listName = "weekly";
+    else listName = "monthly";
+
+    if(state.quests && state.quests[listName]) {
+        const quest = state.quests[listName].find(q => q.id === questId);
+        if (quest && quest.completed) {
+            addXP(-quest.xp); // Deduct XP if it was already completed
+        }
+        state.quests[listName] = state.quests[listName].filter(q => q.id !== questId);
+        saveState();
+        renderQuests();
+        addSystemLog(`⚔️ Quest removida`);
+    }
+}
+window.deleteQuest = deleteQuest;
 
 function toggleQuestStatus(categoryElementId, questId) {
     let listName = "";
@@ -3035,7 +3061,7 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
     }
 
     const isSpecialApp = (
-        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" || app.type === "versatil" || app.type === "zerosignal" ||
+        app.type === "spotify" || app.type === "github" || app.type === "supabase" || app.type === "vercel" || app.type === "whatsapp" || app.type === "instagram" || app.type === "versatil" || app.type === "zerosignal" || app.type === "facebook" ||
         app.name.toLowerCase().includes("spotify") ||
         app.name.toLowerCase().includes("github") ||
         app.name.toLowerCase().includes("supabase") ||
@@ -3043,7 +3069,8 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
         app.name.toLowerCase().includes("whatsapp") ||
         app.name.toLowerCase().includes("instagram") ||
         app.name.toLowerCase().includes("versatil") ||
-        app.name.toLowerCase().includes("zero")
+        app.name.toLowerCase().includes("zero") ||
+        app.name.toLowerCase().includes("facebook")
     );
 
     if (isSpecialApp) {
@@ -3058,6 +3085,7 @@ function selectAppForVisualizer(id, shouldOpenTab = false) {
             else if (nameLower.includes("vercel")) matchedType = "vercel";
             else if (nameLower.includes("whatsapp")) matchedType = "whatsapp";
             else if (nameLower.includes("instagram")) matchedType = "instagram";
+            else if (nameLower.includes("facebook")) matchedType = "facebook";
             else if (nameLower.includes("versatil")) matchedType = "versatil";
             else if (nameLower.includes("zero") || nameLower.includes("signal")) matchedType = "zerosignal";
         }

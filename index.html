@@ -478,6 +478,13 @@
         <!-- 6. QUESTS E MISSÕES -->
         <section class="module-panel" id="module-quests">
             <div class="glass-panel">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title" style="margin: 0;">Quests & Missões</h2>
+                    <button class="action-btn" onclick="openModal('modal-quests-overlay')">
+                        <i data-lucide="plus-circle" style="margin-right: 6px;"></i> Nova Quest
+                    </button>
+                </div>
+                
                 <div class="section-header">
                     <h2 class="section-title">Quests Diárias</h2>
                 </div>
@@ -1465,6 +1472,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js?v=3.6"></script>
+    <script type="module" src="app.js?v=3.7"></script>
 </body>
 </html>
