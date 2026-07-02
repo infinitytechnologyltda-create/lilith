@@ -2952,16 +2952,20 @@ function renderHabits() {
                     `;
                 } else {
                     nameHTML = `
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <span style="font-weight: 600; color: var(--text-main);">${item.name}</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 400; line-height: 1.4; white-space: pre-wrap; display: block; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 4px; margin-top: 2px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <span style="font-size: 26px; font-weight: 700; color: var(--text-main); line-height: 1.2;">${item.name}</span>
+                            <span style="font-size: 22px; color: var(--text-muted); font-weight: 400; line-height: 1.5; white-space: pre-wrap; display: block; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 8px; margin-top: 4px;">
                                 ${item.note}
                             </span>
                         </div>
                     `;
                 }
             } else {
-                nameHTML = `<span style="font-weight: 600;">${item.name}</span>`;
+                if (isPractice) {
+                    nameHTML = `<span style="font-weight: 600;">${item.name}</span>`;
+                } else {
+                    nameHTML = `<span style="font-size: 26px; font-weight: 700; color: var(--text-main); line-height: 1.2;">${item.name}</span>`;
+                }
             }
 
             // 2. Scheduled normal days circles
