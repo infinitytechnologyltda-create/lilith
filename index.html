@@ -680,7 +680,7 @@
                             <h3 style="margin: 0; font-family: 'Orbitron', sans-serif; display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 18px; text-transform: uppercase;">
                                 <i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i> Disciplina (Regras)
                             </h3>
-                            <button class="action-btn" onclick="openModal('modal-discipline-overlay')" style="padding: 6px 12px; font-size: 13px;">
+                            <button class="action-btn" onclick="if(window.openNewDisciplineModal){window.openNewDisciplineModal()}" style="padding: 6px 12px; font-size: 13px;">
                                 <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Adicionar Regra
                             </button>
                         </div>
@@ -1027,10 +1027,11 @@
     <div class="modal-overlay" id="modal-practices-overlay">
         <div class="modal-container" style="max-width: 450px;">
             <div class="modal-header">
-                <h3 class="modal-title">Nova Prática</h3>
+                <h3 class="modal-title" id="practices-modal-title">Nova Prática</h3>
                 <button class="modal-close" onclick="closeModal('modal-practices-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="practice-form">
+                <input type="hidden" id="practice-id-input" value="">
                 <div class="form-group">
                     <label class="form-label" for="practice-title-input">Nome da Prática</label>
                     <input type="text" class="form-input" id="practice-title-input" required placeholder="Ex: Meditação matinal, Exercícios físicos">
@@ -1056,10 +1057,11 @@
     <div class="modal-overlay" id="modal-discipline-overlay">
         <div class="modal-container" style="max-width: 450px;">
             <div class="modal-header">
-                <h3 class="modal-title">Nova Regra de Disciplina</h3>
+                <h3 class="modal-title" id="discipline-modal-title">Nova Regra de Disciplina</h3>
                 <button class="modal-close" onclick="closeModal('modal-discipline-overlay')"><i data-lucide="x"></i></button>
             </div>
             <form id="discipline-form">
+                <input type="hidden" id="discipline-id-input" value="">
                 <div class="form-group">
                     <label class="form-label" for="discipline-title-input">Regra / Disciplina</label>
                     <input type="text" class="form-input" id="discipline-title-input" required placeholder="Ex: Não comer açúcar, Dormir até 23h">

@@ -2986,7 +2986,8 @@ function renderHabits() {
                 <td style="text-align: left; padding: 12px 8px;">${nameHTML}</td>
                 <td style="padding: 12px 8px;">${daysHTML}</td>
                 ${streakHTML}
-                <td style="padding: 12px 8px; text-align: center;">
+                <td style="padding: 12px 8px; text-align: center; white-space: nowrap;">
+                    <button class="note-action edit" onclick="editHabit('${item.id}')" title="Editar" style="color:var(--secondary); margin-right:4px;"><i data-lucide="edit-3" style="width:14px; height:14px;"></i></button>
                     <button class="note-action delete" onclick="deleteHabit('${item.id}')" title="Excluir"><i data-lucide="trash-2" style="width:14px; height:14px;"></i></button>
                 </td>
             `;
@@ -3009,25 +3010,38 @@ const practiceForm = document.getElementById("practice-form");
 if (practiceForm) {
     practiceForm.addEventListener("submit", (e) => {
         e.preventDefault();
+        const id = document.getElementById("practice-id-input").value;
         const name = document.getElementById("practice-title-input").value;
         const note = "";
         const checkedCheckboxes = document.querySelectorAll("input[name='practice-days']:checked");
         const days = Array.from(checkedCheckboxes).map(cb => cb.value);
 
         if (!state.habits) state.habits = [];
-        state.habits.push({
-            id: "pr-" + Date.now(),
-            type: "practice",
-            name: name,
-            note: note,
-            days: days,
-            createdAt: Date.now(),
-            tracking: {}
-        });
 
-        addXP(10);
+        if (id) {
+            // Editing existing practice
+            const item = state.habits.find(h => h.id === id);
+            if (item) {
+                item.name = name;
+                item.days = days;
+            }
+            addSystemLog(`⚡ Prática atualizada: "${name}"`);
+        } else {
+            // Pushing new practice
+            state.habits.push({
+                id: "pr-" + Date.now(),
+                type: "practice",
+                name: name,
+                note: note,
+                days: days,
+                createdAt: Date.now(),
+                tracking: {}
+            });
+            addXP(10);
+            addSystemLog(`⚡ Nova prática cadastrada: "${name}"`);
+        }
+
         saveState();
-        addSystemLog(`⚡ Nova prática cadastrada: "${name}"`);
         closeModal("modal-practices-overlay");
         practiceForm.reset();
         renderHabits();
@@ -3042,25 +3056,39 @@ const disciplineForm = document.getElementById("discipline-form");
 if (disciplineForm) {
     disciplineForm.addEventListener("submit", (e) => {
         e.preventDefault();
+        const id = document.getElementById("discipline-id-input").value;
         const name = document.getElementById("discipline-title-input").value;
         const note = document.getElementById("discipline-note-input").value;
         const checkedCheckboxes = document.querySelectorAll("input[name='discipline-days']:checked");
         const days = Array.from(checkedCheckboxes).map(cb => cb.value);
 
         if (!state.habits) state.habits = [];
-        state.habits.push({
-            id: "ds-" + Date.now(),
-            type: "discipline",
-            name: name,
-            note: note,
-            days: days,
-            createdAt: Date.now(),
-            tracking: {}
-        });
 
-        addXP(10);
+        if (id) {
+            // Editing existing discipline rule
+            const item = state.habits.find(h => h.id === id);
+            if (item) {
+                item.name = name;
+                item.note = note;
+                item.days = days;
+            }
+            addSystemLog(`🛡️ Regra de disciplina atualizada: "${name}"`);
+        } else {
+            // Pushing new rule
+            state.habits.push({
+                id: "ds-" + Date.now(),
+                type: "discipline",
+                name: name,
+                note: note,
+                days: days,
+                createdAt: Date.now(),
+                tracking: {}
+            });
+            addXP(10);
+            addSystemLog(`🛡️ Nova regra de disciplina cadastrada: "${name}"`);
+        }
+
         saveState();
-        addSystemLog(`🛡️ Nova regra de disciplina cadastrada: "${name}"`);
         closeModal("modal-discipline-overlay");
         disciplineForm.reset();
         renderHabits();
@@ -3082,7 +3110,51 @@ function deleteHabit(id) {
         checkDailyHabitsQuest();
     });
 }
+
+function editHabit(id) {
+    const item = state.habits.find(h => h.id === id);
+    if (!item) return;
+
+    if (item.type === "practice") {
+        document.getElementById("practice-id-input").value = item.id;
+        document.getElementById("practice-title-input").value = item.name;
+        
+        const checkboxes = document.querySelectorAll("input[name='practice-days']");
+        checkboxes.forEach(cb => {
+            cb.checked = item.days ? item.days.includes(cb.value) : true;
+        });
+
+        document.getElementById("practices-modal-title").textContent = "Editar Prática";
+        openModal("modal-practices-overlay");
+    } else {
+        document.getElementById("discipline-id-input").value = item.id;
+        document.getElementById("discipline-title-input").value = item.name;
+        document.getElementById("discipline-note-input").value = item.note || "";
+        
+        const checkboxes = document.querySelectorAll("input[name='discipline-days']");
+        checkboxes.forEach(cb => {
+            cb.checked = item.days ? item.days.includes(cb.value) : true;
+        });
+
+        document.getElementById("discipline-modal-title").textContent = "Editar Regra de Disciplina";
+        openModal("modal-discipline-overlay");
+    }
+}
+
+function openNewDisciplineModal() {
+    document.getElementById("discipline-id-input").value = "";
+    document.getElementById("discipline-form").reset();
+    document.getElementById("discipline-modal-title").textContent = "Nova Regra de Disciplina";
+    const checkboxes = document.querySelectorAll("input[name='discipline-days']");
+    checkboxes.forEach(cb => {
+        cb.checked = true;
+    });
+    openModal("modal-discipline-overlay");
+}
+
 window.deleteHabit = deleteHabit;
+window.editHabit = editHabit;
+window.openNewDisciplineModal = openNewDisciplineModal;
 
 // 12. BIBLIOTECA
 function renderLibrary() {
