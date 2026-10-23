@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Lilith - Produtividade e Gerenciamento Pessoal</title>
     <meta name="description" content="Centralize informações, projetos, ideias, tarefas, hábitos, finanças e objetivos pessoais em um painel elegante, gamificado e minimalista.">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=3.9">
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -153,13 +153,22 @@
                 <i data-lucide="cloud-off" id="supabase-cloud-icon"></i>
             </button>
 
-            <!-- Theme Color (Middle) -->
+            <!-- Theme Color (Buttons & Accents) -->
             <div class="theme-color-picker-container" style="position: relative; display: flex; align-items: center; justify-content: center; margin-left: auto;">
-                <button class="supabase-status-btn" id="theme-color-btn" title="Cor do Tema" style="padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; margin-left: 0;">
+                <button class="supabase-status-btn" id="theme-color-btn" title="Cor dos Botões e Textos" style="padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; margin-left: 0;">
                     <i data-lucide="palette" style="width: 18px; height: 18px;"></i>
                     <span style="width: 10px; height: 10px; border-radius: 50%; background-color: var(--primary); display: inline-block; border: 1px solid rgba(255,255,255,0.2);" id="theme-color-preview"></span>
                 </button>
-                <input type="color" id="theme-color-input" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0;">
+                <input type="color" id="theme-color-input" title="Cor dos Botões e Textos" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0;">
+            </div>
+
+            <!-- Window & Menu Color Picker -->
+            <div class="panel-color-picker-container" style="position: relative; display: flex; align-items: center; justify-content: center;">
+                <button class="supabase-status-btn" id="panel-color-btn" title="Mudar Cor das Janelas e Menu" style="padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; margin-left: 0;">
+                    <i data-lucide="layout" style="width: 18px; height: 18px;"></i>
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background-color: #1c2129; display: inline-block; border: 1px solid rgba(255,255,255,0.35);" id="panel-color-preview"></span>
+                </button>
+                <input type="color" id="panel-color-input" value="#1c2129" title="Mudar Cor das Janelas e Menu" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0;">
             </div>
 
             <!-- Avatar (Right) -->
@@ -337,13 +346,20 @@
                             <input type="hidden" id="diary-date-input">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Humor do Dia</label>
-                            <div class="mood-selector" style="gap: 4px;">
-                                <button class="mood-btn" data-mood="excited" title="Animado">🤩</button>
-                                <button class="mood-btn" data-mood="happy" title="Feliz">😊</button>
-                                <button class="mood-btn" data-mood="neutral" title="Neutro">😐</button>
-                                <button class="mood-btn" data-mood="tired" title="Cansado">🥱</button>
-                                <button class="mood-btn" data-mood="sad" title="Triste">😢</button>
+                            <label class="form-label">Humor do Dia (1 = Pior • 9 = Melhor)</label>
+                            <div class="mood-selector" style="gap: 6px;">
+                                <button type="button" class="mood-btn mood-num-1" data-mood="1" title="Nível 1 - Pior Humor (Preto Claro)">1</button>
+                                <button type="button" class="mood-btn mood-num-3" data-mood="3" title="Nível 3 - Humor Baixo (Cinza)">3</button>
+                                <button type="button" class="mood-btn mood-num-5" data-mood="5" title="Nível 5 - Neutro / Equilibrado (Branco)">5</button>
+                                <button type="button" class="mood-btn mood-num-7" data-mood="7" title="Nível 7 - Bom Humor (Amarelo)">7</button>
+                                <button type="button" class="mood-btn mood-num-9" data-mood="9" title="Nível 9 - Melhor Humor (Roxo)">9</button>
+                            </div>
+                            <div class="mood-color-legend" style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); margin-top:6px; padding:0 4px;">
+                                <span>⚫ 1: Preto Claro</span>
+                                <span>🔘 3: Cinza</span>
+                                <span>⚪ 5: Branco</span>
+                                <span>🟡 7: Amarelo</span>
+                                <span>🟣 9: Roxo</span>
                             </div>
                         </div>
                     </div>
@@ -482,8 +498,16 @@
         <!-- 6. QUESTS E MISSÕES -->
         <section class="module-panel" id="module-quests">
             <div class="glass-panel">
-                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 class="section-title" style="margin: 0;">Quests & Missões</h2>
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <h2 class="section-title" style="margin: 0;">Quests & Missões</h2>
+                        <div id="quest-locality-bar" class="quest-locality-bar">
+                            <span id="quest-locality-name">📍 Localidade: Detectando...</span>
+                            <span class="quest-locality-sep">•</span>
+                            <span id="quest-local-time">🕒 Horário Local: --:--</span>
+                            <span id="quest-active-status" class="quest-active-status-pill" style="display: none;">⚡ Missão em andamento</span>
+                        </div>
+                    </div>
                     <button class="action-btn" id="local-new-quest-btn">
                         <i data-lucide="plus-circle" style="margin-right: 6px;"></i> Nova Quest
                     </button>
@@ -824,7 +848,7 @@
                 </div>
                 
                 <!-- Alarms and Notifications Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div class="notifications-grid-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                     <!-- Left Column: Alarms & Alarm History -->
                     <div style="display: flex; flex-direction: column; gap: 24px;">
                         <!-- Active Alarms -->
@@ -886,6 +910,24 @@
                         <option value="Estudo">Estudo</option>
                         <option value="Inspiração">Inspiração</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="text-align: center;">Prioridade / Cor da Janela</label>
+                    <div class="note-priority-selector" id="note-priority-selector">
+                        <button type="button" class="note-priority-option priority-opt-purple active" data-priority="purple" onclick="selectNotePriorityOption('purple')">
+                            <span class="priority-dot" style="background: #a855f7; box-shadow: 0 0 8px #a855f7;"></span>
+                            <span>Roxo • Prioritário</span>
+                        </button>
+                        <button type="button" class="note-priority-option priority-opt-yellow" data-priority="yellow" onclick="selectNotePriorityOption('yellow')">
+                            <span class="priority-dot" style="background: #facc15; box-shadow: 0 0 8px #facc15;"></span>
+                            <span>Amarelo • Mais ou menos</span>
+                        </button>
+                        <button type="button" class="note-priority-option priority-opt-white" data-priority="white" onclick="selectNotePriorityOption('white')">
+                            <span class="priority-dot" style="background: #ffffff; box-shadow: 0 0 8px #ffffff;"></span>
+                            <span>Branco • Quando puder</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="note-priority-input" value="purple">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="note-content-input" style="text-align: center;">Conteúdo</label>
@@ -1261,8 +1303,8 @@
                         Destino do Armazenamento
                     </label>
                     <select class="form-select" id="lilith-storage-mode" style="width:100%;">
-                        <option value="local">Apenas Local (Navegador - LocalStorage)</option>
-                        <option value="cloud">Nuvem + Local (Supabase Cloud + LocalStorage)</option>
+                        <option value="cloud" selected>Simultâneo: Online (Supabase Cloud) + Computador (LocalStorage & IndexedDB)</option>
+                        <option value="local">Local + Sincronização Automática</option>
                     </select>
                 </div>
                 <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:12px; display:flex; flex-direction:column; gap:8px;">
@@ -1436,23 +1478,32 @@
         </div>
     </div>
 
-    <!-- Opacity Modal -->
+    <!-- Opacity & Window Color Modal -->
     <div class="modal-overlay" id="modal-opacity-overlay">
-        <div class="modal-container" style="max-width: 400px;">
+        <div class="modal-container" style="max-width: 420px;">
             <div class="modal-header">
-                <h3 class="modal-title" style="text-align: center; width: 100%;">Ajuste de Opacidade</h3>
+                <h3 class="modal-title" style="text-align: center; width: 100%;">Aparência: Janelas, Menu e Opacidade</h3>
                 <button class="modal-close" onclick="closeModal('modal-opacity-overlay')"><i data-lucide="x"></i></button>
             </div>
             <div style="display: flex; flex-direction: column; gap: 20px; padding: 10px 0;">
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label" style="text-align: center; display: block; margin-bottom: 8px;">Opacidade do Fundo da Página</label>
                     <input type="range" id="opacity-bg-range" min="0" max="100" value="100" style="width: 100%;" oninput="changeBgOpacity(this.value)">
                     <span id="opacity-bg-value" style="font-weight: 700; text-align: center; display: block; margin-top: 4px;">100%</span>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label" style="text-align: center; display: block; margin-bottom: 8px;">Opacidade do Menu Superior (Sidebar)</label>
                     <input type="range" id="opacity-menu-range" min="0" max="100" value="100" style="width: 100%;" oninput="changeMenuOpacity(this.value)">
                     <span id="opacity-menu-value" style="font-weight: 700; text-align: center; display: block; margin-top: 4px;">100%</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 0; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 10px;">Cor das Janelas e Menu Superior</label>
+                    <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+                        <input type="color" id="modal-panel-color-input" value="#1c2129" style="width: 48px; height: 38px; border: 1px solid var(--border-color); border-radius: 6px; background: transparent; cursor: pointer; padding: 2px;">
+                        <button type="button" class="action-btn-secondary" onclick="resetPanelColor()" style="padding: 8px 14px; font-size: 12px;">
+                            Restaurar Padrão
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1545,6 +1596,6 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="app.js?v=3.8"></script>
+    <script type="module" src="app.js?v=3.9"></script>
 </body>
 </html>

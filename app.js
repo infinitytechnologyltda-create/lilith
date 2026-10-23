@@ -170,6 +170,13 @@ function saveStateToLocalStorage(stateObj) {
     } catch (e) {
         console.error("Failed to save state to localStorage:", e);
     }
+
+    // Sempre salvar cópia completa no IndexedDB local do computador
+    try {
+        mediaStore.set("full_state_" + currentLocalStorageKey, cleanState);
+    } catch (e) {
+        console.error("Failed to save full state backup to IndexedDB:", e);
+    }
 }
 
 // Load State from LocalStorage
@@ -180,6 +187,13 @@ function loadState() {
             state = JSON.parse(rawState);
             if (state.themeColor) {
                 localStorage.setItem("lilith_theme_color", state.themeColor);
+            }
+            if (state.panelColor !== undefined) {
+                if (state.panelColor) {
+                    localStorage.setItem("lilith_panel_color", state.panelColor);
+                } else {
+                    localStorage.removeItem("lilith_panel_color");
+                }
             }
             // Guarantee quests initialization
             if (!state.quests) {
@@ -222,17 +236,23 @@ function loadState() {
         state = { ...SEED_DATA };
         saveState();
     }
-    // Migration: update quest qd-1 text
+    // Migration: update quest qd-1 text and ensure default times
     if (state.quests && state.quests.daily) {
         const q = state.quests.daily.find(q => q.id === "qd-1");
-        if (q && q.text === "Concluir 3 tarefas hoje") {
-            q.text = "Fazer análise diária geral";
-            saveState();
+        if (q) {
+            if (q.text === "Concluir 3 tarefas hoje") q.text = "Fazer análise diária geral";
+            if (!q.time) q.time = "08:00";
+        }
+        const q2 = state.quests.daily.find(q => q.id === "qd-2");
+        if (q2 && !q2.time) {
+            q2.time = "22:00";
         }
         const q3 = state.quests.daily.find(q => q.id === "qd-3");
-        if (q3 && (q3.text === "Marcar pelo menos 1 hábito" || q3.text.includes("Controle de Hábitos"))) {
-            q3.text = "Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina";
-            saveState();
+        if (q3) {
+            if (q3.text === "Marcar pelo menos 1 hábito" || q3.text.includes("Controle de Hábitos")) {
+                q3.text = "Ter 1 prática/disciplina ativa, escrever no diário pessoal, supervisionar Práticas e Disciplina";
+            }
+            if (!q3.time) q3.time = "09:00";
         }
     }
     
@@ -391,6 +411,9 @@ function loadState() {
     if (typeof applySystemTheme === "function") {
         applySystemTheme();
     }
+    if (typeof applyPanelColorFromState === "function") {
+        applyPanelColorFromState();
+    }
     checkDailyQuestsReset();
 }
 
@@ -415,12 +438,12 @@ function checkDailyQuestsReset() {
     }
 }
 
-// Save State to LocalStorage
+// Save State Simultaneously to Local Computer (LocalStorage + IndexedDB + Local Folder) and Online (Supabase)
 function saveState() {
+    localStorage.setItem("lilith_storage_mode", "cloud");
     saveStateToLocalStorage(state);
     writeToLocalDirectory();
-    const storageMode = localStorage.getItem("lilith_storage_mode") || "cloud";
-    if (storageMode === "cloud" && supabaseClient && supabaseUser) {
+    if (supabaseClient) {
         saveToSupabaseDebounced();
     }
 }
@@ -705,6 +728,9 @@ function setupGlobalActionBtn(moduleName) {
             btn.onclick = () => {
                 document.getElementById("note-id-input").value = "";
                 document.getElementById("note-form").reset();
+                if (typeof selectNotePriorityOption === "function") {
+                    selectNotePriorityOption("purple");
+                }
                 document.getElementById("note-modal-title").textContent = "Nova Anotação";
                 openModal("modal-notes-overlay");
             };
@@ -1066,12 +1092,14 @@ function renderDashboard() {
         notesDiv.innerHTML = `<div style="text-align:center; color: var(--text-dim); padding: 12px;">Nenhuma anotação criada.</div>`;
     } else {
         recentNotes.forEach(note => {
+            const pInfo = getNotePriorityInfo(note.priority);
             const card = document.createElement("div");
-            card.className = "note-card";
+            card.className = `note-card ${pInfo.className}`;
             card.style.padding = "14px";
             card.innerHTML = `
-                <div class="note-header">
+                <div class="note-header" style="gap: 6px; flex-wrap: wrap;">
                     <span class="note-category">${note.category}</span>
+                    <span class="note-priority-badge ${pInfo.badgeClass}">${pInfo.label}</span>
                 </div>
                 <h4 class="note-title" style="font-size:14px; margin-top:4px;">${note.title}</h4>
                 <p class="note-desc" style="-webkit-line-clamp: 2; font-size:12px; margin-top:2px;">${note.content}</p>
@@ -1199,6 +1227,33 @@ function renderMiniCalendar() {
 }
 
 // 2. NOTES
+function getNotePriorityInfo(priority) {
+    const p = (priority || "purple").toLowerCase();
+    if (p === "yellow" || p === "amarelo") {
+        return { key: "yellow", className: "note-priority-yellow", badgeClass: "badge-yellow", label: "🟡 Mais ou menos", order: 2 };
+    }
+    if (p === "white" || p === "branco") {
+        return { key: "white", className: "note-priority-white", badgeClass: "badge-white", label: "⚪ Quando puder", order: 3 };
+    }
+    return { key: "purple", className: "note-priority-purple", badgeClass: "badge-purple", label: "🟣 Prioritário", order: 1 };
+}
+window.getNotePriorityInfo = getNotePriorityInfo;
+
+function selectNotePriorityOption(priority) {
+    const pKey = getNotePriorityInfo(priority).key;
+    const inputEl = document.getElementById("note-priority-input");
+    if (inputEl) inputEl.value = pKey;
+
+    document.querySelectorAll(".note-priority-option").forEach(btn => {
+        if (btn.getAttribute("data-priority") === pKey) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+}
+window.selectNotePriorityOption = selectNotePriorityOption;
+
 function renderNotes() {
     const grid = document.getElementById("notes-grid-container");
     grid.innerHTML = "";
@@ -1218,11 +1273,15 @@ function renderNotes() {
     }
 
     filtered.forEach(note => {
+        const pInfo = getNotePriorityInfo(note.priority);
         const card = document.createElement("div");
-        card.className = "note-card";
+        card.className = `note-card ${pInfo.className}`;
         card.innerHTML = `
             <div class="note-header">
-                <span class="note-category">${note.category}</span>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span class="note-category">${note.category}</span>
+                    <span class="note-priority-badge ${pInfo.badgeClass}">${pInfo.label}</span>
+                </div>
                 <button class="note-fav-btn ${note.favorite ? 'active' : ''}" onclick="toggleNoteFavorite('${note.id}')">
                     <i data-lucide="star"></i>
                 </button>
@@ -1253,6 +1312,8 @@ document.getElementById("note-form").addEventListener("submit", (e) => {
     const idInput = document.getElementById("note-id-input").value;
     const title = document.getElementById("note-title-input").value;
     const category = document.getElementById("note-category-input").value;
+    const priorityInput = document.getElementById("note-priority-input");
+    const priority = priorityInput ? priorityInput.value : "purple";
     const content = document.getElementById("note-content-input").value;
     
     if(idInput) {
@@ -1261,6 +1322,7 @@ document.getElementById("note-form").addEventListener("submit", (e) => {
         if(note) {
             note.title = title;
             note.category = category;
+            note.priority = priority;
             note.content = content;
         }
     } else {
@@ -1269,6 +1331,7 @@ document.getElementById("note-form").addEventListener("submit", (e) => {
             id: "note-" + Date.now(),
             title,
             category,
+            priority,
             content,
             date: getTodayString(),
             favorite: false
@@ -1279,6 +1342,9 @@ document.getElementById("note-form").addEventListener("submit", (e) => {
     saveState();
     closeModal("modal-notes-overlay");
     renderNotes();
+    if (currentModule === "dashboard") {
+        renderDashboard();
+    }
 });
 
 function toggleNoteFavorite(id) {
@@ -1307,6 +1373,7 @@ function editNote(id) {
         document.getElementById("note-title-input").value = note.title;
         document.getElementById("note-category-input").value = note.category;
         document.getElementById("note-content-input").value = note.content;
+        selectNotePriorityOption(note.priority || "purple");
         
         document.getElementById("note-modal-title").textContent = "Editar Anotação";
         openModal("modal-notes-overlay");
@@ -1315,9 +1382,52 @@ function editNote(id) {
 window.editNote = editNote;
 
 // 3. DIÁRIO PESSOAL
-let selectedMoods = []; // Array of up to 3 selected moods
+let selectedMoods = []; // Array of up to 3 selected moods ("1", "3", "5", "7", "9")
 let currentDiaryCalendarDate = new Date();
 let selectedDiaryDate = getTodayString();
+
+function normalizeMoodValue(rawMood) {
+    const str = String(rawMood || "").trim().toLowerCase();
+    if (str === "1" || str === "sad") return "1";
+    if (str === "3" || str === "tired") return "3";
+    if (str === "5" || str === "neutral") return "5";
+    if (str === "7" || str === "happy") return "7";
+    if (str === "9" || str === "excited") return "9";
+    return "5";
+}
+
+function getMoodMeta(rawMood) {
+    const m = normalizeMoodValue(rawMood);
+    const map = {
+        "1": { num: "1", label: "Nível 1 (Pior Humor • Preto Claro)", dayClass: "diary-mood-1", badgeClass: "mood-badge-1", bg: "#27272a", text: "#f4f4f5", border: "#71717a" },
+        "3": { num: "3", label: "Nível 3 (Humor Baixo • Cinza)", dayClass: "diary-mood-3", badgeClass: "mood-badge-3", bg: "#64748b", text: "#ffffff", border: "#cbd5e1" },
+        "5": { num: "5", label: "Nível 5 (Neutro • Branco)", dayClass: "diary-mood-5", badgeClass: "mood-badge-5", bg: "#f8fafc", text: "#0f172a", border: "#ffffff" },
+        "7": { num: "7", label: "Nível 7 (Bom Humor • Amarelo)", dayClass: "diary-mood-7", badgeClass: "mood-badge-7", bg: "#facc15", text: "#0f172a", border: "#fef08a" },
+        "9": { num: "9", label: "Nível 9 (Melhor Humor • Roxo)", dayClass: "diary-mood-9", badgeClass: "mood-badge-9", bg: "#9333ea", text: "#ffffff", border: "#d8b4fe" }
+    };
+    return map[m] || map["5"];
+}
+
+function updateSelectedDiaryDateHeaderUI() {
+    const labelEl = document.getElementById("diary-selected-date-label");
+    if (!labelEl) return;
+
+    const entry = state.diary ? state.diary[selectedDiaryDate] : null;
+    let activeMood = null;
+    if (selectedMoods && selectedMoods.length > 0) {
+        activeMood = normalizeMoodValue(selectedMoods[0]);
+    } else if (entry) {
+        const m = (entry.moods && entry.moods[0]) ? entry.moods[0] : entry.mood;
+        if (m) activeMood = normalizeMoodValue(m);
+    }
+
+    if (activeMood) {
+        const meta = getMoodMeta(activeMood);
+        labelEl.innerHTML = `Dia Selecionado: ${formatDateString(selectedDiaryDate)} <span class="diary-mood-badge ${meta.badgeClass}" style="margin-left:6px;">Humor ${meta.num}</span>`;
+    } else {
+        labelEl.textContent = `Dia Selecionado: ${formatDateString(selectedDiaryDate)}`;
+    }
+}
 
 function initDiary() {
     const dateInput = document.getElementById("diary-date-input");
@@ -1329,7 +1439,7 @@ function initDiary() {
     const moodBtns = document.querySelectorAll(".mood-btn");
     moodBtns.forEach(btn => {
         btn.onclick = () => {
-            const mood = btn.getAttribute("data-mood");
+            const mood = normalizeMoodValue(btn.getAttribute("data-mood"));
             const index = selectedMoods.indexOf(mood);
             if (index > -1) {
                 selectedMoods.splice(index, 1);
@@ -1342,6 +1452,8 @@ function initDiary() {
                 }
             }
             updateMoodButtonsUI();
+            updateSelectedDiaryDateHeaderUI();
+            renderDiaryCalendar();
         };
     });
 
@@ -1368,7 +1480,7 @@ function updateMoodButtonsUI() {
     const moodBtns = document.querySelectorAll(".mood-btn");
     moodBtns.forEach(btn => {
         btn.classList.remove("selected-1", "selected-2", "selected-3");
-        const mood = btn.getAttribute("data-mood");
+        const mood = normalizeMoodValue(btn.getAttribute("data-mood"));
         const idx = selectedMoods.indexOf(mood);
         if (idx === 0) {
             btn.classList.add("selected-1");
@@ -1420,17 +1532,24 @@ function renderDiaryCalendar() {
         if (dateStr === selectedDiaryDate) {
             cell.classList.add("selected");
         }
-        if (state.diary[dateStr]) {
+
+        const entry = state.diary ? state.diary[dateStr] : null;
+        if (entry) {
             cell.classList.add("has-entry");
+            const rawPrimaryMood = (entry.moods && entry.moods.length > 0) ? entry.moods[0] : entry.mood;
+            const meta = getMoodMeta(rawPrimaryMood);
+            cell.classList.add(meta.dayClass);
+            cell.title = `${formatDateString(dateStr)} • ${meta.label}`;
+        } else if (dateStr === selectedDiaryDate && selectedMoods.length > 0) {
+            const meta = getMoodMeta(selectedMoods[0]);
+            cell.classList.add(meta.dayClass);
         }
 
         cell.onclick = () => {
             selectedDiaryDate = dateStr;
             document.getElementById("diary-date-input").value = dateStr;
-            document.getElementById("diary-selected-date-label").textContent = `Dia Selecionado: ${formatDateString(dateStr)}`;
-            
-            renderDiaryCalendar();
             loadDiaryForDate(dateStr);
+            renderDiaryCalendar();
         };
 
         grid.appendChild(cell);
@@ -1443,22 +1562,22 @@ function loadDiaryForDate(dateStr) {
     
     selectedDiaryDate = dateStr;
     document.getElementById("diary-date-input").value = dateStr;
-    document.getElementById("diary-selected-date-label").textContent = `Dia Selecionado: ${formatDateString(dateStr)}`;
 
     selectedMoods = [];
 
     if(entry) {
         textInput.value = entry.text;
         if (entry.moods && Array.isArray(entry.moods)) {
-            selectedMoods = [...entry.moods];
+            selectedMoods = entry.moods.map(m => normalizeMoodValue(m));
         } else if (entry.mood) {
-            selectedMoods = [entry.mood];
+            selectedMoods = [normalizeMoodValue(entry.mood)];
         }
     } else {
         textInput.value = "";
     }
     
     updateMoodButtonsUI();
+    updateSelectedDiaryDateHeaderUI();
 }
 
 document.getElementById("diary-save-btn").onclick = () => {
@@ -1487,7 +1606,7 @@ document.getElementById("diary-save-btn").onclick = () => {
         updatedAt = nowTimestamp;
     }
 
-    const moods = (selectedMoods && selectedMoods.length > 0) ? [...selectedMoods] : ["neutral"];
+    const moods = (selectedMoods && selectedMoods.length > 0) ? selectedMoods.map(m => normalizeMoodValue(m)) : ["5"];
 
     state.diary[dateStr] = { 
         text, 
@@ -1508,8 +1627,9 @@ document.getElementById("diary-save-btn").onclick = () => {
         addSystemLog("📖 Diário Pessoal editado!");
     }
     
-    showMagicAlert("✨ Diário Salvo!", "Seu diário e humor diários foram gravados com sucesso!");
+    showMagicAlert("✨ Diário Salvo!", "Seu diário e nível de humor foram gravados com sucesso!");
     checkDailyHabitsQuest();
+    updateSelectedDiaryDateHeaderUI();
     renderDiaryCalendar();
     renderDiaryHistory();
 };
@@ -1525,8 +1645,6 @@ function renderDiaryHistory() {
         return;
     }
 
-    const emojis = { excited: "🤩", happy: "😊", neutral: "😐", tired: "🥱", sad: "😢" };
-
     dates.forEach(dateStr => {
         const entry = state.diary[dateStr];
         const card = document.createElement("div");
@@ -1534,15 +1652,20 @@ function renderDiaryHistory() {
         
         let moodsArray = [];
         if (entry.moods && Array.isArray(entry.moods)) {
-            moodsArray = entry.moods;
+            moodsArray = entry.moods.map(m => normalizeMoodValue(m));
         } else if (entry.mood) {
-            moodsArray = [entry.mood];
+            moodsArray = [normalizeMoodValue(entry.mood)];
+        } else {
+            moodsArray = ["5"];
         }
 
-        let emojisHTML = "";
+        const primaryMeta = getMoodMeta(moodsArray[0]);
+        card.style.borderLeft = `4px solid ${primaryMeta.bg === '#27272a' ? '#71717a' : primaryMeta.bg}`;
+
+        let moodsHTML = "";
         moodsArray.forEach((mood, idx) => {
-            const emoji = emojis[mood] || "😐";
-            emojisHTML += `<span class="diary-card-emoji-item mood-rank-${idx + 1}" title="${mood}">${emoji}</span>`;
+            const meta = getMoodMeta(mood);
+            moodsHTML += `<span class="diary-mood-badge ${meta.badgeClass} mood-rank-${idx + 1}" title="${meta.label}">${meta.num}</span>`;
         });
 
         // Separate "Criado em" and "Alterado em" timestamps
@@ -1557,7 +1680,7 @@ function renderDiaryHistory() {
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:13px; font-weight:700; color:var(--text-main);">${formatDateString(dateStr)}</span>
-                <div class="diary-card-emojis">${emojisHTML}</div>
+                <div class="diary-card-emojis">${moodsHTML}</div>
             </div>
             <div style="font-size:12px; color:var(--text-muted); line-height:1.5; height:54px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; margin-top:4px;">
                 ${entry.text}
@@ -1571,8 +1694,8 @@ function renderDiaryHistory() {
             selectedDiaryDate = dateStr;
             const entryDate = new Date(dateStr + "T00:00:00");
             currentDiaryCalendarDate = entryDate;
-            renderDiaryCalendar();
             loadDiaryForDate(dateStr);
+            renderDiaryCalendar();
         };
         historyDiv.appendChild(card);
     });
@@ -1964,12 +2087,137 @@ function wbDrawShape(x1, y1, x2, y2) {
 }
 
 // 6. QUESTS E MISSÕES
+let detectedLocalityLabel = "";
+let lastActiveQuestSignature = "";
+
+function parseTimeToMinutes(timeStr) {
+    if (!timeStr || typeof timeStr !== "string" || !timeStr.includes(":")) return null;
+    const parts = timeStr.trim().split(":");
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return null;
+    return h * 60 + m;
+}
+
+function getLocalTimezoneDisplay() {
+    if (detectedLocalityLabel) return detectedLocalityLabel;
+    try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+        const offsetMin = -new Date().getTimezoneOffset();
+        const sign = offsetMin >= 0 ? "+" : "-";
+        const absH = String(Math.floor(Math.abs(offsetMin) / 60)).padStart(2, "0");
+        const absM = String(Math.abs(offsetMin) % 60).padStart(2, "0");
+        const city = tz.includes("/") ? tz.split("/").pop().replace(/_/g, " ") : tz;
+        return `${city} (${tz} • GMT${sign}${absH}:${absM})`;
+    } catch (e) {
+        return "Horário Local do Dispositivo";
+    }
+}
+
+function computeActiveQuestIds(list, nowMinutes) {
+    if (!Array.isArray(list) || list.length === 0) return { activeIds: new Set(), nextTime: null, activeTime: null };
+
+    // Collect distinct valid times sorted ascending
+    const timedQuests = list
+        .map(q => ({ quest: q, mins: parseTimeToMinutes(q.time) }))
+        .filter(item => item.mins !== null)
+        .sort((a, b) => a.mins - b.mins);
+
+    if (timedQuests.length === 0) {
+        return { activeIds: new Set(), nextTime: null, activeTime: null };
+    }
+
+    // Distinct time slots in chronological order
+    const distinctSlots = [...new Set(timedQuests.map(t => t.mins))].sort((a, b) => a - b);
+
+    // Find slot <= nowMinutes (e.g., if quest is 09:00 and now is 09:01, activeSlot = 09:00 until next slot)
+    let activeSlot = null;
+    let nextSlot = null;
+    for (let i = 0; i < distinctSlots.length; i++) {
+        if (distinctSlots[i] <= nowMinutes) {
+            activeSlot = distinctSlots[i];
+            nextSlot = (i + 1 < distinctSlots.length) ? distinctSlots[i + 1] : distinctSlots[0];
+        }
+    }
+
+    // If current time is before the first quest of the day, wrap around to the last slot of the cycle
+    if (activeSlot === null && distinctSlots.length > 0) {
+        activeSlot = distinctSlots[distinctSlots.length - 1];
+        nextSlot = distinctSlots[0];
+    }
+
+    const activeIds = new Set();
+    let activeTimeStr = null;
+    let nextTimeStr = null;
+
+    timedQuests.forEach(item => {
+        if (item.mins === activeSlot) {
+            activeIds.add(item.quest.id);
+            activeTimeStr = item.quest.time;
+        }
+        if (item.mins === nextSlot && !nextTimeStr) {
+            nextTimeStr = item.quest.time;
+        }
+    });
+
+    return { activeIds, nextTime: nextTimeStr, activeTime: activeTimeStr };
+}
+
+function updateQuestLocalityAndClock() {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const timeStr = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+    const locEl = document.getElementById("quest-locality-name");
+    const timeEl = document.getElementById("quest-local-time");
+    const statusEl = document.getElementById("quest-active-status");
+
+    if (locEl) {
+        locEl.textContent = `📍 Localidade: ${getLocalTimezoneDisplay()}`;
+    }
+    if (timeEl) {
+        timeEl.textContent = `🕒 Horário Local: ${timeStr}`;
+    }
+
+    // Compute signature of active quests across daily, weekly, monthly
+    const dailyInfo = computeActiveQuestIds(state.quests ? state.quests.daily : [], nowMinutes);
+    const weeklyInfo = computeActiveQuestIds(state.quests ? state.quests.weekly : [], nowMinutes);
+    const monthlyInfo = computeActiveQuestIds(state.quests ? state.quests.monthly : [], nowMinutes);
+
+    if (statusEl) {
+        if (dailyInfo.activeTime) {
+            statusEl.style.display = "inline-flex";
+            statusEl.textContent = `⚡ Janela Ativa: ${dailyInfo.activeTime}${dailyInfo.nextTime && dailyInfo.nextTime !== dailyInfo.activeTime ? ` → Próxima às ${dailyInfo.nextTime}` : ""}`;
+        } else {
+            statusEl.style.display = "none";
+        }
+    }
+
+    const newSignature = [
+        ...[...dailyInfo.activeIds],
+        ...[...weeklyInfo.activeIds],
+        ...[...monthlyInfo.activeIds]
+    ].join(",");
+
+    if (newSignature !== lastActiveQuestSignature) {
+        lastActiveQuestSignature = newSignature;
+        if (typeof currentModule !== "undefined" && currentModule === "quests") {
+            renderQuests();
+        }
+    }
+}
+
 function renderQuests() {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    updateQuestLocalityAndClock();
+
     const renderList = (elementId, list) => {
         const div = document.getElementById(elementId);
+        if (!div) return;
         div.innerHTML = "";
         
-        if(list.length === 0) {
+        if(!list || list.length === 0) {
             div.innerHTML = `<div style="font-size:13px; color: var(--text-dim); padding:10px;">Sem missões cadastradas.</div>`;
             return;
         }
@@ -1984,18 +2232,24 @@ function renderQuests() {
             return 0;
         });
 
+        const { activeIds, nextTime } = computeActiveQuestIds(sortedList, nowMinutes);
+
         sortedList.forEach(quest => {
+            const isActiveNow = activeIds.has(quest.id);
             const item = document.createElement("div");
-            item.className = `quest-item ${quest.completed ? 'completed' : ''}`;
+            item.className = `quest-item ${quest.completed ? 'completed' : ''} ${isActiveNow ? 'quest-active-now' : ''}`;
             item.innerHTML = `
                 <div class="quest-info">
-                    <span class="quest-label">${quest.text}</span>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span class="quest-label">${quest.text}</span>
+                        ${isActiveNow ? `<span class="quest-active-now-badge">⚡ EM ANDAMENTO AGORA${nextTime && nextTime !== quest.time ? ` (Até ${nextTime})` : ''}</span>` : ''}
+                    </div>
                     <div class="quest-meta">
                         <span>Recompensa: <span class="quest-reward">+${quest.xp} XP</span></span>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    ${quest.time ? `<span class="quest-time-badge" style="display: flex; align-items: center; gap: 4px; color: var(--accent); font-size: 13px; font-weight: 600; margin-right: 4px;"><i data-lucide="clock" style="width: 13px; height: 13px;"></i>${quest.time}</span>` : ''}
+                    ${quest.time ? `<span class="quest-time-badge" style="display: flex; align-items: center; gap: 4px; color: ${isActiveNow ? '#facc15' : 'var(--accent)'}; font-size: 13px; font-weight: 700; margin-right: 4px;"><i data-lucide="clock" style="width: 13px; height: 13px;"></i>${quest.time}</span>` : ''}
                     <button class="habit-checkbox ${quest.completed ? 'checked' : ''}" onclick="toggleQuestStatus('${elementId}', '${quest.id}')">
                         ${quest.completed ? '<i data-lucide="check" style="width:12px; height:12px;"></i>' : ''}
                     </button>
@@ -3853,11 +4107,34 @@ function formatBRL(amount) {
     return amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function detectAndApplyMobileMode() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+    const isSmallViewport = window.innerWidth <= 900 || (window.matchMedia && window.matchMedia("(max-width: 900px)").matches);
+    const isMobile = isMobileUA || isSmallViewport;
+
+    document.body.classList.toggle("is-mobile-device", isMobile);
+    document.documentElement.classList.toggle("is-mobile-device", isMobile);
+}
+window.detectAndApplyMobileMode = detectAndApplyMobileMode;
+
 function requestSystemPermissions() {
-    // 1. Geolocation Permission Request
+    // 1. Geolocation Permission Request & Locality Detection
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-            (pos) => console.log("Permissão de localização concedida"),
+            (pos) => {
+                console.log("Permissão de localização concedida");
+                try {
+                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+                    const city = tz.includes("/") ? tz.split("/").pop().replace(/_/g, " ") : tz;
+                    const lat = pos.coords.latitude.toFixed(2);
+                    const lon = pos.coords.longitude.toFixed(2);
+                    detectedLocalityLabel = `${city} (${tz} • ${lat}°, ${lon}°)`;
+                    if (typeof updateQuestLocalityAndClock === "function") {
+                        updateQuestLocalityAndClock();
+                    }
+                } catch (e) {}
+            },
             (err) => console.warn("Permissão de localização negada:", err)
         );
     }
@@ -3876,6 +4153,10 @@ function requestSystemPermissions() {
 
 // ==================== STARTUP ====================
 window.onload = () => {
+    detectAndApplyMobileMode();
+    window.addEventListener("resize", detectAndApplyMobileMode);
+    window.addEventListener("orientationchange", detectAndApplyMobileMode);
+
     loadState();
     initRouter();
     bindTourEvents();
@@ -3904,6 +4185,12 @@ window.onload = () => {
     if (typeof checkDailyQuestsReset === "function") {
         checkDailyQuestsReset();
         setInterval(checkDailyQuestsReset, 60000);
+    }
+
+    // Live Local Time & Active Quest Blinking updater
+    if (typeof updateQuestLocalityAndClock === "function") {
+        updateQuestLocalityAndClock();
+        setInterval(updateQuestLocalityAndClock, 5000);
     }
 
     // Check notifications and alarms, and set periodic check
@@ -3959,8 +4246,9 @@ window.onload = () => {
     checkDailyHabitsQuest();
     updateUIElements();
     
-    // Initialize Theme Color Picker
+    // Initialize Theme Color Picker & Window/Menu Color Picker
     initThemeColorPicker();
+    initPanelColorPicker();
     
     // Initialize Supabase
     initSupabase();
@@ -4687,11 +4975,15 @@ async function loadStateFromSupabase(showAlert = true) {
         const timeStr = new Date().toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
         if (data && data.state) {
-            // Overwrite state and save local
+            // Overwrite state and save local computer copy simultaneously
             state = data.state;
             saveStateToLocalStorage(state);
+            writeToLocalDirectory();
             if (state.themeColor) {
                 setThemeColor(state.themeColor);
+            }
+            if (typeof applyPanelColorFromState === "function") {
+                applyPanelColorFromState();
             }
             if (typeof applyGlobalBackground === "function") {
                 applyGlobalBackground();
@@ -5517,6 +5809,115 @@ function setThemeColor(hex) {
         saveState();
     }
 }
+
+// ==================== WINDOW & MENU COLOR PICKER ====================
+function initPanelColorPicker() {
+    const panelColorInput = document.getElementById("panel-color-input");
+    const modalPanelColorInput = document.getElementById("modal-panel-color-input");
+    const savedPanelColor = (state && state.panelColor) || localStorage.getItem("lilith_panel_color") || "";
+
+    if (savedPanelColor) {
+        setPanelColor(savedPanelColor, false);
+    }
+
+    if (panelColorInput) {
+        if (savedPanelColor) panelColorInput.value = savedPanelColor;
+        panelColorInput.oninput = (e) => setPanelColor(e.target.value, true);
+        panelColorInput.onchange = (e) => setPanelColor(e.target.value, true);
+    }
+
+    if (modalPanelColorInput) {
+        if (savedPanelColor) modalPanelColorInput.value = savedPanelColor;
+        modalPanelColorInput.oninput = (e) => setPanelColor(e.target.value, true);
+        modalPanelColorInput.onchange = (e) => setPanelColor(e.target.value, true);
+    }
+}
+
+function applyPanelColorFromState() {
+    const savedPanelColor = (state && state.panelColor) || localStorage.getItem("lilith_panel_color") || "";
+    if (savedPanelColor) {
+        setPanelColor(savedPanelColor, false);
+    }
+}
+window.applyPanelColorFromState = applyPanelColorFromState;
+
+function setPanelColor(hex, shouldSave = true) {
+    if (!hex || !hex.startsWith("#") || hex.length !== 7) return;
+
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+
+    // Compute slightly lighter/darker shade for gradient depth
+    const r2 = Math.min(255, r + 16);
+    const g2 = Math.min(255, g + 18);
+    const b2 = Math.min(255, b + 22);
+
+    const borderR = Math.min(255, r + 70);
+    const borderG = Math.min(255, g + 75);
+    const borderB = Math.min(255, b + 85);
+
+    const root = document.documentElement;
+    root.classList.add("has-custom-panel-color");
+    root.style.setProperty("--menu-bg-gradient", `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.95) 0%, rgba(${r2}, ${g2}, ${b2}, 0.91) 100%)`);
+    root.style.setProperty("--menu-border-color", `rgba(${borderR}, ${borderG}, ${borderB}, 0.55)`);
+    root.style.setProperty("--window-bg-gradient", `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.92) 0%, rgba(${r2}, ${g2}, ${b2}, 0.88) 100%)`);
+    root.style.setProperty("--window-modal-gradient", `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.97) 0%, rgba(${r2}, ${g2}, ${b2}, 0.94) 100%)`);
+    root.style.setProperty("--window-border-color", `rgba(${borderR}, ${borderG}, ${borderB}, 0.55)`);
+    root.style.setProperty("--bg-panel", `rgba(${r}, ${g}, ${b}, 0.82)`);
+    root.style.setProperty("--bg-card", `rgba(${r}, ${g}, ${b}, 0.55)`);
+    root.style.setProperty("--bg-card-hover", `rgba(${r2}, ${g2}, ${b2}, 0.72)`);
+
+    const previewDot = document.getElementById("panel-color-preview");
+    if (previewDot) {
+        previewDot.style.backgroundColor = hex;
+    }
+
+    const panelColorInput = document.getElementById("panel-color-input");
+    if (panelColorInput && panelColorInput.value !== hex) {
+        panelColorInput.value = hex;
+    }
+    const modalPanelColorInput = document.getElementById("modal-panel-color-input");
+    if (modalPanelColorInput && modalPanelColorInput.value !== hex) {
+        modalPanelColorInput.value = hex;
+    }
+
+    localStorage.setItem("lilith_panel_color", hex);
+
+    if (shouldSave && typeof state !== "undefined" && state) {
+        state.panelColor = hex;
+        saveState();
+    }
+}
+window.setPanelColor = setPanelColor;
+
+function resetPanelColor() {
+    const root = document.documentElement;
+    root.classList.remove("has-custom-panel-color");
+    root.style.setProperty("--menu-bg-gradient", "linear-gradient(135deg, rgba(28, 33, 41, 0.94) 0%, rgba(38, 44, 55, 0.9) 100%)");
+    root.style.setProperty("--menu-border-color", "rgba(148, 163, 184, 0.45)");
+    root.style.setProperty("--window-bg-gradient", "linear-gradient(135deg, rgba(28, 33, 41, 0.92) 0%, rgba(38, 44, 55, 0.88) 100%)");
+    root.style.setProperty("--window-modal-gradient", "linear-gradient(135deg, rgba(28, 33, 41, 0.96) 0%, rgba(38, 44, 55, 0.94) 100%)");
+    root.style.setProperty("--window-border-color", "rgba(148, 163, 184, 0.45)");
+    root.style.setProperty("--bg-panel", "rgba(46, 42, 45, 0.7)");
+    root.style.setProperty("--bg-card", "rgba(46, 42, 45, 0.4)");
+    root.style.setProperty("--bg-card-hover", "rgba(46, 42, 45, 0.65)");
+
+    const previewDot = document.getElementById("panel-color-preview");
+    if (previewDot) previewDot.style.backgroundColor = "#1c2129";
+    const panelColorInput = document.getElementById("panel-color-input");
+    if (panelColorInput) panelColorInput.value = "#1c2129";
+    const modalPanelColorInput = document.getElementById("modal-panel-color-input");
+    if (modalPanelColorInput) modalPanelColorInput.value = "#1c2129";
+
+    localStorage.removeItem("lilith_panel_color");
+    if (typeof state !== "undefined" && state) {
+        state.panelColor = "";
+        saveState();
+    }
+    showMagicAlert("Aparência Restaurada ✨", "A cor padrão das janelas e do menu foi restaurada.");
+}
+window.resetPanelColor = resetPanelColor;
 
 function hslToRgb(h, s, l) {
     let r, g, b;
